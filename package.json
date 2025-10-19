@@ -1,29 +1,71 @@
 {
   "name": "zenweb",
-  "version": "1.0.0",
-  "description": "A minimalist TypeScript framework for building reactive web applications",
-  "main": "dist/index.js",
+  "version": "0.1.0",
+  "description": "A minimalist TypeScript framework for building reactive web applications with no virtual DOM",
+  "main": "dist/runtime/index.js",
+  "types": "dist/runtime/index.d.ts",
   "type": "module",
   "exports": {
-    ".": "./dist/runtime/index.js",
-    "./runtime": "./dist/runtime/index.js",
-    "./helpers": "./dist/runtime/helpers/index.js",
-    "./state": "./dist/runtime/state.js",
-    "./dom": "./dist/runtime/dom.js"
+    ".": {
+      "types": "./dist/runtime/index.d.ts",
+      "import": "./dist/runtime/index.js"
+    },
+    "./runtime": {
+      "types": "./dist/runtime/index.d.ts",
+      "import": "./dist/runtime/index.js"
+    },
+    "./helpers": {
+      "types": "./dist/runtime/helpers/index.d.ts",
+      "import": "./dist/runtime/helpers/index.js"
+    },
+    "./state": {
+      "types": "./dist/runtime/state.d.ts",
+      "import": "./dist/runtime/state.js"
+    },
+    "./dom": {
+      "types": "./dist/runtime/dom.d.ts",
+      "import": "./dist/runtime/dom.js"
+    }
   },
   "bin": {
     "zenweb": "./dist/cli/bin/zenweb.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build:framework": "tsc",
     "build": "pnpm build:framework && node dist/cli/bin/zenweb.js build",
     "dev": "pnpm build:framework && node dist/cli/bin/zenweb.js dev",
     "watch": "tsc --watch",
+    "prepublishOnly": "pnpm build:framework",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["framework", "reactive", "ui", "minimalist", "zenweb", "typescript"],
-  "author": "",
+  "keywords": [
+    "framework",
+    "reactive",
+    "ui",
+    "minimalist",
+    "zenweb",
+    "typescript",
+    "vanilla-js",
+    "no-virtual-dom",
+    "proxy-based",
+    "state-management",
+    "web-framework"
+  ],
+  "author": "razen-core",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/razen-core/zenweb.git"
+  },
+  "bugs": {
+    "url": "https://github.com/razen-core/zenweb/issues"
+  },
+  "homepage": "https://github.com/razen-core/zenweb#readme",
   "packageManager": "pnpm@10.12.1",
   "dependencies": {
     "esbuild": "^0.19.0",

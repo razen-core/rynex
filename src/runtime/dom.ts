@@ -6,7 +6,7 @@
 
 import { debugLog } from './debug.js';
 
-export type DOMChild = HTMLElement | Text | string | number | boolean | null | undefined;
+export type DOMChild = HTMLElement | SVGElement | Text | string | number | boolean | null | undefined;
 export type DOMChildren = DOMChild | DOMChild[];
 
 export interface DOMProps {
@@ -14,7 +14,8 @@ export interface DOMProps {
   class?: string;
   className?: string;
   id?: string;
-  style?: string | Partial<CSSStyleDeclaration>;
+  style?: string | Partial<CSSStyleDeclaration> | Record<string, any>;
+  onHover?: Partial<CSSStyleDeclaration> | Record<string, any>;
   onClick?: (event: MouseEvent) => void;
   onInput?: (event: Event) => void;
   onChange?: (event: Event) => void;
@@ -25,6 +26,12 @@ export interface DOMProps {
   onKeyUp?: (event: KeyboardEvent) => void;
   onMouseEnter?: (event: MouseEvent) => void;
   onMouseLeave?: (event: MouseEvent) => void;
+  onDoubleClick?: (event: MouseEvent) => void;
+  onContextMenu?: (event: MouseEvent) => void;
+  onMouseMove?: (event: MouseEvent) => void;
+  onScroll?: (event: Event) => void;
+  onDrag?: (event: DragEvent) => void;
+  onDrop?: (event: DragEvent) => void;
   ref?: { current: HTMLElement | null };
 }
 
@@ -82,8 +89,36 @@ export function applyProps(element: HTMLElement, props: DOMProps): void {
       if (typeof value === 'string') {
         element.setAttribute('style', value);
       } else if (typeof value === 'object') {
-        Object.assign(element.style, value);
+        // Apply styles with proper camelCase to kebab-case conversion
+        for (const [styleKey, styleValue] of Object.entries(value)) {
+          if (styleValue !== null && styleValue !== undefined) {
+            // Convert camelCase to kebab-case for CSS properties
+            const cssKey = styleKey.replace(/[A-Z]/g, match => `-${match.toLowerCase()}`);
+            (element.style as any)[styleKey] = styleValue;
+          }
+        }
       }
+    }
+    // Handle hover styles
+    else if (key === 'onHover' && typeof value === 'object') {
+      const hoverStyles = value;
+      element.addEventListener('mouseenter', () => {
+        for (const [styleKey, styleValue] of Object.entries(hoverStyles)) {
+          if (styleValue !== null && styleValue !== undefined) {
+            (element.style as any)[styleKey] = styleValue;
+          }
+        }
+      });
+      // Store original styles to restore on mouse leave
+      const originalStyles: Record<string, any> = {};
+      for (const styleKey of Object.keys(hoverStyles)) {
+        originalStyles[styleKey] = (element.style as any)[styleKey];
+      }
+      element.addEventListener('mouseleave', () => {
+        for (const [styleKey, styleValue] of Object.entries(originalStyles)) {
+          (element.style as any)[styleKey] = styleValue;
+        }
+      });
     }
     // Handle ref
     else if (key === 'ref' && typeof value === 'object' && 'current' in value) {
@@ -156,7 +191,7 @@ export function removeProp(element: HTMLElement, key: string, value: any): void 
 /**
  * Append children to a DOM element
  */
-export function appendChildren(parent: HTMLElement, children: DOMChildren[]): void {
+export function appendChildren(parent: HTMLElement | SVGElement, children: DOMChildren[]): void {
   const flatChildren = children.flat(Infinity) as DOMChild[];
   
   for (const child of flatChildren) {
@@ -166,7 +201,7 @@ export function appendChildren(parent: HTMLElement, children: DOMChildren[]): vo
     
     if (typeof child === 'string' || typeof child === 'number') {
       parent.appendChild(createTextNode(child));
-    } else if (child instanceof HTMLElement || child instanceof Text) {
+    } else if (child instanceof HTMLElement || child instanceof SVGElement || child instanceof Text) {
       parent.appendChild(child);
     }
   }

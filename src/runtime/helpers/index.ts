@@ -108,6 +108,7 @@ export {
   audio,
   canvas,
   svg,
+  svgPath,
   iframe,
   picture,
   source,
@@ -139,3 +140,18 @@ export {
   portal,
   css
 } from './utilities.js';
+
+// UI Components
+export {
+  badge,
+  card,
+  avatar,
+  icon,
+  tooltip,
+  modal,
+  dropdown,
+  toggle,
+  slider,
+  progressBar,
+  spinner
+} from './components.js';

@@ -27,10 +27,53 @@ export function canvas(props: DOMProps & { width?: number; height?: number }): H
 }
 
 /**
- * SVG container
+ * SVG container - creates proper SVG element with namespace
  */
-export function svg(props: DOMProps & { viewBox?: string }, ...children: DOMChildren[]): SVGSVGElement {
-  return createElement('svg', props, ...children) as any as SVGSVGElement;
+export function svg(props: DOMProps & { viewBox?: string; width?: string | number; height?: string | number }, innerHTML?: string): SVGSVGElement {
+  const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  
+  // Apply props
+  if (props) {
+    for (const [key, value] of Object.entries(props)) {
+      if (value === null || value === undefined) continue;
+      
+      if (key === 'style' && typeof value === 'object') {
+        Object.assign(svgElement.style, value);
+      } else if (key === 'class' || key === 'className') {
+        svgElement.setAttribute('class', value);
+      } else if (key.startsWith('on') && typeof value === 'function') {
+        const eventName = key.slice(2).toLowerCase();
+        svgElement.addEventListener(eventName, value as EventListener);
+      } else {
+        svgElement.setAttribute(key, String(value));
+      }
+    }
+  }
+  
+  // Set innerHTML if provided (for SVG paths)
+  if (innerHTML) {
+    svgElement.innerHTML = innerHTML;
+  }
+  
+  return svgElement;
+}
+
+/**
+ * Create SVG path element
+ */
+export function svgPath(d: string, props?: DOMProps): SVGPathElement {
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', d);
+  
+  if (props) {
+    for (const [key, value] of Object.entries(props)) {
+      if (value !== null && value !== undefined) {
+        path.setAttribute(key, String(value));
+      }
+    }
+  }
+  
+  return path;
 }
 
 /**

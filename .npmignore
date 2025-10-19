@@ -1,0 +1,46 @@
+# Source files
+src/
+tsconfig.json
+pnpm-workspace.yaml
+
+# Examples
+examples/
+
+# Development files
+.git/
+.gitignore
+*.md
+!README.md
+!LICENSE
+
+# Build artifacts
+*.log
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Tests
+test/
+*.test.ts
+*.spec.ts
+
+# Documentation (except README)
+docs/
+CONTRIBUTING.md
+NEW_SYNTAX.md
+VANILLA_JS_MIGRATION.md
+FUNCTIONS_LIST.md
+NPM_PUBLISHING_GUIDE.md
+MODULE_PATHS_GUIDE.md
+COMPLETE_UPDATE_SUMMARY.md
+
+# Node modules
+node_modules/
+
+# Temporary files
+*.tmp
+.DS_Store
