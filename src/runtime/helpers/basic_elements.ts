@@ -4,6 +4,7 @@
  */
 
 import { createElement, DOMProps, DOMChildren } from '../dom.js';
+import { effect } from '../state.js';
 
 /**
  * Div element (generic container)
@@ -20,20 +21,68 @@ export function span(props: DOMProps, ...children: DOMChildren[]): HTMLElement {
 }
 
 /**
- * Text element
+ * Text element with reactive getter support
+ * Usage: text('static') or text(() => `Count: ${state.count}`) or text({ class: 'foo' }, 'static') or text({ class: 'foo' }, () => `Count: ${state.count}`)
  */
-export function text(props: DOMProps | string, content?: string): HTMLElement {
+export function text(props: DOMProps | string | (() => string), content?: string | (() => string)): HTMLElement {
+  // Case 1: text('static string')
   if (typeof props === 'string') {
     return createElement('span', {}, props);
   }
-  return createElement('span', props, content || '');
+  
+  // Case 2: text(() => reactive)
+  if (typeof props === 'function') {
+    const el = createElement('span', {});
+    effect(() => {
+      el.textContent = props();
+    });
+    return el;
+  }
+  
+  // Case 3: text({ props }, 'static') or text({ props }, () => reactive)
+  const el = createElement('span', props);
+  
+  if (typeof content === 'function') {
+    // Reactive content
+    effect(() => {
+      el.textContent = content();
+    });
+  } else if (content) {
+    // Static content
+    el.textContent = content;
+  }
+  
+  return el;
 }
 
 /**
- * Button element
+ * Button element with reactive text support
+ * Usage: button({ onClick: ... }, 'Click') or button({ onClick: ... }, () => state.show ? 'Hide' : 'Show')
  */
-export function button(props: DOMProps, ...content: DOMChildren[]): HTMLElement {
-  return createElement('button', props, ...content);
+export function button(props: DOMProps, content?: string | (() => string) | DOMChildren[]): HTMLElement {
+  const el = createElement('button', props);
+  
+  if (typeof content === 'function') {
+    // Reactive text content
+    effect(() => {
+      el.textContent = content();
+    });
+  } else if (typeof content === 'string') {
+    // Static text content
+    el.textContent = content;
+  } else if (content) {
+    // Children elements
+    const children = Array.isArray(content) ? content : [content];
+    children.forEach(child => {
+      if (typeof child === 'string') {
+        el.appendChild(document.createTextNode(child));
+      } else if (child instanceof HTMLElement) {
+        el.appendChild(child);
+      }
+    });
+  }
+  
+  return el;
 }
 
 /**

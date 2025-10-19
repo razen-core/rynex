@@ -393,10 +393,10 @@ function App() {
       ]),
       // Layout Helpers Test
       section({ class: "test-section" }, [
-        h2({}, "Layout Helpers"),
+        h2({ class: "name", id: "name" }, "Layout Helpers"),
         vbox({ class: "test-box" }, [
           h3({}, "VBox (Vertical)"),
-          vbox(
+          hbox(
             { class: "demo-vbox" },
             text("Item 1"),
             text("Item 2"),

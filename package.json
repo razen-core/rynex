@@ -4,6 +4,13 @@
   "description": "A minimalist TypeScript framework for building reactive web applications",
   "main": "dist/index.js",
   "type": "module",
+  "exports": {
+    ".": "./dist/runtime/index.js",
+    "./runtime": "./dist/runtime/index.js",
+    "./helpers": "./dist/runtime/helpers/index.js",
+    "./state": "./dist/runtime/state.js",
+    "./dom": "./dist/runtime/dom.js"
+  },
   "bin": {
     "zenweb": "./dist/cli/bin/zenweb.js"
   },

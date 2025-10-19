@@ -4,6 +4,7 @@
  */
 
 import { createElement, DOMProps, DOMChildren } from '../dom.js';
+import { effect } from '../state.js';
 
 /**
  * Fragment - render children without wrapper
@@ -21,16 +22,37 @@ export function when(condition: boolean, content: () => HTMLElement | DOMChildre
 }
 
 /**
- * Show/hide based on condition
+ * Show/hide based on condition with reactive support
+ * Usage: show(state.visible, element) or show(() => state.count > 0, element)
+ * Properly toggles DOM presence (not just display:none)
  */
-export function show(condition: boolean, content: HTMLElement): HTMLElement | null {
-  if (condition) {
-    content.style.display = '';
-    return content;
+export function show(condition: boolean | (() => boolean), content: HTMLElement): HTMLElement {
+  const container = createElement('div', { 'data-conditional': 'true' });
+  let isAttached = false;
+  
+  const updateVisibility = (visible: boolean) => {
+    if (visible && !isAttached) {
+      container.appendChild(content);
+      isAttached = true;
+    } else if (!visible && isAttached) {
+      if (container.contains(content)) {
+        container.removeChild(content);
+      }
+      isAttached = false;
+    }
+  };
+  
+  if (typeof condition === 'function') {
+    // Reactive condition
+    effect(() => {
+      updateVisibility(condition());
+    });
   } else {
-    content.style.display = 'none';
-    return null;
+    // Static condition
+    updateVisibility(condition);
   }
+  
+  return container;
 }
 
 /**
@@ -95,4 +117,44 @@ export function portal(children: DOMChildren[], target: string | HTMLElement): H
     });
   }
   return createElement('div', { 'data-portal': true });
+}
+
+/**
+ * CSS helper - add styles to external stylesheet
+ * Usage: css('.my-class', { color: 'red', fontSize: '16px' })
+ * Styles are added to a <style> tag in the document head
+ */
+let styleSheet: CSSStyleSheet | null = null;
+let styleElement: HTMLStyleElement | null = null;
+
+export function css(selector: string, styles: Partial<CSSStyleDeclaration> | string): void {
+  // Create style element if it doesn't exist
+  if (!styleElement) {
+    styleElement = document.createElement('style');
+    styleElement.setAttribute('data-zenweb-styles', 'true');
+    document.head.appendChild(styleElement);
+    styleSheet = styleElement.sheet as CSSStyleSheet;
+  }
+  
+  if (typeof styles === 'string') {
+    // Raw CSS string
+    const rule = `${selector} { ${styles} }`;
+    if (styleSheet) {
+      styleSheet.insertRule(rule, styleSheet.cssRules.length);
+    }
+  } else {
+    // Style object - convert to CSS string
+    const cssText = Object.entries(styles)
+      .map(([key, value]) => {
+        // Convert camelCase to kebab-case
+        const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+        return `${cssKey}: ${value}`;
+      })
+      .join('; ');
+    
+    const rule = `${selector} { ${cssText} }`;
+    if (styleSheet) {
+      styleSheet.insertRule(rule, styleSheet.cssRules.length);
+    }
+  }
 }

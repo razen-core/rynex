@@ -19,6 +19,33 @@ export interface BuildOptions {
 import { logger } from './logger.js';
 
 /**
+ * Copy files from public directory to dist
+ */
+function copyPublicFiles(sourceDir: string, destDir: string): void {
+  const files = fs.readdirSync(sourceDir);
+  
+  for (const file of files) {
+    const sourcePath = path.join(sourceDir, file);
+    const destPath = path.join(destDir, file);
+    const stat = fs.statSync(sourcePath);
+    
+    if (stat.isDirectory()) {
+      // Recursively copy directories
+      if (!fs.existsSync(destPath)) {
+        fs.mkdirSync(destPath, { recursive: true });
+      }
+      copyPublicFiles(sourcePath, destPath);
+    } else {
+      // Copy files (skip styles.css as it's handled separately)
+      if (file !== 'styles.css') {
+        fs.copyFileSync(sourcePath, destPath);
+        logger.debug(`Copied: ${file}`);
+      }
+    }
+  }
+}
+
+/**
  * Build a ZenWeb project
  */
 export async function build(options: BuildOptions): Promise<void> {
@@ -108,14 +135,29 @@ export async function build(options: BuildOptions): Promise<void> {
     logger.debug(`esbuild completed successfully`);
     logger.debug(`Output files: ${result.outputFiles?.length || 'written to disk'}`);
 
-    // Write styles to CSS file
+    // Copy public files to dist
+    const publicDir = path.join(projectRoot, 'public');
+    if (fs.existsSync(publicDir)) {
+      logger.debug(`Copying public files from ${publicDir} to ${distDir}`);
+      copyPublicFiles(publicDir, distDir);
+      logger.success('Public files copied to dist');
+    }
+
+    // Handle styles.css
+    const publicStylesPath = path.join(publicDir, 'styles.css');
+    const distStylesPath = path.join(distDir, 'styles.css');
+    
     if (allStyles) {
-      const cssPath = path.join(distDir, 'styles.css');
-      logger.debug(`Writing ${allStyles.length} chars of CSS to ${cssPath}`);
-      await fs.promises.writeFile(cssPath, allStyles, 'utf8');
-      logger.success(`Styles written to ${cssPath}`);
-    } else {
-      logger.debug(`No styles to write`);
+      // If we extracted styles from components, write them
+      logger.debug(`Writing ${allStyles.length} chars of extracted CSS to ${distStylesPath}`);
+      await fs.promises.writeFile(distStylesPath, allStyles, 'utf8');
+      logger.success('Component styles written to dist/styles.css');
+    } else if (!fs.existsSync(distStylesPath)) {
+      // If no extracted styles and no styles.css exists, create empty one
+      logger.debug('No styles found, creating empty styles.css');
+      const defaultStyles = `/* ZenWeb Styles */\n* {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n}\n\nbody {\n  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;\n}\n`;
+      await fs.promises.writeFile(distStylesPath, defaultStyles, 'utf8');
+      logger.success('Created default styles.css');
     }
 
     logger.success(`Build complete: ${options.output}`);

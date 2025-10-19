@@ -36,7 +36,10 @@ export {
   ol,
   li,
   hr,
-  br
+  br,
+  dl,
+  dt,
+  dd
 } from './basic_elements.js';
 
 // Typography
@@ -133,5 +136,6 @@ export {
   each,
   switchCase,
   dynamic,
-  portal
+  portal,
+  css
 } from './utilities.js';
