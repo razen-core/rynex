@@ -1,63 +1,26 @@
-// ../../dist/runtime/debug.js
-var debugEnabled = false;
-function enableDebug() {
-  debugEnabled = true;
-  console.log("[ZenWeb Debug] Debugging enabled");
-}
-function debugLog(category, message, data) {
-  if (debugEnabled) {
-    const timestamp = (/* @__PURE__ */ new Date()).toISOString().split("T")[1].split(".")[0];
-    console.log(`[${timestamp}] [DEBUG:${category}] ${message}`, data || "");
-  }
-}
-function debugWarn(category, message, data) {
-  if (debugEnabled) {
-    const timestamp = (/* @__PURE__ */ new Date()).toISOString().split("T")[1].split(".")[0];
-    console.warn(`[${timestamp}] [WARN:${category}] ${message}`, data || "");
-  }
-}
-if (typeof window !== "undefined") {
-  const urlParams = new URLSearchParams(window.location.search);
-  const hasDebugParam = urlParams.get("debug") === "true";
-  const hasDebugStorage = localStorage.getItem("zenweb-debug") === "true";
-  if (hasDebugParam || hasDebugStorage) {
-    enableDebug();
-  }
-}
-
 // ../../dist/runtime/state.js
 var currentComponent = null;
 var currentEffect = null;
 var componentStates = /* @__PURE__ */ new WeakMap();
-var stateIdCounter = 0;
 var ReactiveState = class {
   constructor(initialValue) {
     this._value = initialValue;
     this._subscribers = /* @__PURE__ */ new Set();
-    this._id = stateIdCounter++;
-    debugLog("State", `Created state #${this._id}`, initialValue);
   }
   get value() {
     if (currentEffect) {
       this._subscribers.add(currentEffect);
-      debugLog("State", `State #${this._id} tracked by effect`);
     }
-    debugLog("State", `State #${this._id} read`, this._value);
     return this._value;
   }
   set value(newValue) {
-    const oldValue = this._value;
     if (this._value !== newValue) {
       this._value = newValue;
-      debugLog("State", `State #${this._id} changed from ${oldValue} to ${newValue}`);
       this._notify();
-    } else {
-      debugWarn("State", `State #${this._id} set to same value, skipping update`);
     }
   }
   _notify() {
     const subscribers = Array.from(this._subscribers);
-    debugLog("State", `Notifying ${subscribers.length} subscribers for state #${this._id}`);
     queueMicrotask(() => {
       subscribers.forEach((callback) => {
         try {
@@ -69,7 +32,6 @@ var ReactiveState = class {
     });
   }
   cleanup() {
-    debugLog("State", `Cleaning up state #${this._id}`);
     this._subscribers.clear();
   }
 };
@@ -77,14 +39,9 @@ function state(initialValue) {
   const reactiveState = new ReactiveState(initialValue);
   const getter = () => reactiveState.value;
   const setter = (newValue) => {
-    const finalValue = typeof newValue === "function" ? newValue(reactiveState.value) : newValue;
-    debugLog("State", `Setter called with value`, finalValue);
-    reactiveState.value = finalValue;
+    reactiveState.value = typeof newValue === "function" ? newValue(reactiveState.value) : newValue;
     if (currentComponent && currentComponent.update) {
-      debugLog("State", `Triggering component update`);
       currentComponent.update();
-    } else {
-      debugWarn("State", `No current component to update`);
     }
   };
   if (currentComponent) {
@@ -92,9 +49,6 @@ function state(initialValue) {
       componentStates.set(currentComponent, []);
     }
     componentStates.get(currentComponent).push(reactiveState);
-    debugLog("State", `State registered to component`);
-  } else {
-    debugWarn("State", `State created outside component context`);
   }
   return [getter, setter];
 }
@@ -123,10 +77,10 @@ function normalizeChildren(children) {
     return child !== null && child !== void 0 && child !== false && child !== true;
   });
 }
-function mount(vnode, container2) {
+function mount(vnode, container3) {
   const el = createElement(vnode);
   vnode.el = el;
-  container2.appendChild(el);
+  container3.appendChild(el);
 }
 function createElement(vnode) {
   if (typeof vnode === "string" || typeof vnode === "number") {
@@ -258,8 +212,7 @@ function unmount(vnode) {
 
 // ../../dist/runtime/renderer.js
 var componentInstances = /* @__PURE__ */ new WeakMap();
-var renderCounter = 0;
-function render(component, container2) {
+function render(component, container3) {
   const instance = {
     vnode: null,
     el: null,
@@ -269,23 +222,17 @@ function render(component, container2) {
     }
   };
   const update = () => {
-    const renderId = ++renderCounter;
-    debugLog("Renderer", `Render #${renderId} starting`);
     setCurrentComponent(instance);
     try {
       const newVNode = component({});
-      debugLog("Renderer", `Render #${renderId} component executed`);
       if (!instance.vnode) {
-        debugLog("Renderer", `Render #${renderId} initial mount`);
-        mount(newVNode, container2);
+        mount(newVNode, container3);
         instance.vnode = newVNode;
         instance.el = newVNode.el;
       } else {
-        debugLog("Renderer", `Render #${renderId} patching DOM`);
         patch(instance.vnode, newVNode);
         instance.vnode = newVNode;
       }
-      debugLog("Renderer", `Render #${renderId} complete`);
     } catch (error) {
       console.error("Error rendering component:", error);
     } finally {
@@ -324,6 +271,32 @@ function hbox(props, children) {
   };
   return h("div", { ...props, style }, ...children);
 }
+function grid(props, children) {
+  const { columns = 1, gap = "1rem", ...restProps } = props;
+  const style = {
+    display: "grid",
+    gridTemplateColumns: `repeat(${columns}, 1fr)`,
+    gap,
+    ...typeof restProps.style === "object" ? restProps.style : {}
+  };
+  return h("div", { ...restProps, style }, ...children);
+}
+function center(props, children) {
+  const style = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    ...typeof props.style === "object" ? props.style : {}
+  };
+  return h("div", { ...props, style }, ...children);
+}
+function scroll(props, children) {
+  const style = {
+    overflow: "auto",
+    ...typeof props.style === "object" ? props.style : {}
+  };
+  return h("div", { ...props, style }, ...children);
+}
 
 // ../../dist/runtime/helpers/basic_elements.js
 function text(props, content) {
@@ -339,47 +312,243 @@ function input(props) {
   return h("input", props);
 }
 
-// src/components/Header.ts
-function Header(props) {
-  return hbox({ class: "header" }, [
-    text({ class: "title" }, props.title)
-  ]);
+// ../../dist/runtime/helpers/typography.js
+function h1(props, content) {
+  return h("h1", props, content);
+}
+function h2(props, content) {
+  return h("h2", props, content);
+}
+function h3(props, content) {
+  return h("h3", props, content);
+}
+function strong(props, content) {
+  return h("strong", props, content);
+}
+function em(props, content) {
+  return h("em", props, content);
+}
+function code(props, content) {
+  return h("code", props, content);
 }
 
-// src/components/Footer.ts
-function Footer() {
-  return hbox({ class: "footer" }, [
-    text({}, "Built with ZenWeb \u{1F9D8}")
-  ]);
+// ../../dist/runtime/helpers/forms.js
+function form(props, children) {
+  return h("form", props, ...children);
+}
+function textarea(props, content) {
+  return h("textarea", props, content || "");
+}
+function select(props, children) {
+  return h("select", props, ...children);
+}
+function option(props, content) {
+  return h("option", props, content);
+}
+function checkbox(props) {
+  return h("input", { ...props, type: "checkbox" });
+}
+
+// ../../dist/runtime/helpers/semantic.js
+function header(props, children) {
+  return h("header", props, ...children);
+}
+function footer(props, children) {
+  return h("footer", props, ...children);
+}
+function section(props, children) {
+  return h("section", props, ...children);
+}
+
+// ../../dist/runtime/helpers/table.js
+function table(props, children) {
+  return h("table", props, ...children);
+}
+function thead(props, children) {
+  return h("thead", props, ...children);
+}
+function tbody(props, children) {
+  return h("tbody", props, ...children);
+}
+function tr(props, children) {
+  return h("tr", props, ...children);
+}
+function th(props, content) {
+  return h("th", props, content);
+}
+function td(props, content) {
+  return h("td", props, content);
+}
+
+// ../../dist/runtime/helpers/utilities.js
+function show(condition, content) {
+  return condition ? content : null;
 }
 
 // src/App.ts
 function App() {
   const [count, setCount] = state(0);
   const [name, setName] = state("");
-  return vbox({ class: "app-container" }, [
-    Header({ title: "Welcome to ZenWeb 2" }),
-    vbox({ class: "main-content" }, [
-      text({ class: "greeting" }, `Hello, ${name() || "Guest"}!`),
-      input({
-        placeholder: "Enter your name",
-        value: name(),
-        onInput: (e) => setName(e.target.value)
-      }),
-      hbox({ class: "counter-section" }, [
-        button({ onClick: () => setCount(count() - 1) }, "Decrement"),
-        text({ class: "count-display" }, `Count: ${count()}`),
-        button({ onClick: () => setCount(count() + 1) }, "Increment")
-      ]),
-      button({
-        class: "reset-btn",
-        onClick: () => {
-          setCount(0);
-          setName("");
-        }
-      }, "Reset All")
+  const [checked, setChecked] = state(false);
+  const [selected, setSelected] = state("option1");
+  const [showSection, setShowSection] = state(true);
+  return vbox({ class: "app" }, [
+    header({ class: "header" }, [
+      h1({}, "ZenWeb - All Functions Test")
     ]),
-    Footer()
+    scroll({ class: "content" }, [
+      // State Management Test
+      section({ class: "test-section" }, [
+        h2({}, "State Management"),
+        vbox({ class: "test-box" }, [
+          text({}, `Count: ${count()}`),
+          hbox({ class: "button-group" }, [
+            button({ onClick: () => setCount(count() - 1) }, "Decrement"),
+            button({ onClick: () => setCount(count() + 1) }, "Increment"),
+            button({ onClick: () => setCount(0) }, "Reset")
+          ])
+        ])
+      ]),
+      // Layout Helpers Test
+      section({ class: "test-section" }, [
+        h2({}, "Layout Helpers"),
+        vbox({ class: "test-box" }, [
+          h3({}, "VBox (Vertical)"),
+          vbox({ class: "demo-vbox" }, [
+            text({}, "Item 1"),
+            text({}, "Item 2"),
+            text({}, "Item 3")
+          ]),
+          h3({}, "HBox (Horizontal)"),
+          hbox({ class: "demo-hbox" }, [
+            text({}, "Item 1"),
+            text({}, "Item 2"),
+            text({}, "Item 3")
+          ]),
+          h3({}, "Grid"),
+          grid({ columns: 3, gap: "1rem", class: "demo-grid" }, [
+            text({}, "Cell 1"),
+            text({}, "Cell 2"),
+            text({}, "Cell 3"),
+            text({}, "Cell 4"),
+            text({}, "Cell 5"),
+            text({}, "Cell 6")
+          ]),
+          h3({}, "Center"),
+          center({ class: "demo-center" }, [
+            text({}, "Centered Content")
+          ])
+        ])
+      ]),
+      // Form Elements Test
+      section({ class: "test-section" }, [
+        h2({}, "Form Elements"),
+        form({ class: "test-box", onSubmit: (e) => {
+          e.preventDefault();
+        } }, [
+          vbox({ class: "form-group" }, [
+            text({}, "Name:"),
+            input({
+              type: "text",
+              value: name(),
+              onInput: (e) => setName(e.target.value),
+              placeholder: "Enter your name"
+            }),
+            text({}, `Hello, ${name() || "Guest"}!`)
+          ]),
+          vbox({ class: "form-group" }, [
+            text({}, "Checkbox:"),
+            checkbox({
+              checked: checked(),
+              onChange: (e) => setChecked(e.target.checked)
+            }),
+            text({}, `Checked: ${checked()}`)
+          ]),
+          vbox({ class: "form-group" }, [
+            text({}, "Select:"),
+            select({
+              value: selected(),
+              onChange: (e) => setSelected(e.target.value)
+            }, [
+              option({ value: "option1" }, "Option 1"),
+              option({ value: "option2" }, "Option 2"),
+              option({ value: "option3" }, "Option 3")
+            ]),
+            text({}, `Selected: ${selected()}`)
+          ]),
+          vbox({ class: "form-group" }, [
+            text({}, "Textarea:"),
+            textarea({ placeholder: "Enter text...", rows: 4 })
+          ])
+        ])
+      ]),
+      // Typography Test
+      section({ class: "test-section" }, [
+        h2({}, "Typography"),
+        vbox({ class: "test-box" }, [
+          h1({}, "Heading 1"),
+          h2({}, "Heading 2"),
+          h3({}, "Heading 3"),
+          text({}, "Regular text"),
+          strong({}, "Bold text"),
+          em({}, "Italic text"),
+          code({}, "Code text"),
+          text({}, "Text with "),
+          strong({}, "bold"),
+          text({}, " and "),
+          em({}, "italic")
+        ])
+      ]),
+      // Table Test
+      section({ class: "test-section" }, [
+        h2({}, "Table"),
+        table({ class: "test-table" }, [
+          thead({}, [
+            tr({}, [
+              th({}, "Name"),
+              th({}, "Age"),
+              th({}, "City")
+            ])
+          ]),
+          tbody({}, [
+            tr({}, [
+              td({}, "John"),
+              td({}, "25"),
+              td({}, "New York")
+            ]),
+            tr({}, [
+              td({}, "Jane"),
+              td({}, "30"),
+              td({}, "London")
+            ]),
+            tr({}, [
+              td({}, "Bob"),
+              td({}, "35"),
+              td({}, "Paris")
+            ])
+          ])
+        ])
+      ]),
+      // Conditional Rendering Test
+      section({ class: "test-section" }, [
+        h2({}, "Conditional Rendering"),
+        vbox({ class: "test-box" }, [
+          button({
+            onClick: () => setShowSection(!showSection())
+          }, showSection() ? "Hide Section" : "Show Section"),
+          show(
+            showSection(),
+            vbox({ class: "conditional-content" }, [
+              text({}, "This content is conditionally rendered!"),
+              text({}, `Current count: ${count()}`)
+            ])
+          )
+        ])
+      ])
+    ]),
+    footer({ class: "footer" }, [
+      text({}, "ZenWeb Framework - All Functions Working!")
+    ])
   ]);
 }
 

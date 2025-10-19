@@ -3,6 +3,8 @@
  * Reactive state tracking with automatic dependency collection
  */
 
+import { debugLog, debugWarn } from './debug.js';
+
 type EffectFunction = () => void;
 type StateGetter<T> = () => T;
 type StateSetter<T> = (value: T | ((prev: T) => T)) => void;
@@ -10,34 +12,46 @@ type StateSetter<T> = (value: T | ((prev: T) => T)) => void;
 let currentComponent: any = null;
 let currentEffect: EffectFunction | null = null;
 const componentStates = new WeakMap<any, ReactiveState<any>[]>();
+let stateIdCounter = 0;
 
 class ReactiveState<T> {
   private _value: T;
   private _subscribers: Set<EffectFunction>;
+  private _id: number;
 
   constructor(initialValue: T) {
     this._value = initialValue;
     this._subscribers = new Set();
+    this._id = stateIdCounter++;
+    debugLog('State', `Created state #${this._id}`, initialValue);
   }
 
   get value(): T {
     // Track dependency if we're inside a component or effect
     if (currentEffect) {
       this._subscribers.add(currentEffect);
+      debugLog('State', `State #${this._id} tracked by effect`);
     }
+    debugLog('State', `State #${this._id} read`, this._value);
     return this._value;
   }
 
   set value(newValue: T) {
+    const oldValue = this._value;
     if (this._value !== newValue) {
       this._value = newValue;
+      debugLog('State', `State #${this._id} changed from ${oldValue} to ${newValue}`);
       this._notify();
+    } else {
+      debugWarn('State', `State #${this._id} set to same value, skipping update`);
     }
   }
 
   private _notify(): void {
     // Batch updates for performance
     const subscribers = Array.from(this._subscribers);
+    debugLog('State', `Notifying ${subscribers.length} subscribers for state #${this._id}`);
+    
     queueMicrotask(() => {
       subscribers.forEach(callback => {
         try {
@@ -50,6 +64,7 @@ class ReactiveState<T> {
   }
 
   cleanup(): void {
+    debugLog('State', `Cleaning up state #${this._id}`);
     this._subscribers.clear();
   }
 }
@@ -64,9 +79,20 @@ export function state<T>(initialValue: T): [StateGetter<T>, StateSetter<T>] {
 
   const getter: StateGetter<T> = () => reactiveState.value;
   const setter: StateSetter<T> = (newValue) => {
-    reactiveState.value = typeof newValue === 'function' 
+    const finalValue = typeof newValue === 'function' 
       ? (newValue as (prev: T) => T)(reactiveState.value) 
       : newValue;
+    
+    debugLog('State', `Setter called with value`, finalValue);
+    reactiveState.value = finalValue;
+    
+    // Trigger component update if we have a current component
+    if (currentComponent && (currentComponent as any).update) {
+      debugLog('State', `Triggering component update`);
+      (currentComponent as any).update();
+    } else {
+      debugWarn('State', `No current component to update`);
+    }
   };
 
   // Store reference for cleanup
@@ -75,6 +101,9 @@ export function state<T>(initialValue: T): [StateGetter<T>, StateSetter<T>] {
       componentStates.set(currentComponent, []);
     }
     componentStates.get(currentComponent)!.push(reactiveState);
+    debugLog('State', `State registered to component`);
+  } else {
+    debugWarn('State', `State created outside component context`);
   }
 
   return [getter, setter];

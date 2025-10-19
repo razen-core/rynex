@@ -30,9 +30,11 @@ const colors = {
 
 class Logger {
   private useColors: boolean;
+  private debugEnabled: boolean;
 
   constructor(useColors = true) {
     this.useColors = useColors && process.stdout.isTTY;
+    this.debugEnabled = process.env.DEBUG === 'true' || process.argv.includes('--debug');
   }
 
   private formatMessage(level: LogLevel, message: string): string {
@@ -84,9 +86,13 @@ class Logger {
   }
 
   debug(message: string): void {
-    if (process.env.DEBUG) {
+    if (this.debugEnabled) {
       console.log(this.formatMessage(LogLevel.DEBUG, message));
     }
+  }
+  
+  setDebug(enabled: boolean): void {
+    this.debugEnabled = enabled;
   }
 
   section(title: string): void {

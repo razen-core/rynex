@@ -12,6 +12,9 @@ export { h, mount, patch, unmount } from './vdom.js';
 // Renderer
 export { render, createComponent } from './renderer.js';
 
+// Debug utilities
+export { enableDebug, disableDebug, isDebugEnabled } from './debug.js';
+
 // All Helper functions (organized by category)
 export * from './helpers/index.js';
 

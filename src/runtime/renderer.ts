@@ -5,9 +5,11 @@
 
 import { mount, patch, unmount } from './vdom.js';
 import { setCurrentComponent, cleanupComponent } from './state.js';
+import { debugLog } from './debug.js';
 import type { VNode, ComponentInstance } from './types.js';
 
 const componentInstances = new WeakMap<any, ComponentInstance>();
+let renderCounter = 0;
 
 /**
  * Render a component to a container element
@@ -21,21 +23,28 @@ export function render(component: Function, container: HTMLElement): ComponentIn
   };
 
   const update = () => {
+    const renderId = ++renderCounter;
+    debugLog('Renderer', `Render #${renderId} starting`);
+    
     setCurrentComponent(instance);
     
     try {
       const newVNode = component({}) as VNode;
+      debugLog('Renderer', `Render #${renderId} component executed`);
 
       if (!instance.vnode) {
         // Initial mount
+        debugLog('Renderer', `Render #${renderId} initial mount`);
         mount(newVNode, container);
         instance.vnode = newVNode;
         instance.el = newVNode.el as HTMLElement;
       } else {
         // Update
+        debugLog('Renderer', `Render #${renderId} patching DOM`);
         patch(instance.vnode, newVNode);
         instance.vnode = newVNode;
       }
+      debugLog('Renderer', `Render #${renderId} complete`);
     } catch (error) {
       console.error('Error rendering component:', error);
     } finally {

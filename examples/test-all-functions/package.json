@@ -1,0 +1,12 @@
+{
+  "name": "zenweb-test-all-functions",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node ../../dist/cli/bin/zenweb.js dev",
+    "build": "node ../../dist/cli/bin/zenweb.js build"
+  },
+  "dependencies": {
+    "zenweb": "file:../.."
+  }
+}
