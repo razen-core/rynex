@@ -1,23 +1,31 @@
 /**
  * ZenWeb Renderer
- * Main rendering engine that connects components to the DOM
+ * Main rendering engine using vanilla JavaScript (no VDOM)
  */
 
-import { mount, patch, unmount } from './vdom.js';
-import { setCurrentComponent, cleanupComponent } from './state.js';
+import { mount, unmount, replaceChildren } from './dom.js';
+import { subscribe } from './state.js';
 import { debugLog } from './debug.js';
-import type { VNode, ComponentInstance } from './types.js';
 
-const componentInstances = new WeakMap<any, ComponentInstance>();
+export interface ComponentInstance {
+  element: HTMLElement | null;
+  container: HTMLElement | null;
+  update: () => void;
+  unmount: () => void;
+  unsubscribe?: () => void;
+}
+
+const componentInstances = new WeakMap<Function, ComponentInstance>();
 let renderCounter = 0;
 
 /**
  * Render a component to a container element
+ * Component should return an HTMLElement
  */
-export function render(component: Function, container: HTMLElement): ComponentInstance {
+export function render(component: Function, container: HTMLElement, props: any = {}): ComponentInstance {
   const instance: ComponentInstance = {
-    vnode: null,
-    el: null,
+    element: null,
+    container,
     update: () => {},
     unmount: () => {}
   };
@@ -26,38 +34,37 @@ export function render(component: Function, container: HTMLElement): ComponentIn
     const renderId = ++renderCounter;
     debugLog('Renderer', `Render #${renderId} starting`);
     
-    setCurrentComponent(instance);
-    
     try {
-      const newVNode = component({}) as VNode;
+      // Execute component function to get DOM element
+      const newElement = component(props) as HTMLElement;
       debugLog('Renderer', `Render #${renderId} component executed`);
 
-      if (!instance.vnode) {
+      if (!instance.element) {
         // Initial mount
         debugLog('Renderer', `Render #${renderId} initial mount`);
-        mount(newVNode, container);
-        instance.vnode = newVNode;
-        instance.el = newVNode.el as HTMLElement;
+        mount(newElement, container);
+        instance.element = newElement;
       } else {
-        // Update
-        debugLog('Renderer', `Render #${renderId} patching DOM`);
-        patch(instance.vnode, newVNode);
-        instance.vnode = newVNode;
+        // Update - replace old element with new one
+        debugLog('Renderer', `Render #${renderId} updating DOM`);
+        if (instance.element.parentElement) {
+          instance.element.parentElement.replaceChild(newElement, instance.element);
+        }
+        instance.element = newElement;
       }
       debugLog('Renderer', `Render #${renderId} complete`);
     } catch (error) {
       console.error('Error rendering component:', error);
-    } finally {
-      setCurrentComponent(null);
     }
   };
 
   const unmountFn = () => {
-    if (instance.vnode) {
-      unmount(instance.vnode);
-      cleanupComponent(instance);
-      instance.vnode = null;
-      instance.el = null;
+    if (instance.element) {
+      unmount(instance.element);
+      instance.element = null;
+    }
+    if (instance.unsubscribe) {
+      instance.unsubscribe();
     }
   };
 
@@ -72,14 +79,31 @@ export function render(component: Function, container: HTMLElement): ComponentIn
 }
 
 /**
- * Create a component instance
+ * Create a component that auto-updates when state changes
  */
-export function createComponent(component: Function, props: any = {}): VNode {
-  setCurrentComponent(component);
+export function createComponent(component: Function, stateObj?: any, props: any = {}): HTMLElement {
+  const element = component(props) as HTMLElement;
   
-  try {
-    return component(props) as VNode;
-  } finally {
-    setCurrentComponent(null);
+  // If state object provided, subscribe to changes and re-render
+  if (stateObj && stateObj.__listeners) {
+    const container = document.createElement('div');
+    container.appendChild(element);
+    
+    subscribe(stateObj, () => {
+      const newElement = component(props) as HTMLElement;
+      replaceChildren(container, [newElement]);
+    });
+    
+    return container;
   }
+  
+  return element;
+}
+
+/**
+ * Mount a component and return cleanup function
+ */
+export function mountComponent(component: Function, container: HTMLElement, props: any = {}): () => void {
+  const instance = render(component, container, props);
+  return () => instance.unmount();
 }

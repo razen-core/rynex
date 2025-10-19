@@ -3,28 +3,34 @@
  * Utility functions for conditional rendering, fragments, etc.
  */
 
-import { h } from '../vdom.js';
-import type { VNode, VNodeChild } from '../types.js';
+import { createElement, DOMProps, DOMChildren } from '../dom.js';
 
 /**
  * Fragment - render children without wrapper
  */
-export function fragment(children: VNodeChild[]): VNode[] {
-  return children.filter(child => child !== null && child !== undefined) as VNode[];
+export function fragment(...children: DOMChildren[]): HTMLElement[] {
+  const flat = children.flat(Infinity).filter(child => child !== null && child !== undefined) as any[];
+  return flat.filter(child => child instanceof HTMLElement) as HTMLElement[];
 }
 
 /**
  * Conditional rendering - show content when condition is true
  */
-export function when(condition: boolean, content: () => VNode | VNodeChild): VNode | null {
-  return condition ? (content() as VNode) : null;
+export function when(condition: boolean, content: () => HTMLElement | DOMChildren): HTMLElement | null {
+  return condition ? (content() as HTMLElement) : null;
 }
 
 /**
  * Show/hide based on condition
  */
-export function show(condition: boolean, content: VNode): VNode | null {
-  return condition ? content : null;
+export function show(condition: boolean, content: HTMLElement): HTMLElement | null {
+  if (condition) {
+    content.style.display = '';
+    return content;
+  } else {
+    content.style.display = 'none';
+    return null;
+  }
 }
 
 /**
@@ -32,15 +38,15 @@ export function show(condition: boolean, content: VNode): VNode | null {
  */
 export function each<T>(
   items: T[],
-  renderFn: (item: T, index: number) => VNode,
+  renderFn: (item: T, index: number) => HTMLElement,
   keyFn?: (item: T, index: number) => string | number
-): VNode[] {
+): HTMLElement[] {
   return items.map((item, index) => {
-    const vnode = renderFn(item, index);
+    const element = renderFn(item, index);
     if (keyFn) {
-      vnode.key = keyFn(item, index);
+      element.dataset.key = String(keyFn(item, index));
     }
-    return vnode;
+    return element;
   });
 }
 
@@ -49,9 +55,9 @@ export function each<T>(
  */
 export function switchCase<T>(
   value: T,
-  cases: Record<string, () => VNode>,
-  defaultCase?: () => VNode
-): VNode | null {
+  cases: Record<string, () => HTMLElement>,
+  defaultCase?: () => HTMLElement
+): HTMLElement | null {
   const key = String(value);
   if (cases[key]) {
     return cases[key]();
@@ -65,19 +71,28 @@ export function switchCase<T>(
 export function dynamic(
   component: Function | string,
   props: any,
-  children?: VNodeChild[]
-): VNode {
+  ...children: DOMChildren[]
+): HTMLElement {
   if (typeof component === 'function') {
-    return component(props) as VNode;
+    return component(props) as HTMLElement;
   }
-  return h(component, props, ...(children || []));
+  return createElement(component, props, ...children);
 }
 
 /**
  * Portal - render content in a different DOM location
- * Note: This is a placeholder for future implementation
  */
-export function portal(children: VNodeChild[], target: string | HTMLElement): VNode {
-  // TODO: Implement portal functionality
-  return h('div', { 'data-portal': true }, ...children);
+export function portal(children: DOMChildren[], target: string | HTMLElement): HTMLElement {
+  const container = typeof target === 'string' ? document.querySelector(target) : target;
+  if (container) {
+    const flat = children.flat(Infinity);
+    flat.forEach(child => {
+      if (child instanceof HTMLElement) {
+        container.appendChild(child);
+      } else if (typeof child === 'string' || typeof child === 'number') {
+        container.appendChild(document.createTextNode(String(child)));
+      }
+    });
+  }
+  return createElement('div', { 'data-portal': true });
 }

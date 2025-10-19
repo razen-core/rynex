@@ -1,4 +1,4 @@
-import { state } from '../../../dist/runtime/index.js';
+import { state, effect } from '../../../dist/runtime/index.js';
 import {
   vbox, hbox, container, center, scroll, grid,
   text, button, input, checkbox, radio,
@@ -10,14 +10,43 @@ import {
 } from '../../../dist/runtime/index.js';
 
 export default function App() {
-  const [count, setCount] = state(0);
-  const [name, setName] = state('');
-  const [checked, setChecked] = state(false);
-  const [selected, setSelected] = state('option1');
-  const [showSection, setShowSection] = state(true);
+  // Vanilla JS Proxy-based state
+  const appState = state({
+    count: 0,
+    name: '',
+    checked: false,
+    selected: 'option1',
+    showSection: true
+  });
 
-  view {
-    vbox({ class: 'app' }, [
+  // Create reactive UI elements
+  const countDisplay = text(`Count: ${appState.count}`);
+  const nameDisplay = text(`Hello, ${appState.name || 'Guest'}!`);
+  const checkedDisplay = text(`Checked: ${appState.checked}`);
+  const selectedDisplay = text(`Selected: ${appState.selected}`);
+  const countInConditional = text(`Current count: ${appState.count}`);
+  
+  const toggleButton = button({ 
+    onClick: () => appState.showSection = !appState.showSection 
+  }, appState.showSection ? 'Hide Section' : 'Show Section');
+  
+  const conditionalContent = vbox({ class: 'conditional-content', style: { display: appState.showSection ? '' : 'none' } },
+    text('This content is conditionally rendered!'),
+    countInConditional
+  );
+  
+  // Auto-update UI when state changes
+  effect(() => {
+    countDisplay.textContent = `Count: ${appState.count}`;
+    nameDisplay.textContent = `Hello, ${appState.name || 'Guest'}!`;
+    checkedDisplay.textContent = `Checked: ${appState.checked}`;
+    selectedDisplay.textContent = `Selected: ${appState.selected}`;
+    countInConditional.textContent = `Current count: ${appState.count}`;
+    toggleButton.textContent = appState.showSection ? 'Hide Section' : 'Show Section';
+    conditionalContent.style.display = appState.showSection ? '' : 'none';
+  });
+  
+  return vbox({ class: 'app' },
       header({ class: 'header' }, [
         h1({}, 'ZenWeb - All Functions Test')
       ]),
@@ -27,11 +56,11 @@ export default function App() {
         section({ class: 'test-section' }, [
           h2({}, 'State Management'),
           vbox({ class: 'test-box' }, [
-            text({}, `Count: ${count()}`),
+            countDisplay,
             hbox({ class: 'button-group' }, [
-              button({ onClick: () => setCount(count() - 1) }, 'Decrement'),
-              button({ onClick: () => setCount(count() + 1) }, 'Increment'),
-              button({ onClick: () => setCount(0) }, 'Reset')
+              button({ onClick: () => appState.count-- }, 'Decrement'),
+              button({ onClick: () => appState.count++ }, 'Increment'),
+              button({ onClick: () => appState.count = 0 }, 'Reset')
             ])
           ])
         ]),
@@ -41,153 +70,147 @@ export default function App() {
           h2({}, 'Layout Helpers'),
           vbox({ class: 'test-box' }, [
             h3({}, 'VBox (Vertical)'),
-            vbox({ class: 'demo-vbox' }, [
-              text({}, 'Item 1'),
-              text({}, 'Item 2'),
-              text({}, 'Item 3')
-            ]),
+            vbox({ class: 'demo-vbox' },
+              text('Item 1'),
+              text('Item 2'),
+              text('Item 3')
+            ),
             
             h3({}, 'HBox (Horizontal)'),
-            hbox({ class: 'demo-hbox' }, [
-              text({}, 'Item 1'),
-              text({}, 'Item 2'),
-              text({}, 'Item 3')
-            ]),
+            hbox({ class: 'demo-hbox' },
+              text('Item 1'),
+              text('Item 2'),
+              text('Item 3')
+            ),
             
             h3({}, 'Grid'),
-            grid({ columns: 3, gap: '1rem', class: 'demo-grid' }, [
-              text({}, 'Cell 1'),
-              text({}, 'Cell 2'),
-              text({}, 'Cell 3'),
-              text({}, 'Cell 4'),
-              text({}, 'Cell 5'),
-              text({}, 'Cell 6')
-            ]),
+            grid({ columns: 3, gap: '1rem', class: 'demo-grid' },
+              text('Cell 1'),
+              text('Cell 2'),
+              text('Cell 3'),
+              text('Cell 4'),
+              text('Cell 5'),
+              text('Cell 6')
+            ),
             
             h3({}, 'Center'),
-            center({ class: 'demo-center' }, [
-              text({}, 'Centered Content')
-            ])
+            center({ class: 'demo-center' },
+              text('Centered Content')
+            )
           ])
         ]),
 
         // Form Elements Test
         section({ class: 'test-section' }, [
           h2({}, 'Form Elements'),
-          form({ class: 'test-box', onSubmit: (e: Event) => { e.preventDefault(); } }, [
-            vbox({ class: 'form-group' }, [
-              text({}, 'Name:'),
+          form({ class: 'test-box', onSubmit: (e: Event) => { e.preventDefault(); } },
+            vbox({ class: 'form-group' },
+              text('Name:'),
               input({
                 type: 'text',
-                value: name(),
-                onInput: (e: Event) => setName((e.target as HTMLInputElement).value),
+                value: appState.name,
+                onInput: (e: Event) => appState.name = (e.target as HTMLInputElement).value,
                 placeholder: 'Enter your name'
               }),
-              text({}, `Hello, ${name() || 'Guest'}!`)
-            ]),
+              nameDisplay
+            ),
             
-            vbox({ class: 'form-group' }, [
-              text({}, 'Checkbox:'),
+            vbox({ class: 'form-group' },
+              text('Checkbox:'),
               checkbox({
-                checked: checked(),
-                onChange: (e: Event) => setChecked((e.target as HTMLInputElement).checked)
+                checked: appState.checked,
+                onChange: (e: Event) => appState.checked = (e.target as HTMLInputElement).checked
               }),
-              text({}, `Checked: ${checked()}`)
-            ]),
+              checkedDisplay
+            ),
             
-            vbox({ class: 'form-group' }, [
-              text({}, 'Select:'),
+            vbox({ class: 'form-group' },
+              text('Select:'),
               select({
-                value: selected(),
-                onChange: (e: Event) => setSelected((e.target as HTMLSelectElement).value)
-              }, [
+                value: appState.selected,
+                onChange: (e: Event) => appState.selected = (e.target as HTMLSelectElement).value
+              },
                 option({ value: 'option1' }, 'Option 1'),
                 option({ value: 'option2' }, 'Option 2'),
                 option({ value: 'option3' }, 'Option 3')
-              ]),
-              text({}, `Selected: ${selected()}`)
-            ]),
+              ),
+              selectedDisplay
+            ),
             
-            vbox({ class: 'form-group' }, [
-              text({}, 'Textarea:'),
+            vbox({ class: 'form-group' },
+              text('Textarea:'),
               textarea({ placeholder: 'Enter text...', rows: 4 })
-            ])
-          ])
+            )
+          )
         ]),
 
         // Typography Test
         section({ class: 'test-section' }, [
           h2({}, 'Typography'),
-          vbox({ class: 'test-box' }, [
+          vbox({ class: 'test-box' },
             h1({}, 'Heading 1'),
             h2({}, 'Heading 2'),
             h3({}, 'Heading 3'),
-            text({}, 'Regular text'),
+            text('Regular text'),
             strong({}, 'Bold text'),
             em({}, 'Italic text'),
             code({}, 'Code text'),
-            text({}, 'Text with '),
+            text('Text with '),
             strong({}, 'bold'),
-            text({}, ' and '),
+            text(' and '),
             em({}, 'italic')
-          ])
+          )
         ]),
 
         // Table Test
         section({ class: 'test-section' }, [
           h2({}, 'Table'),
-          table({ class: 'test-table' }, [
-            thead({}, [
-              tr({}, [
+          table({ class: 'test-table' },
+            thead({},
+              tr({},
                 th({}, 'Name'),
                 th({}, 'Age'),
                 th({}, 'City')
-              ])
-            ]),
-            tbody({}, [
-              tr({}, [
+              )
+            ),
+            tbody({},
+              tr({},
                 td({}, 'John'),
                 td({}, '25'),
                 td({}, 'New York')
-              ]),
-              tr({}, [
+              ),
+              tr({},
                 td({}, 'Jane'),
                 td({}, '30'),
                 td({}, 'London')
-              ]),
-              tr({}, [
+              ),
+              tr({},
                 td({}, 'Bob'),
                 td({}, '35'),
                 td({}, 'Paris')
-              ])
-            ])
-          ])
+              )
+            )
+          )
         ]),
 
         // Conditional Rendering Test
         section({ class: 'test-section' }, [
           h2({}, 'Conditional Rendering'),
-          vbox({ class: 'test-box' }, [
-            button({ 
-              onClick: () => setShowSection(!showSection()) 
-            }, showSection() ? 'Hide Section' : 'Show Section'),
-            
-            show(showSection(), 
-              vbox({ class: 'conditional-content' }, [
-                text({}, 'This content is conditionally rendered!'),
-                text({}, `Current count: ${count()}`)
-              ])
-            )
-          ])
+          vbox({ class: 'test-box' },
+            toggleButton,
+            conditionalContent
+          )
         ])
       ]),
       
-      footer({ class: 'footer' }, [
-        text({}, 'ZenWeb Framework - All Functions Working!')
-      ])
-    ])
-  }
+      footer({ class: 'footer' },
+        text('ZenWeb Framework - Vanilla JS - All Functions Working!')
+      )
+    );
+}
 
+// Note: Styles should be in public/styles.css
+/*
   style {
     .app {
       min-height: 100vh;
@@ -296,4 +319,4 @@ export default function App() {
       text-align: center;
     }
   }
-}
+*/

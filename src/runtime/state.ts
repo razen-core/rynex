@@ -1,142 +1,133 @@
 /**
  * ZenWeb State Management
- * Reactive state tracking with automatic dependency collection
+ * Vanilla JavaScript Proxy-based reactive state (no React hooks)
  */
 
 import { debugLog, debugWarn } from './debug.js';
 
+type Listener = () => void;
 type EffectFunction = () => void;
-type StateGetter<T> = () => T;
-type StateSetter<T> = (value: T | ((prev: T) => T)) => void;
 
-let currentComponent: any = null;
+// Track current effect being executed for dependency tracking
 let currentEffect: EffectFunction | null = null;
-const componentStates = new WeakMap<any, ReactiveState<any>[]>();
-let stateIdCounter = 0;
-
-class ReactiveState<T> {
-  private _value: T;
-  private _subscribers: Set<EffectFunction>;
-  private _id: number;
-
-  constructor(initialValue: T) {
-    this._value = initialValue;
-    this._subscribers = new Set();
-    this._id = stateIdCounter++;
-    debugLog('State', `Created state #${this._id}`, initialValue);
-  }
-
-  get value(): T {
-    // Track dependency if we're inside a component or effect
-    if (currentEffect) {
-      this._subscribers.add(currentEffect);
-      debugLog('State', `State #${this._id} tracked by effect`);
-    }
-    debugLog('State', `State #${this._id} read`, this._value);
-    return this._value;
-  }
-
-  set value(newValue: T) {
-    const oldValue = this._value;
-    if (this._value !== newValue) {
-      this._value = newValue;
-      debugLog('State', `State #${this._id} changed from ${oldValue} to ${newValue}`);
-      this._notify();
-    } else {
-      debugWarn('State', `State #${this._id} set to same value, skipping update`);
-    }
-  }
-
-  private _notify(): void {
-    // Batch updates for performance
-    const subscribers = Array.from(this._subscribers);
-    debugLog('State', `Notifying ${subscribers.length} subscribers for state #${this._id}`);
-    
-    queueMicrotask(() => {
-      subscribers.forEach(callback => {
-        try {
-          callback();
-        } catch (error) {
-          console.error('Error in state subscriber:', error);
-        }
-      });
-    });
-  }
-
-  cleanup(): void {
-    debugLog('State', `Cleaning up state #${this._id}`);
-    this._subscribers.clear();
-  }
-}
+const effectDependencies = new WeakMap<EffectFunction, Set<any>>();
 
 /**
- * Create a reactive state value
- * @param initialValue - Initial state value
- * @returns Tuple of getter and setter
+ * Create a reactive state object using Proxy
+ * Any property access is tracked, any property change triggers updates
  */
-export function state<T>(initialValue: T): [StateGetter<T>, StateSetter<T>] {
-  const reactiveState = new ReactiveState<T>(initialValue);
+export function state<T extends object>(initialState: T): T {
+  const listeners = new Set<Listener>();
+  const dependencies = new Map<string | symbol, Set<EffectFunction>>();
 
-  const getter: StateGetter<T> = () => reactiveState.value;
-  const setter: StateSetter<T> = (newValue) => {
-    const finalValue = typeof newValue === 'function' 
-      ? (newValue as (prev: T) => T)(reactiveState.value) 
-      : newValue;
-    
-    debugLog('State', `Setter called with value`, finalValue);
-    reactiveState.value = finalValue;
-    
-    // Trigger component update if we have a current component
-    if (currentComponent && (currentComponent as any).update) {
-      debugLog('State', `Triggering component update`);
-      (currentComponent as any).update();
-    } else {
-      debugWarn('State', `No current component to update`);
+  const handler: ProxyHandler<T> = {
+    get(target, prop, receiver) {
+      // Track dependency if we're inside an effect
+      if (currentEffect) {
+        if (!dependencies.has(prop)) {
+          dependencies.set(prop, new Set());
+        }
+        dependencies.get(prop)!.add(currentEffect);
+        
+        // Track reverse dependency
+        if (!effectDependencies.has(currentEffect)) {
+          effectDependencies.set(currentEffect, new Set());
+        }
+        effectDependencies.get(currentEffect)!.add(target);
+        
+        debugLog('State', `Tracking dependency: ${String(prop)}`);
+      }
+      
+      return Reflect.get(target, prop, receiver);
+    },
+
+    set(target, prop, value, receiver) {
+      const oldValue = Reflect.get(target, prop, receiver);
+      
+      // Only update if value changed
+      if (Object.is(oldValue, value)) {
+        return true;
+      }
+
+      const result = Reflect.set(target, prop, value, receiver);
+      
+      if (result) {
+        debugLog('State', `Property ${String(prop)} changed from ${oldValue} to ${value}`);
+        
+        // Notify property-specific effects
+        const propEffects = dependencies.get(prop);
+        if (propEffects) {
+          propEffects.forEach(effect => {
+            queueMicrotask(() => {
+              try {
+                effect();
+              } catch (error) {
+                console.error('Error in effect:', error);
+              }
+            });
+          });
+        }
+        
+        // Notify global listeners
+        listeners.forEach(listener => {
+          queueMicrotask(() => {
+            try {
+              listener();
+            } catch (error) {
+              console.error('Error in listener:', error);
+            }
+          });
+        });
+      }
+      
+      return result;
     }
   };
 
-  // Store reference for cleanup
-  if (currentComponent) {
-    if (!componentStates.has(currentComponent)) {
-      componentStates.set(currentComponent, []);
-    }
-    componentStates.get(currentComponent)!.push(reactiveState);
-    debugLog('State', `State registered to component`);
-  } else {
-    debugWarn('State', `State created outside component context`);
-  }
-
-  return [getter, setter];
+  const proxy = new Proxy(initialState, handler);
+  
+  // Store listeners reference for manual subscription
+  (proxy as any).__listeners = listeners;
+  
+  return proxy;
 }
 
 /**
  * Create a computed value that automatically updates when dependencies change
- * @param computeFn - Function that computes the value
- * @returns Getter function for computed value
  */
-export function computed<T>(computeFn: () => T): StateGetter<T> {
-  const [value, setValue] = state<T>(null as T);
-  
+export function computed<T>(computeFn: () => T): { value: T } {
+  let cachedValue: T;
+  let isInitialized = false;
+
   const effectFn: EffectFunction = () => {
     const oldEffect = currentEffect;
     currentEffect = effectFn;
     try {
-      const newValue = computeFn();
-      setValue(newValue);
+      cachedValue = computeFn();
+      isInitialized = true;
+      debugLog('Computed', 'Recomputed value:', cachedValue);
     } finally {
       currentEffect = oldEffect;
     }
   };
 
-  effectFn(); // Run once to establish dependencies
-  return value;
+  // Run once to establish dependencies and get initial value
+  effectFn();
+
+  return {
+    get value() {
+      if (!isInitialized) {
+        effectFn();
+      }
+      return cachedValue;
+    }
+  };
 }
 
 /**
- * Run an effect when dependencies change
- * @param effectFn - Effect function to run
+ * Run an effect when reactive dependencies change
  */
-export function effect(effectFn: EffectFunction): void {
+export function effect(effectFn: EffectFunction): () => void {
   const wrappedEffect: EffectFunction = () => {
     const oldEffect = currentEffect;
     currentEffect = wrappedEffect;
@@ -147,25 +138,61 @@ export function effect(effectFn: EffectFunction): void {
     }
   };
 
+  // Run immediately to establish dependencies
   wrappedEffect();
+  
+  // Return cleanup function
+  return () => {
+    const deps = effectDependencies.get(wrappedEffect);
+    if (deps) {
+      deps.clear();
+      effectDependencies.delete(wrappedEffect);
+    }
+  };
 }
 
 /**
- * Set the current component context for state tracking
- * @param component - Component instance
+ * Subscribe to state changes manually
  */
-export function setCurrentComponent(component: any): void {
-  currentComponent = component;
+export function subscribe(stateObj: any, listener: Listener): () => void {
+  if (stateObj.__listeners) {
+    stateObj.__listeners.add(listener);
+    debugLog('State', 'Added listener to state');
+    
+    return () => {
+      stateObj.__listeners.delete(listener);
+      debugLog('State', 'Removed listener from state');
+    };
+  }
+  
+  debugWarn('State', 'Object is not a reactive state');
+  return () => {};
 }
 
 /**
- * Cleanup all states associated with a component
- * @param component - Component instance
+ * Batch multiple state updates together
  */
-export function cleanupComponent(component: any): void {
-  const states = componentStates.get(component);
-  if (states) {
-    states.forEach(state => state.cleanup());
-    componentStates.delete(component);
+let batchDepth = 0;
+const pendingEffects = new Set<EffectFunction>();
+
+export function batch(fn: () => void): void {
+  batchDepth++;
+  try {
+    fn();
+  } finally {
+    batchDepth--;
+    if (batchDepth === 0) {
+      // Execute all pending effects
+      pendingEffects.forEach(effect => {
+        queueMicrotask(() => {
+          try {
+            effect();
+          } catch (error) {
+            console.error('Error in batched effect:', error);
+          }
+        });
+      });
+      pendingEffects.clear();
+    }
   }
 }

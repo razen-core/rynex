@@ -3,132 +3,152 @@
  * Basic HTML elements and components
  */
 
-import { h } from '../vdom.js';
-import type { VNode, VNodeProps, VNodeChild } from '../types.js';
+import { createElement, DOMProps, DOMChildren } from '../dom.js';
 
 /**
  * Div element (generic container)
  */
-export function div(props: VNodeProps, children: VNodeChild[]): VNode {
-  return h('div', props, ...children);
+export function div(props: DOMProps, ...children: DOMChildren[]): HTMLElement {
+  return createElement('div', props, ...children);
 }
 
 /**
  * Span element (inline container)
  */
-export function span(props: VNodeProps, children: VNodeChild[]): VNode {
-  return h('span', props, ...children);
+export function span(props: DOMProps, ...children: DOMChildren[]): HTMLElement {
+  return createElement('span', props, ...children);
 }
 
 /**
  * Text element
  */
-export function text(props: VNodeProps | string, content?: string): VNode {
+export function text(props: DOMProps | string, content?: string): HTMLElement {
   if (typeof props === 'string') {
-    return h('span', {}, props);
+    return createElement('span', {}, props);
   }
-  return h('span', props, content || '');
+  return createElement('span', props, content || '');
 }
 
 /**
  * Button element
  */
-export function button(props: VNodeProps, content: VNodeChild): VNode {
-  return h('button', props, content);
+export function button(props: DOMProps, ...content: DOMChildren[]): HTMLElement {
+  return createElement('button', props, ...content);
 }
 
 /**
  * Input element
  */
-export function input(props: VNodeProps): VNode {
-  return h('input', props);
+export function input(props: DOMProps): HTMLInputElement {
+  return createElement('input', props) as HTMLInputElement;
 }
 
 /**
  * Image element
  */
-export function image(props: VNodeProps & { src: string; alt?: string; lazy?: boolean }): VNode {
+export function image(props: DOMProps & { src: string; alt?: string; lazy?: boolean }): HTMLImageElement {
   const imgProps = { ...props };
   if (props.lazy) {
     imgProps.loading = 'lazy';
     delete imgProps.lazy;
   }
-  return h('img', imgProps);
+  return createElement('img', imgProps) as HTMLImageElement;
 }
 
 /**
  * Link/anchor element
  */
-export function link(props: VNodeProps & { href: string }, children: VNodeChild[]): VNode {
-  return h('a', props, ...children);
+export function link(props: DOMProps & { href: string }, ...children: DOMChildren[]): HTMLAnchorElement {
+  return createElement('a', props, ...children) as HTMLAnchorElement;
 }
 
 /**
  * Label element
  */
-export function label(props: VNodeProps & { htmlFor?: string }, content: VNodeChild): VNode {
-  return h('label', props, content);
+export function label(props: DOMProps & { htmlFor?: string }, ...content: DOMChildren[]): HTMLLabelElement {
+  return createElement('label', props, ...content) as HTMLLabelElement;
 }
 
 /**
  * Paragraph element
  */
-export function p(props: VNodeProps, content: VNodeChild): VNode {
-  return h('p', props, content);
+export function p(props: DOMProps, ...content: DOMChildren[]): HTMLParagraphElement {
+  return createElement('p', props, ...content) as HTMLParagraphElement;
 }
 
 /**
  * List element with optimized rendering
  */
 export function list<T>(
-  props: VNodeProps & {
+  props: DOMProps & {
     items: T[];
-    renderItem: (item: T, index: number) => VNode;
+    renderItem: (item: T, index: number) => HTMLElement;
     keyExtractor?: (item: T, index: number) => string | number;
   }
-): VNode {
+): HTMLElement {
   const { items, renderItem, keyExtractor, ...restProps } = props;
   const children = items.map((item, index) => {
     const child = renderItem(item, index);
     if (keyExtractor) {
-      child.key = keyExtractor(item, index);
+      child.dataset.key = String(keyExtractor(item, index));
     }
     return child;
   });
-  return h('div', restProps, ...children);
+  return createElement('div', restProps, ...children);
 }
 
 /**
  * Unordered list
  */
-export function ul(props: VNodeProps, children: VNodeChild[]): VNode {
-  return h('ul', props, ...children);
+export function ul(props: DOMProps, ...children: DOMChildren[]): HTMLUListElement {
+  return createElement('ul', props, ...children) as HTMLUListElement;
 }
 
 /**
  * Ordered list
  */
-export function ol(props: VNodeProps, children: VNodeChild[]): VNode {
-  return h('ol', props, ...children);
+export function ol(props: DOMProps, ...children: DOMChildren[]): HTMLOListElement {
+  return createElement('ol', props, ...children) as HTMLOListElement;
 }
 
 /**
  * List item
  */
-export function li(props: VNodeProps, content: VNodeChild): VNode {
-  return h('li', props, content);
+export function li(props: DOMProps, ...content: DOMChildren[]): HTMLLIElement {
+  return createElement('li', props, ...content) as HTMLLIElement;
 }
 
 /**
  * Horizontal rule
  */
-export function hr(props: VNodeProps = {}): VNode {
-  return h('hr', props);
+export function hr(props: DOMProps = {}): HTMLHRElement {
+  return createElement('hr', props) as HTMLHRElement;
 }
 
 /**
  * Line break
  */
-export function br(props: VNodeProps = {}): VNode {
-  return h('br', props);
+export function br(props: DOMProps = {}): HTMLBRElement {
+  return createElement('br', props) as HTMLBRElement;
+}
+
+/**
+ * Description list
+ */
+export function dl(props: DOMProps, ...children: DOMChildren[]): HTMLDListElement {
+  return createElement('dl', props, ...children) as HTMLDListElement;
+}
+
+/**
+ * Description term
+ */
+export function dt(props: DOMProps, ...content: DOMChildren[]): HTMLElement {
+  return createElement('dt', props, ...content);
+}
+
+/**
+ * Description definition
+ */
+export function dd(props: DOMProps, ...content: DOMChildren[]): HTMLElement {
+  return createElement('dd', props, ...content);
 }

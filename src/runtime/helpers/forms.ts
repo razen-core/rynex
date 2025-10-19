@@ -3,89 +3,88 @@
  * Form elements and inputs
  */
 
-import { h } from '../vdom.js';
-import type { VNode, VNodeProps, VNodeChild } from '../types.js';
+import { createElement, DOMProps, DOMChildren } from '../dom.js';
 
 /**
  * Form element
  */
-export function form(props: VNodeProps, children: VNodeChild[]): VNode {
-  return h('form', props, ...children);
+export function form(props: DOMProps, ...children: DOMChildren[]): HTMLFormElement {
+  return createElement('form', props, ...children) as HTMLFormElement;
 }
 
 /**
  * Textarea element
  */
-export function textarea(props: VNodeProps, content?: string): VNode {
-  return h('textarea', props, content || '');
+export function textarea(props: DOMProps, content?: string): HTMLTextAreaElement {
+  return createElement('textarea', props, content || '') as HTMLTextAreaElement;
 }
 
 /**
  * Select element
  */
-export function select(props: VNodeProps, children: VNodeChild[]): VNode {
-  return h('select', props, ...children);
+export function select(props: DOMProps, ...children: DOMChildren[]): HTMLSelectElement {
+  return createElement('select', props, ...children) as HTMLSelectElement;
 }
 
 /**
  * Option element
  */
-export function option(props: VNodeProps & { value: string }, content: VNodeChild): VNode {
-  return h('option', props, content);
+export function option(props: DOMProps & { value: string }, ...content: DOMChildren[]): HTMLOptionElement {
+  return createElement('option', props, ...content) as HTMLOptionElement;
 }
 
 /**
  * Checkbox input
  */
-export function checkbox(props: VNodeProps & { checked?: boolean }): VNode {
-  return h('input', { ...props, type: 'checkbox' });
+export function checkbox(props: DOMProps & { checked?: boolean }): HTMLInputElement {
+  return createElement('input', { ...props, type: 'checkbox' }) as HTMLInputElement;
 }
 
 /**
  * Radio input
  */
-export function radio(props: VNodeProps & { checked?: boolean; name?: string }): VNode {
-  return h('input', { ...props, type: 'radio' });
+export function radio(props: DOMProps & { checked?: boolean; name?: string }): HTMLInputElement {
+  return createElement('input', { ...props, type: 'radio' }) as HTMLInputElement;
 }
 
 /**
  * Fieldset element
  */
-export function fieldset(props: VNodeProps, children: VNodeChild[]): VNode {
-  return h('fieldset', props, ...children);
+export function fieldset(props: DOMProps, ...children: DOMChildren[]): HTMLFieldSetElement {
+  return createElement('fieldset', props, ...children) as HTMLFieldSetElement;
 }
 
 /**
  * Legend element
  */
-export function legend(props: VNodeProps, content: VNodeChild): VNode {
-  return h('legend', props, content);
+export function legend(props: DOMProps, ...content: DOMChildren[]): HTMLLegendElement {
+  return createElement('legend', props, ...content) as HTMLLegendElement;
 }
 
 /**
  * Datalist element
  */
-export function datalist(props: VNodeProps & { id: string }, children: VNodeChild[]): VNode {
-  return h('datalist', props, ...children);
+export function datalist(props: DOMProps & { id: string }, ...children: DOMChildren[]): HTMLDataListElement {
+  return createElement('datalist', props, ...children) as HTMLDataListElement;
 }
 
 /**
  * Meter element
  */
-export function meter(props: VNodeProps & { value: number; min?: number; max?: number }): VNode {
-  return h('meter', props);
+export function meter(props: DOMProps & { value: number; min?: number; max?: number }): HTMLMeterElement {
+  return createElement('meter', props) as HTMLMeterElement;
 }
 
 /**
  * Progress element
  */
-export function progress(props: VNodeProps & { value?: number; max?: number }): VNode {
-  return h('progress', props);
+export function progress(props: DOMProps & { value?: number; max?: number }): HTMLProgressElement {
+  return createElement('progress', props) as HTMLProgressElement;
 }
 
 /**
  * Output element
  */
-export function output(props: VNodeProps & { htmlFor?: string }, content: VNodeChild): VNode {
-  return h('output', props, content);
+export function output(props: DOMProps & { htmlFor?: string }, ...content: DOMChildren[]): HTMLOutputElement {
+  return createElement('output', props, ...content) as HTMLOutputElement;
 }

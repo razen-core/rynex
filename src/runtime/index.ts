@@ -1,16 +1,37 @@
 /**
  * ZenWeb Runtime
  * Main entry point for the runtime library
+ * Vanilla JavaScript approach - no Virtual DOM
  */
 
-// State management
-export { state, computed, effect } from './state.js';
+// State management (Proxy-based reactivity)
+export { state, computed, effect, subscribe, batch } from './state.js';
 
-// Virtual DOM
-export { h, mount, patch, unmount } from './vdom.js';
+// DOM manipulation (direct, no VDOM)
+export {
+  createElement,
+  createTextNode,
+  mount,
+  unmount,
+  createRef,
+  applyProps,
+  updateProps,
+  appendChildren,
+  replaceChildren,
+  $,
+  $$,
+  addClass,
+  removeClass,
+  toggleClass,
+  setStyle,
+  setAttributes,
+  on,
+  off
+} from './dom.js';
 
 // Renderer
-export { render, createComponent } from './renderer.js';
+export { render, createComponent, mountComponent } from './renderer.js';
+export type { ComponentInstance } from './renderer.js';
 
 // Debug utilities
 export { enableDebug, disableDebug, isDebugEnabled } from './debug.js';
@@ -19,4 +40,4 @@ export { enableDebug, disableDebug, isDebugEnabled } from './debug.js';
 export * from './helpers/index.js';
 
 // Types
-export type { VNode, VNodeProps, VNodeChild, ComponentInstance } from './types.js';
+export type { DOMProps, DOMChildren, DOMChild } from './dom.js';

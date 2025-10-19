@@ -9,7 +9,7 @@ export * from './index.js';
 
 // Create a default export with all functions
 import * as state from './state.js';
-import * as vdom from './vdom.js';
+import * as dom from './dom.js';
 import * as renderer from './renderer.js';
 import * as helpers from './helpers/index.js';
 
@@ -17,8 +17,8 @@ export default {
   // State management
   ...state,
   
-  // Virtual DOM
-  ...vdom,
+  // DOM manipulation
+  ...dom,
   
   // Renderer
   ...renderer,

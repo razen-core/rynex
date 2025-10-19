@@ -3,103 +3,102 @@
  * Semantic HTML5 elements
  */
 
-import { h } from '../vdom.js';
-import type { VNode, VNodeProps, VNodeChild } from '../types.js';
+import { createElement, DOMProps, DOMChildren } from '../dom.js';
 
 /**
  * Header section
  */
-export function header(props: VNodeProps, children: VNodeChild[]): VNode {
-  return h('header', props, ...children);
+export function header(props: DOMProps, ...children: DOMChildren[]): HTMLElement {
+  return createElement('header', props, ...children);
 }
 
 /**
  * Footer section
  */
-export function footer(props: VNodeProps, children: VNodeChild[]): VNode {
-  return h('footer', props, ...children);
+export function footer(props: DOMProps, ...children: DOMChildren[]): HTMLElement {
+  return createElement('footer', props, ...children);
 }
 
 /**
  * Navigation
  */
-export function nav(props: VNodeProps, children: VNodeChild[]): VNode {
-  return h('nav', props, ...children);
+export function nav(props: DOMProps, ...children: DOMChildren[]): HTMLElement {
+  return createElement('nav', props, ...children);
 }
 
 /**
  * Main content
  */
-export function main(props: VNodeProps, children: VNodeChild[]): VNode {
-  return h('main', props, ...children);
+export function main(props: DOMProps, ...children: DOMChildren[]): HTMLElement {
+  return createElement('main', props, ...children);
 }
 
 /**
  * Section
  */
-export function section(props: VNodeProps, children: VNodeChild[]): VNode {
-  return h('section', props, ...children);
+export function section(props: DOMProps, ...children: DOMChildren[]): HTMLElement {
+  return createElement('section', props, ...children);
 }
 
 /**
  * Article
  */
-export function article(props: VNodeProps, children: VNodeChild[]): VNode {
-  return h('article', props, ...children);
+export function article(props: DOMProps, ...children: DOMChildren[]): HTMLElement {
+  return createElement('article', props, ...children);
 }
 
 /**
  * Aside/Sidebar
  */
-export function aside(props: VNodeProps, children: VNodeChild[]): VNode {
-  return h('aside', props, ...children);
+export function aside(props: DOMProps, ...children: DOMChildren[]): HTMLElement {
+  return createElement('aside', props, ...children);
 }
 
 /**
  * Figure with caption
  */
-export function figure(props: VNodeProps, children: VNodeChild[]): VNode {
-  return h('figure', props, ...children);
+export function figure(props: DOMProps, ...children: DOMChildren[]): HTMLElement {
+  return createElement('figure', props, ...children);
 }
 
 /**
  * Figure caption
  */
-export function figcaption(props: VNodeProps, content: VNodeChild): VNode {
-  return h('figcaption', props, content);
+export function figcaption(props: DOMProps, ...content: DOMChildren[]): HTMLElement {
+  return createElement('figcaption', props, ...content);
 }
 
 /**
  * Time element
  */
-export function time(props: VNodeProps & { datetime?: string }, content: VNodeChild): VNode {
-  return h('time', props, content);
+export function time(props: DOMProps & { datetime?: string }, ...content: DOMChildren[]): HTMLTimeElement {
+  return createElement('time', props, ...content) as HTMLTimeElement;
 }
 
 /**
  * Address element
  */
-export function address(props: VNodeProps, children: VNodeChild[]): VNode {
-  return h('address', props, ...children);
+export function address(props: DOMProps, ...children: DOMChildren[]): HTMLElement {
+  return createElement('address', props, ...children);
 }
 
 /**
  * Details disclosure
  */
-export function details(props: VNodeProps & { open?: boolean }, children: VNodeChild[]): VNode {
-  return h('details', props, ...children);
+export function details(props: DOMProps & { open?: boolean }, ...children: DOMChildren[]): HTMLDetailsElement {
+  return createElement('details', props, ...children) as HTMLDetailsElement;
 }
 
 /**
  * Details summary
  */
-export function summary(props: VNodeProps, content: VNodeChild): VNode {
-  return h('summary', props, content);
+export function summary(props: DOMProps, ...content: DOMChildren[]): HTMLElement {
+  return createElement('summary', props, ...content);
 }
 
 /**
  * Dialog element
  */
-export function dialog(props: VNodeProps & { open?: boolean }, children: VNodeChild[]): VNode {
-  return h('dialog', props, ...children);
+export function dialog(props: DOMProps & { open?: boolean }, ...children: DOMChildren[]): HTMLDialogElement {
+  return createElement('dialog', props, ...children) as HTMLDialogElement;
 }

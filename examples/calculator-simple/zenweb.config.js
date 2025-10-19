@@ -1,8 +1,8 @@
 export default {
   entry: 'src/index.ts',
   output: 'public/bundle.js',
+  port: 8082,
   minify: false,
   sourceMaps: true,
-  port: 8080,
   hotReload: true
 };
