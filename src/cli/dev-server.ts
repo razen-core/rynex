@@ -7,6 +7,7 @@ import * as http from 'http';
 import * as fs from 'fs';
 import * as path from 'path';
 import { watch } from 'chokidar';
+import { logger } from './logger.js';
 
 export interface DevServerOptions {
   port: number;
@@ -117,7 +118,7 @@ export async function startDevServer(options: DevServerOptions): Promise<void> {
     });
 
     watcher.on('change', (filePath) => {
-      console.log(`📝 File changed: ${filePath}`);
+      logger.info(`File changed: ${filePath}`);
       
       // Notify all connected clients
       clients.forEach(client => {
@@ -128,10 +129,10 @@ export async function startDevServer(options: DevServerOptions): Promise<void> {
 
   // Start server
   server.listen(port, () => {
-    console.log(`🚀 ZenWeb dev server running at http://localhost:${port}`);
-    console.log(`📁 Serving files from: ${root}`);
+    logger.success(`Dev server running at http://localhost:${port}`);
+    logger.info(`Serving files from: ${root}`);
     if (hotReload) {
-      console.log('🔥 Hot reload enabled');
+      logger.info('Hot reload enabled');
     }
   });
 }

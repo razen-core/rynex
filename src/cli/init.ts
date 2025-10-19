@@ -5,6 +5,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { logger } from './logger.js';
 
 const templates = {
   'package.json': (projectName: string) => `{
@@ -265,11 +266,11 @@ Visit [ZenWeb Documentation](https://github.com/zenweb) to learn more.
 export async function initProject(projectName: string): Promise<void> {
   const projectPath = path.join(process.cwd(), projectName);
 
-  console.log(`🎨 Creating ZenWeb project: ${projectName}`);
+  logger.info(`Creating ZenWeb project: ${projectName}`);
 
   // Create project directory
   if (fs.existsSync(projectPath)) {
-    console.error(`❌ Directory ${projectName} already exists`);
+    logger.error(`Directory ${projectName} already exists`);
     process.exit(1);
   }
 
@@ -313,8 +314,8 @@ export async function initProject(projectName: string): Promise<void> {
     'utf8'
   );
 
-  console.log('✅ Project created successfully!');
-  console.log('\nNext steps:');
+  logger.success('Project created successfully');
+  logger.info('Next steps:');
   console.log(`  cd ${projectName}`);
   console.log('  npm install');
   console.log('  npm run dev');

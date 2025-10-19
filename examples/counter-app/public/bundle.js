@@ -74,10 +74,10 @@ function normalizeChildren(children) {
     return child !== null && child !== void 0 && child !== false && child !== true;
   });
 }
-function mount(vnode, container) {
+function mount(vnode, container2) {
   const el = createElement(vnode);
   vnode.el = el;
-  container.appendChild(el);
+  container2.appendChild(el);
 }
 function createElement(vnode) {
   if (typeof vnode === "string" || typeof vnode === "number") {
@@ -209,7 +209,7 @@ function unmount(vnode) {
 
 // ../../dist/runtime/renderer.js
 var componentInstances = /* @__PURE__ */ new WeakMap();
-function render(component, container) {
+function render(component, container2) {
   const instance = {
     vnode: null,
     el: null,
@@ -223,7 +223,7 @@ function render(component, container) {
     try {
       const newVNode = component({});
       if (!instance.vnode) {
-        mount(newVNode, container);
+        mount(newVNode, container2);
         instance.vnode = newVNode;
         instance.el = newVNode.el;
       } else {
@@ -251,7 +251,7 @@ function render(component, container) {
   return instance;
 }
 
-// ../../dist/runtime/helpers.js
+// ../../dist/runtime/helpers/layout.js
 function vbox(props, children) {
   const style = {
     display: "flex",
@@ -268,6 +268,8 @@ function hbox(props, children) {
   };
   return h("div", { ...props, style }, ...children);
 }
+
+// ../../dist/runtime/helpers/basic_elements.js
 function text(props, content) {
   if (typeof props === "string") {
     return h("span", {}, props);

@@ -163,12 +163,13 @@ function findMatchingBrace(str: string, openPos: number): number {
 
 /**
  * Scope CSS styles to a component
+ * For now, we'll use a simple class-based scoping approach
  */
 function scopeStyles(css: string, componentId: string): string {
-  // Simple scoping: add component ID to each selector
+  // Simple approach: just return the CSS as-is for now
+  // TODO: Implement proper scoping with component hash classes
   const lines = css.split('\n');
   let result = '';
-  let currentSelector = '';
   let inBlock = false;
 
   for (const line of lines) {
@@ -177,11 +178,7 @@ function scopeStyles(css: string, componentId: string): string {
     if (trimmed.includes('{')) {
       // Selector line
       const selector = trimmed.substring(0, trimmed.indexOf('{')).trim();
-      currentSelector = selector;
-      
-      // Scope the selector
-      const scopedSelector = scopeSelector(selector, componentId);
-      result += `${scopedSelector} {\n`;
+      result += `${selector} {\n`;
       inBlock = true;
       
       // Handle inline properties
@@ -198,24 +195,6 @@ function scopeStyles(css: string, componentId: string): string {
   }
 
   return result;
-}
-
-/**
- * Scope a CSS selector
- */
-function scopeSelector(selector: string, componentId: string): string {
-  // Handle multiple selectors separated by comma
-  const selectors = selector.split(',').map(s => s.trim());
-  
-  return selectors.map(sel => {
-    // Don't scope :root, *, or other global selectors
-    if (sel.startsWith(':root') || sel === '*' || sel.startsWith('@')) {
-      return sel;
-    }
-    
-    // Add component ID as attribute selector
-    return `[data-zw="${componentId}"] ${sel}`;
-  }).join(', ');
 }
 
 /**

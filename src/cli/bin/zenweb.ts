@@ -9,6 +9,7 @@ import { initProject } from '../init.js';
 import { build, watch } from '../builder.js';
 import { startDevServer } from '../dev-server.js';
 import { loadConfig, validateConfig } from '../config.js';
+import { logger } from '../logger.js';
 import * as path from 'path';
 
 const args = process.argv.slice(2);
@@ -71,9 +72,9 @@ async function main() {
 
     case 'clean': {
       const { execSync } = await import('child_process');
-      console.log('🧹 Cleaning build artifacts...');
+      logger.info('Cleaning build artifacts');
       execSync('rm -rf dist', { stdio: 'inherit' });
-      console.log('✅ Clean complete');
+      logger.success('Clean complete');
       break;
     }
 
@@ -107,6 +108,6 @@ For more information, visit: https://github.com/zenweb
 }
 
 main().catch(error => {
-  console.error('❌ Error:', error);
+  logger.error('Fatal error', error);
   process.exit(1);
 });

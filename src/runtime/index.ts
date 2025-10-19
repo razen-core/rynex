@@ -12,31 +12,8 @@ export { h, mount, patch, unmount } from './vdom.js';
 // Renderer
 export { render, createComponent } from './renderer.js';
 
-// Helper functions
-export {
-  vbox,
-  hbox,
-  text,
-  button,
-  input,
-  image,
-  link,
-  grid,
-  list,
-  div,
-  span,
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
-  p,
-  form,
-  textarea,
-  select,
-  option
-} from './helpers.js';
+// All Helper functions (organized by category)
+export * from './helpers/index.js';
 
 // Types
 export type { VNode, VNodeProps, VNodeChild, ComponentInstance } from './types.js';

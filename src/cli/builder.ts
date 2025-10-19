@@ -16,11 +16,13 @@ export interface BuildOptions {
   watch?: boolean;
 }
 
+import { logger } from './logger.js';
+
 /**
  * Build a ZenWeb project
  */
 export async function build(options: BuildOptions): Promise<void> {
-  console.log('🔨 Building ZenWeb project...');
+  logger.info('Building ZenWeb project');
 
   const projectRoot = process.cwd();
   const srcDir = path.join(projectRoot, 'src');
@@ -85,16 +87,17 @@ export async function build(options: BuildOptions): Promise<void> {
     if (allStyles) {
       const cssPath = path.join(distDir, 'styles.css');
       await fs.promises.writeFile(cssPath, allStyles, 'utf8');
-      console.log(`✅ Styles written to ${cssPath}`);
+      logger.success(`Styles written to ${cssPath}`);
     }
 
-    console.log(`✅ Build complete: ${options.output}`);
+    logger.success(`Build complete: ${options.output}`);
     
     if (result.warnings.length > 0) {
-      console.warn('⚠️  Build warnings:', result.warnings);
+      logger.warning(`Build warnings: ${result.warnings.length} warning(s)`);
+      result.warnings.forEach(w => logger.debug(w.text));
     }
   } catch (error) {
-    console.error('❌ Build failed:', error);
+    logger.error('Build failed', error as Error);
     throw error;
   }
 }
@@ -103,7 +106,7 @@ export async function build(options: BuildOptions): Promise<void> {
  * Watch mode for development
  */
 export async function watch(options: BuildOptions): Promise<void> {
-  console.log('👀 Watching for changes...');
+  logger.info('Watching for changes');
   
   // Use esbuild's watch mode
   const projectRoot = process.cwd();
@@ -147,5 +150,5 @@ export async function watch(options: BuildOptions): Promise<void> {
   });
 
   await ctx.watch();
-  console.log('✅ Watching for changes...');
+  logger.success('Watch mode enabled');
 }

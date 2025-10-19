@@ -5,6 +5,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { logger } from './logger.js';
 
 export interface ZenWebConfig {
   entry: string;
@@ -31,7 +32,7 @@ export async function loadConfig(): Promise<ZenWebConfig> {
   const configPath = path.join(process.cwd(), 'zenweb.config.js');
 
   if (!fs.existsSync(configPath)) {
-    console.log('⚙️  Using default configuration');
+    logger.info('Using default configuration');
     return defaultConfig;
   }
 
@@ -44,7 +45,7 @@ export async function loadConfig(): Promise<ZenWebConfig> {
       ...userConfig
     };
   } catch (error) {
-    console.error('❌ Error loading config:', error);
+    logger.error('Error loading config', error as Error);
     return defaultConfig;
   }
 }
@@ -54,12 +55,12 @@ export async function loadConfig(): Promise<ZenWebConfig> {
  */
 export function validateConfig(config: ZenWebConfig): boolean {
   if (!config.entry) {
-    console.error('❌ Config error: entry is required');
+    logger.error('Config error: entry is required');
     return false;
   }
 
   if (!config.output) {
-    console.error('❌ Config error: output is required');
+    logger.error('Config error: output is required');
     return false;
   }
 
