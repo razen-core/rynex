@@ -1,5 +1,5 @@
 /**
- * ZenWeb Builder - Extended
+ * Rynex Builder - Extended
  * Handles compilation and bundling with TypeScript support
  * Supports both simple and advanced project structures
  */
@@ -7,8 +7,8 @@
 import * as esbuild from 'esbuild';
 import * as fs from 'fs';
 import * as path from 'path';
-import { parseZenWebFile, transformImports } from './parser.js';
-import { RouteConfig, ZenWebConfig } from './config.js';
+import { parseRynexFile, transformImports } from './parser.js';
+import { RouteConfig, RynexConfig } from './config.js';
 import { logger } from './logger.js';
 import { scanRoutes, generateRouteManifest, generateRouterConfig } from './route-scanner.js';
 
@@ -19,7 +19,7 @@ export interface BuildOptions {
   sourceMaps: boolean;
   watch?: boolean;
   routes?: RouteConfig[];
-  config?: ZenWebConfig;
+  config?: RynexConfig;
 }
 
 /**
@@ -118,7 +118,7 @@ function generatePageHTML(pageName: string, distPageDir: string): void {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${pageName.charAt(0).toUpperCase() + pageName.slice(1)} - ZenWeb</title>
+  <title>${pageName.charAt(0).toUpperCase() + pageName.slice(1)} - Rynex</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -238,9 +238,9 @@ async function buildMainEntry(
   const isDebug = process.argv.includes('--debug');
   const distDir = path.join(projectRoot, path.dirname(options.output));
 
-  // Create esbuild plugin for ZenWeb transformation
-  const zenwebPlugin: esbuild.Plugin = {
-    name: 'zenweb-transform',
+  // Create esbuild plugin for Rynex transformation
+  const rynexPlugin: esbuild.Plugin = {
+    name: 'rynex-transform',
     setup(build) {
       build.onLoad({ filter: /\.(ts|js|tsx|jsx)$/ }, async (args) => {
         logger.debug(`Processing file: ${args.path}`);
@@ -249,7 +249,7 @@ async function buildMainEntry(
         // Check if file contains view or style keywords
         if (source.includes('view {') || source.includes('style {')) {
           logger.debug(`Found view/style keywords in: ${args.path}`);
-          const parsed = parseZenWebFile(source);
+          const parsed = parseRynexFile(source);
           
           if (parsed.styles) {
             logger.debug(`Extracted ${parsed.styles.length} chars of styles from: ${args.path}`);
@@ -290,7 +290,7 @@ async function buildMainEntry(
     target: 'es2020',
     minify: options.minify,
     sourcemap: options.sourceMaps,
-    plugins: [zenwebPlugin],
+    plugins: [rynexPlugin],
     external: [],
     write: true,
     logLevel: isDebug ? 'debug' : 'warning',
@@ -312,7 +312,7 @@ async function buildMainEntry(
   } else if (!fs.existsSync(distStylesPath)) {
     // If no extracted styles and no styles.css exists, create empty one
     logger.debug('No styles found, creating default styles.css');
-    const defaultStyles = `/* ZenWeb Styles */
+    const defaultStyles = `/* Rynex Styles */
 * {
   margin: 0;
   padding: 0;
@@ -351,7 +351,7 @@ body {
 }
 
 /**
- * Build a ZenWeb project
+ * Build a Rynex project
  * Supports both simple and advanced project structures
  */
 export async function build(options: BuildOptions): Promise<void> {
@@ -360,7 +360,7 @@ export async function build(options: BuildOptions): Promise<void> {
     logger.setDebug(true);
   }
 
-  logger.info('Building ZenWeb project');
+  logger.info('Building Rynex project');
   logger.debug(`Build options: ${JSON.stringify(options)}`);
 
   const projectRoot = process.cwd();
@@ -444,14 +444,14 @@ export async function watch(options: BuildOptions): Promise<void> {
   // Use esbuild's watch mode
   const projectRoot = process.cwd();
   
-  const zenwebPlugin: esbuild.Plugin = {
-    name: 'zenweb-transform',
+  const rynexPlugin: esbuild.Plugin = {
+    name: 'rynex-transform',
     setup(build) {
       build.onLoad({ filter: /\.(ts|js|tsx|jsx)$/ }, async (args) => {
         const source = await fs.promises.readFile(args.path, 'utf8');
         
         if (source.includes('view {') || source.includes('style {')) {
-          const parsed = parseZenWebFile(source);
+          const parsed = parseRynexFile(source);
           let transformedCode = parsed.code;
           transformedCode = transformImports(transformedCode);
 
@@ -479,7 +479,7 @@ export async function watch(options: BuildOptions): Promise<void> {
     target: 'es2020',
     minify: false,
     sourcemap: true,
-    plugins: [zenwebPlugin]
+    plugins: [rynexPlugin]
   });
 
   await ctx.watch();

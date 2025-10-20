@@ -1,5 +1,5 @@
 /**
- * ZenWeb Table Elements
+ * Rynex Table Elements
  * Table-related elements
  */
 

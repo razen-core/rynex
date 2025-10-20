@@ -1,4 +1,4 @@
-# ZenWeb Routing Update - What's New
+# Rynex Routing Update - What's New
 
 ## 🎉 Major Updates
 
@@ -56,7 +56,7 @@
 
 #### 6. **New CLI Command**
 ```bash
-zenweb start  # Start production server
+rynex start  # Start production server
 ```
 
 ### ✅ Enhanced Configuration
@@ -125,7 +125,7 @@ zenweb start  # Start production server
 
 ### Basic Router Setup
 ```typescript
-import { createRouter } from 'zenweb';
+import { createRouter } from 'rynex';
 
 const router = createRouter([
   { path: '/', component: HomePage },
@@ -152,7 +152,7 @@ src/pages/
 
 ### Navigation
 ```typescript
-import { useNavigate } from 'zenweb';
+import { useNavigate } from 'rynex';
 
 const navigate = useNavigate(router);
 navigate.push('/about');
@@ -180,21 +180,21 @@ router.addRoute({
 
 ```bash
 # Development
-zenweb init my-app        # Create new project
-zenweb dev                # Dev server with HMR
+rynex init my-app        # Create new project
+rynex dev                # Dev server with HMR
 
 # Production
-zenweb build              # Build for production
-zenweb start              # Start production server
+rynex build              # Build for production
+rynex start              # Start production server
 
 # Utilities
-zenweb clean              # Clean build artifacts
-zenweb help               # Show help
+rynex clean              # Clean build artifacts
+rynex help               # Show help
 ```
 
 ## 📝 Configuration Files
 
-### zenweb.config.js
+### rynex.config.js
 ```javascript
 export default {
   entry: 'src/index.ts',
@@ -217,7 +217,7 @@ pnpm build:framework
 cd project-tree
 pnpm dev                  # Development mode
 pnpm build                # Production build
-zenweb start              # Start production server
+rynex start              # Start production server
 ```
 
 ## 📊 What's Included

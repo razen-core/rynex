@@ -1,5 +1,5 @@
 /**
- * ZenWeb Utility Helpers
+ * Rynex Utility Helpers
  * Utility functions for conditional rendering, fragments, etc.
  */
 
@@ -131,7 +131,7 @@ export function css(selector: string, styles: Partial<CSSStyleDeclaration> | str
   // Create style element if it doesn't exist
   if (!styleElement) {
     styleElement = document.createElement('style');
-    styleElement.setAttribute('data-zenweb-styles', 'true');
+    styleElement.setAttribute('data-rynex-styles', 'true');
     document.head.appendChild(styleElement);
     styleSheet = styleElement.sheet as CSSStyleSheet;
   }

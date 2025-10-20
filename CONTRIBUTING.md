@@ -1,13 +1,13 @@
-# Contributing to ZenWeb
+# Contributing to Rynex
 
-Thank you for your interest in contributing to ZenWeb! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to Rynex! This document provides guidelines and instructions for contributing.
 
 ## Development Setup
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/zenweb/zenweb.git
-   cd zenweb
+   git clone https://github.com/rynex/rynex.git
+   cd rynex
    ```
 
 2. **Install dependencies**
@@ -30,7 +30,7 @@ Thank you for your interest in contributing to ZenWeb! This document provides gu
 ## Project Structure
 
 ```
-zenweb/
+rynex/
 ├── src/
 │   ├── runtime/          # Core runtime engine
 │   │   ├── state.ts      # State management
@@ -116,4 +116,4 @@ Feel free to open an issue for any questions or concerns.
 
 ## License
 
-By contributing to ZenWeb, you agree that your contributions will be licensed under the MIT License.
+By contributing to Rynex, you agree that your contributions will be licensed under the MIT License.

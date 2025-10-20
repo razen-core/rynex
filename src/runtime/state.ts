@@ -1,5 +1,5 @@
 /**
- * ZenWeb State Management
+ * Rynex State Management
  * Vanilla JavaScript Proxy-based reactive state (no React hooks)
  */
 

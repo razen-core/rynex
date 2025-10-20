@@ -1,4 +1,4 @@
-# ZenWeb Framework - Complete Feature List
+# Rynex Framework - Complete Feature List
 
 ## 🎯 Core Features
 
@@ -166,11 +166,11 @@
 ## 🔧 Build System
 
 ### 18. **CLI Commands**
-- ✅ `zenweb init [name]` - Create new project
-- ✅ `zenweb dev` - Development server with HMR
-- ✅ `zenweb build` - Production build
-- ✅ `zenweb start` - Production server (NEW!)
-- ✅ `zenweb clean` - Clean build artifacts
+- ✅ `rynex init [name]` - Create new project
+- ✅ `rynex dev` - Development server with HMR
+- ✅ `rynex build` - Production build
+- ✅ `rynex start` - Production server (NEW!)
+- ✅ `rynex clean` - Clean build artifacts
 
 ### 19. **Development Server**
 - ✅ **Hot Module Replacement (HMR)** - Live reload
@@ -203,7 +203,7 @@
 - ✅ **Public assets** - Copy public files to dist
 
 ### 22. **Configuration**
-- ✅ **zenweb.config.js** - Project configuration
+- ✅ **rynex.config.js** - Project configuration
 - ✅ **Routing config** - Mode, base URL, file-based routing
 - ✅ **Middleware config** - Global and route-specific
 - ✅ **Build config** - Splitting, chunk size, analysis
@@ -240,7 +240,7 @@ my-app/
 │   ├── index.html
 │   └── styles.css
 ├── dist/                     # Build output
-├── zenweb.config.js          # Configuration
+├── rynex.config.js          # Configuration
 ├── package.json
 └── tsconfig.json
 ```
@@ -306,7 +306,7 @@ my-app/
 
 ## 📊 Framework Comparison
 
-| Feature | ZenWeb | React | Vue | Svelte |
+| Feature | Rynex | React | Vue | Svelte |
 |---------|--------|-------|-----|--------|
 | Virtual DOM | ❌ | ✅ | ✅ | ❌ |
 | File-based Routing | ✅ | ❌ | ❌ | ❌ |
@@ -318,7 +318,7 @@ my-app/
 
 ## 🎉 Summary
 
-**ZenWeb** is a complete, production-ready framework with:
+**Rynex** is a complete, production-ready framework with:
 - **27 major feature categories**
 - **200+ helper functions**
 - **Full routing system** with file-based routing

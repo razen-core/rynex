@@ -1,5 +1,5 @@
 /**
- * ZenWeb Typography Helpers
+ * Rynex Typography Helpers
  * Text and typography elements
  */
 

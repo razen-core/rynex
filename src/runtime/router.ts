@@ -1,5 +1,5 @@
 /**
- * ZenWeb Router
+ * Rynex Router
  * Client-side routing with dynamic routes, middleware, and lazy loading
  * Inspired by Express.js and Next.js routing patterns
  */

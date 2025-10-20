@@ -48,7 +48,7 @@ export default function App() {
   
   return vbox({ class: 'app' },
       header({ class: 'header' }, [
-        h1({}, 'ZenWeb - All Functions Test')
+        h1({}, 'Rynex - All Functions Test')
       ]),
       
       scroll({ class: 'content' }, [
@@ -204,7 +204,7 @@ export default function App() {
       ]),
       
       footer({ class: 'footer' },
-        text('ZenWeb Framework - Vanilla JS - All Functions Working!')
+        text('Rynex Framework - Vanilla JS - All Functions Working!')
       )
     );
 }

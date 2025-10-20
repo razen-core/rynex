@@ -1,6 +1,6 @@
-# ZenWeb Documentation
+# Rynex Documentation
 
-Complete documentation for the ZenWeb framework.
+Complete documentation for the Rynex framework.
 
 ## Quick Links
 
@@ -9,9 +9,9 @@ Complete documentation for the ZenWeb framework.
 - [Configuration](./CONFIGURATION.md) - Configure your application
 - [Examples](./EXAMPLES.md) - Real-world code examples
 
-## What is ZenWeb?
+## What is Rynex?
 
-ZenWeb is a minimalist TypeScript framework for building reactive web applications without a Virtual DOM. It provides:
+Rynex is a minimalist TypeScript framework for building reactive web applications without a Virtual DOM. It provides:
 
 - Direct DOM manipulation for maximum performance
 - Proxy-based reactive state management
@@ -35,7 +35,7 @@ ZenWeb is a minimalist TypeScript framework for building reactive web applicatio
 ## Quick Start
 
 ```bash
-npx zenweb init my-app
+npx rynex init my-app
 cd my-app
 pnpm install
 pnpm dev

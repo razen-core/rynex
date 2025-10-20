@@ -1,5 +1,5 @@
 /**
- * ZenWeb Runtime
+ * Rynex Runtime
  * Main entry point for the runtime library
  * Vanilla JavaScript approach - no Virtual DOM
  */

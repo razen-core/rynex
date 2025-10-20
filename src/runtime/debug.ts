@@ -1,5 +1,5 @@
 /**
- * ZenWeb Runtime Debugging
+ * Rynex Runtime Debugging
  * Debug utilities for development
  */
 
@@ -7,7 +7,7 @@ let debugEnabled = false;
 
 export function enableDebug(): void {
   debugEnabled = true;
-  console.log('[ZenWeb Debug] Debugging enabled');
+  console.log('[Rynex Debug] Debugging enabled');
 }
 
 export function disableDebug(): void {
@@ -43,7 +43,7 @@ export function debugError(category: string, message: string, error?: Error): vo
 if (typeof window !== 'undefined') {
   const urlParams = new URLSearchParams(window.location.search);
   const hasDebugParam = urlParams.get('debug') === 'true';
-  const hasDebugStorage = localStorage.getItem('zenweb-debug') === 'true';
+  const hasDebugStorage = localStorage.getItem('rynex-debug') === 'true';
   
   if (hasDebugParam || hasDebugStorage) {
     enableDebug();

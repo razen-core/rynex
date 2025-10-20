@@ -1,5 +1,5 @@
 /**
- * ZenWeb Type Definitions
+ * Rynex Type Definitions
  * Types for vanilla JavaScript DOM manipulation
  */
 

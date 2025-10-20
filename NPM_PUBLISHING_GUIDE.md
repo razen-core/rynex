@@ -1,4 +1,4 @@
-# ZenWeb - NPM Publishing Guide
+# Rynex - NPM Publishing Guide
 
 ## Current Status
 
@@ -12,12 +12,12 @@ import * as UI from '../../../dist/runtime/index.js';
 ### After Publishing to NPM
 ```typescript
 // Clean imports - what users will use
-import { state } from 'zenweb';
-import * as UI from 'zenweb';
+import { state } from 'rynex';
+import * as UI from 'rynex';
 
 // Or selective imports
-import * as UI from 'zenweb/helpers';
-import { state, effect } from 'zenweb/state';
+import * as UI from 'rynex/helpers';
+import { state, effect } from 'rynex/state';
 ```
 
 ---
@@ -30,7 +30,7 @@ Current package.json needs these updates:
 
 ```json
 {
-  "name": "zenweb",
+  "name": "rynex",
   "version": "1.0.0",
   "description": "A minimalist TypeScript framework for building reactive web applications",
   "main": "dist/runtime/index.js",
@@ -59,7 +59,7 @@ Current package.json needs these updates:
     }
   },
   "bin": {
-    "zenweb": "./dist/cli/bin/zenweb.js"
+    "rynex": "./dist/cli/bin/rynex.js"
   },
   "files": [
     "dist",
@@ -76,7 +76,7 @@ Current package.json needs these updates:
     "reactive",
     "ui",
     "minimalist",
-    "zenweb",
+    "rynex",
     "typescript",
     "vanilla-js",
     "no-virtual-dom",
@@ -87,12 +87,12 @@ Current package.json needs these updates:
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/razen-core/zenweb.git"
+    "url": "https://github.com/razen-core/rynex.git"
   },
   "bugs": {
-    "url": "https://github.com/razen-core/zenweb/issues"
+    "url": "https://github.com/razen-core/rynex/issues"
   },
-  "homepage": "https://github.com/razen-core/zenweb#readme",
+  "homepage": "https://github.com/razen-core/rynex#readme",
   "packageManager": "pnpm@10.12.1",
   "dependencies": {
     "esbuild": "^0.19.0",
@@ -156,9 +156,9 @@ pnpm build:framework
 # Test pack (creates a tarball without publishing)
 npm pack
 
-# This creates: zenweb-1.0.0.tgz
+# This creates: rynex-1.0.0.tgz
 # You can test install it locally:
-npm install ./zenweb-1.0.0.tgz
+npm install ./rynex-1.0.0.tgz
 ```
 
 ### Step 3: Check Package Contents
@@ -182,10 +182,10 @@ npm publish
 
 ```bash
 # Check if package is available
-npm view zenweb
+npm view rynex
 
 # Install and test
-npm install zenweb
+npm install rynex
 ```
 
 ---
@@ -195,18 +195,18 @@ npm install zenweb
 ### Create a Test Project
 
 ```bash
-mkdir test-zenweb-npm
-cd test-zenweb-npm
+mkdir test-rynex-npm
+cd test-rynex-npm
 npm init -y
-npm install zenweb
+npm install rynex
 ```
 
 ### Test File (test-app.ts)
 
 ```typescript
 // Clean imports - this is what users will use!
-import { state, render } from 'zenweb';
-import * as UI from 'zenweb';
+import { state, render } from 'rynex';
+import * as UI from 'rynex';
 
 function App() {
   const appState = state({
@@ -290,18 +290,18 @@ Add to package.json:
 ## Installation
 
 \`\`\`bash
-npm install zenweb
+npm install rynex
 # or
-pnpm add zenweb
+pnpm add rynex
 # or
-yarn add zenweb
+yarn add rynex
 \`\`\`
 
 ## Quick Start
 
 \`\`\`typescript
-import { state, render } from 'zenweb';
-import * as UI from 'zenweb';
+import { state, render } from 'rynex';
+import * as UI from 'rynex';
 
 function App() {
   const appState = state({ count: 0 });
@@ -319,8 +319,8 @@ render(App, document.getElementById('root')!);
 ### 2. Add NPM Badge to README
 
 ```markdown
-[![npm version](https://badge.fury.io/js/zenweb.svg)](https://www.npmjs.com/package/zenweb)
-[![npm downloads](https://img.shields.io/npm/dm/zenweb.svg)](https://www.npmjs.com/package/zenweb)
+[![npm version](https://badge.fury.io/js/rynex.svg)](https://www.npmjs.com/package/rynex)
+[![npm downloads](https://img.shields.io/npm/dm/rynex.svg)](https://www.npmjs.com/package/rynex)
 ```
 
 ### 3. Update Examples to Use NPM Package
@@ -333,8 +333,8 @@ import { state } from '../../../dist/runtime/index.js';
 import * as UI from '../../../dist/runtime/index.js';
 
 // NEW (after npm publish)
-import { state } from 'zenweb';
-import * as UI from 'zenweb';
+import { state } from 'rynex';
+import * as UI from 'rynex';
 ```
 
 ---
@@ -343,9 +343,9 @@ import * as UI from 'zenweb';
 
 ### Package Name Already Taken
 
-If "zenweb" is taken, try:
-- `@your-username/zenweb`
-- `zenweb-framework`
+If "rynex" is taken, try:
+- `@your-username/rynex`
+- `rynex-framework`
 - `zen-web`
 
 ### TypeScript Definitions Not Working
@@ -373,7 +373,7 @@ Check:
 - [ ] Run `npm publish --dry-run`
 - [ ] Login with `npm login`
 - [ ] Publish with `npm publish --access public`
-- [ ] Test install: `npm install zenweb`
+- [ ] Test install: `npm install rynex`
 - [ ] Update README with npm install instructions
 - [ ] Push git tags: `git push --tags`
 

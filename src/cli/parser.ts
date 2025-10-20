@@ -1,5 +1,5 @@
 /**
- * ZenWeb Parser
+ * Rynex Parser
  * Transforms view and style keywords into runtime calls
  */
 
@@ -9,9 +9,9 @@ export interface ParseResult {
 }
 
 /**
- * Parse ZenWeb component file and transform view/style keywords
+ * Parse Rynex component file and transform view/style keywords
  */
-export function parseZenWebFile(source: string): ParseResult {
+export function parseRynexFile(source: string): ParseResult {
   let transformedCode = source;
   let extractedStyles = '';
 
@@ -214,16 +214,16 @@ function generateHash(str: string): string {
  * Transform imports to use runtime
  */
 export function transformImports(code: string): string {
-  // Replace zenweb/runtime imports
+  // Replace rynex/runtime imports
   code = code.replace(
-    /from\s+['"]zenweb\/runtime['"]/g,
-    "from 'zenweb/runtime'"
+    /from\s+['"]rynex\/runtime['"]/g,
+    "from 'rynex/runtime'"
   );
 
-  // Replace zenweb/helpers imports
+  // Replace rynex/helpers imports
   code = code.replace(
-    /from\s+['"]zenweb\/helpers['"]/g,
-    "from 'zenweb/runtime'"
+    /from\s+['"]rynex\/helpers['"]/g,
+    "from 'rynex/runtime'"
   );
 
   return code;

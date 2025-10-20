@@ -1,5 +1,5 @@
 /**
- * ZenWeb App - New Syntax Test
+ * Rynex App - New Syntax Test
  * Uses namespaced imports and reactive getters for auto-updates
  * No manual effect() needed - reactivity is built into UI functions
  */
@@ -147,7 +147,7 @@ export default function App() {
         color: 'white'
       }
     }, [
-      UI.text({}, 'ZenWeb - New Syntax with Reactive Getters! 🧘')
+      UI.text({}, 'Rynex - New Syntax with Reactive Getters! 🧘')
     ])
   ]);
 }

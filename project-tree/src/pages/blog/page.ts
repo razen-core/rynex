@@ -3,7 +3,7 @@ import { RouteContext } from '../../../../dist/runtime/index.js';
 
 export default function BlogPage(ctx: RouteContext) {
   const posts = [
-    { slug: 'getting-started', title: 'Getting Started with ZenWeb' },
+    { slug: 'getting-started', title: 'Getting Started with Rynex' },
     { slug: 'routing-guide', title: 'Complete Routing Guide' },
     { slug: 'state-management', title: 'State Management Best Practices' }
   ];

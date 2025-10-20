@@ -1,5 +1,5 @@
 /**
- * ZenWeb Development Server
+ * Rynex Development Server
  * Hot-reload development server
  */
 
@@ -8,7 +8,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { watch } from 'chokidar';
 import { logger } from './logger.js';
-import { RouteConfig, ZenWebConfig } from './config.js';
+import { RouteConfig, RynexConfig } from './config.js';
 import { scanRoutes, RouteManifest } from './route-scanner.js';
 
 export interface DevServerOptions {
@@ -16,7 +16,7 @@ export interface DevServerOptions {
   root: string;
   hotReload: boolean;
   routes?: RouteConfig[];
-  config?: ZenWebConfig;
+  config?: RynexConfig;
 }
 
 type Middleware = (req: http.IncomingMessage, res: http.ServerResponse, next: () => void) => void;
@@ -83,7 +83,7 @@ export async function startDevServer(options: DevServerOptions): Promise<void> {
     const url = req.url || '/';
 
     // Handle SSE for hot reload
-    if (hotReload && url === '/__zenweb_hmr') {
+    if (hotReload && url === '/__rynex_hmr') {
       res.writeHead(200, {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
@@ -168,10 +168,10 @@ export async function startDevServer(options: DevServerOptions): Promise<void> {
         const html = data.toString();
         const hmrScript = `
           <script>
-            const eventSource = new EventSource('/__zenweb_hmr');
+            const eventSource = new EventSource('/__rynex_hmr');
             eventSource.onmessage = (event) => {
               if (event.data === 'reload') {
-                console.log('[ZenWeb] Reloading...');
+                console.log('[Rynex] Reloading...');
                 window.location.reload();
               }
             };

@@ -1,6 +1,6 @@
 # Examples and Tutorials
 
-Real-world examples and practical tutorials for building with ZenWeb.
+Real-world examples and practical tutorials for building with Rynex.
 
 ## Table of Contents
 
@@ -20,8 +20,8 @@ Real-world examples and practical tutorials for building with ZenWeb.
 A complete todo application with add, delete, and toggle functionality.
 
 ```typescript
-import { state } from 'zenweb';
-import * as UI from 'zenweb';
+import { state } from 'rynex';
+import * as UI from 'rynex';
 
 interface Todo {
   id: number;
@@ -207,8 +207,8 @@ A blog application with file-based routing and dynamic posts.
 **File**: `src/pages/blog/page.ts`
 
 ```typescript
-import * as UI from 'zenweb';
-import { state, effect } from 'zenweb';
+import * as UI from 'rynex';
+import { state, effect } from 'rynex';
 
 export default function BlogPage() {
   const blogState = state({
@@ -262,8 +262,8 @@ export default function BlogPage() {
 **File**: `src/pages/blog/[slug]/page.ts`
 
 ```typescript
-import * as UI from 'zenweb';
-import { state, effect, RouteContext } from 'zenweb';
+import * as UI from 'rynex';
+import { state, effect, RouteContext } from 'rynex';
 
 export default function BlogPostPage(ctx: RouteContext) {
   const slug = ctx.params.slug;
@@ -323,8 +323,8 @@ export default function BlogPostPage(ctx: RouteContext) {
 Dashboard with authentication and user data.
 
 ```typescript
-import { state, effect } from 'zenweb';
-import * as UI from 'zenweb';
+import { state, effect } from 'rynex';
+import * as UI from 'rynex';
 
 export default function Dashboard() {
   const dashboardState = state({
@@ -463,8 +463,8 @@ export default function Dashboard() {
 Complete form with validation and submission.
 
 ```typescript
-import { state } from 'zenweb';
-import * as UI from 'zenweb';
+import { state } from 'rynex';
+import * as UI from 'rynex';
 
 export default function ContactForm() {
   const formState = state({
@@ -650,8 +650,8 @@ export default function ContactForm() {
 Example of fetching and displaying data from an API.
 
 ```typescript
-import { state, effect } from 'zenweb';
-import * as UI from 'zenweb';
+import { state, effect } from 'rynex';
+import * as UI from 'rynex';
 
 interface User {
   id: number;

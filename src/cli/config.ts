@@ -1,5 +1,5 @@
 /**
- * ZenWeb Configuration
+ * Rynex Configuration
  * Load and validate configuration
  */
 
@@ -18,7 +18,7 @@ export interface RouteConfig {
   children?: RouteConfig[];
 }
 
-export interface ZenWebConfig {
+export interface RynexConfig {
   entry: string;
   output: string;
   minify: boolean;
@@ -46,7 +46,7 @@ export interface ZenWebConfig {
   };
 }
 
-const defaultConfig: ZenWebConfig = {
+const defaultConfig: RynexConfig = {
   entry: 'src/index.ts',
   output: 'dist/bundle.js',
   minify: true,
@@ -74,10 +74,10 @@ const defaultConfig: ZenWebConfig = {
 };
 
 /**
- * Load ZenWeb configuration
+ * Load Rynex configuration
  */
-export async function loadConfig(): Promise<ZenWebConfig> {
-  const configPath = path.join(process.cwd(), 'zenweb.config.js');
+export async function loadConfig(): Promise<RynexConfig> {
+  const configPath = path.join(process.cwd(), 'rynex.config.js');
 
   if (!fs.existsSync(configPath)) {
     logger.info('Using default configuration');
@@ -101,7 +101,7 @@ export async function loadConfig(): Promise<ZenWebConfig> {
 /**
  * Validate configuration
  */
-export function validateConfig(config: ZenWebConfig): boolean {
+export function validateConfig(config: RynexConfig): boolean {
   if (!config.entry) {
     logger.error('Config error: entry is required');
     return false;

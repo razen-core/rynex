@@ -2,7 +2,7 @@
 var debugEnabled = false;
 function enableDebug() {
   debugEnabled = true;
-  console.log("[ZenWeb Debug] Debugging enabled");
+  console.log("[Rynex Debug] Debugging enabled");
 }
 function debugLog(category, message, data) {
   if (debugEnabled) {
@@ -13,7 +13,7 @@ function debugLog(category, message, data) {
 if (typeof window !== "undefined") {
   const urlParams = new URLSearchParams(window.location.search);
   const hasDebugParam = urlParams.get("debug") === "true";
-  const hasDebugStorage = localStorage.getItem("zenweb-debug") === "true";
+  const hasDebugStorage = localStorage.getItem("rynex-debug") === "true";
   if (hasDebugParam || hasDebugStorage) {
     enableDebug();
   }
@@ -376,7 +376,7 @@ function App() {
   return vbox(
     { class: "app" },
     header({ class: "header" }, [
-      h1({}, "ZenWeb - All Functions Test")
+      h1({}, "Rynex - All Functions Test")
     ]),
     scroll({ class: "content" }, [
       // State Management Test
@@ -541,7 +541,7 @@ function App() {
     ]),
     footer(
       { class: "footer" },
-      text("ZenWeb Framework - Vanilla JS - All Functions Working!")
+      text("Rynex Framework - Vanilla JS - All Functions Working!")
     )
   );
 }

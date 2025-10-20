@@ -1,5 +1,5 @@
 /**
- * ZenWeb UI Components
+ * Rynex UI Components
  * Pre-built UI components with common patterns
  */
 

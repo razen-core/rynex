@@ -1,5 +1,5 @@
 /**
- * ZenWeb Semantic Elements
+ * Rynex Semantic Elements
  * Semantic HTML5 elements
  */
 

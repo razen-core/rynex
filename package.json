@@ -1,5 +1,5 @@
 {
-  "name": "@razen-core/zenweb",
+  "name": "@razen-core/rynex",
   "version": "0.1.0",
   "description": "A minimalist TypeScript framework for building reactive web applications with no virtual DOM",
   "main": "dist/runtime/index.js",
@@ -28,7 +28,7 @@
     }
   },
   "bin": {
-    "zenweb": "./dist/cli/bin/zenweb.js"
+    "rynex": "./dist/cli/bin/rynex.js"
   },
   "files": [
     "dist",
@@ -37,8 +37,8 @@
   ],
   "scripts": {
     "build:framework": "tsc",
-    "build": "pnpm build:framework && node dist/cli/bin/zenweb.js build",
-    "dev": "pnpm build:framework && node dist/cli/bin/zenweb.js dev",
+    "build": "pnpm build:framework && node dist/cli/bin/rynex.js build",
+    "dev": "pnpm build:framework && node dist/cli/bin/rynex.js dev",
     "watch": "tsc --watch",
     "prepublishOnly": "pnpm build:framework",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -48,7 +48,7 @@
     "reactive",
     "ui",
     "minimalist",
-    "zenweb",
+    "rynex",
     "typescript",
     "vanilla-js",
     "no-virtual-dom",
@@ -60,12 +60,12 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/razen-core/zenweb.git"
+    "url": "git+https://github.com/razen-core/rynex.git"
   },
   "bugs": {
-    "url": "https://github.com/razen-core/zenweb/issues"
+    "url": "https://github.com/razen-core/rynex/issues"
   },
-  "homepage": "https://github.com/razen-core/zenweb#readme",
+  "homepage": "https://github.com/razen-core/rynex#readme",
   "packageManager": "pnpm@10.12.1",
   "dependencies": {
     "esbuild": "^0.19.0",

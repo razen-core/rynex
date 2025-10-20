@@ -1,6 +1,6 @@
-# Getting Started with ZenWeb
+# Getting Started with Rynex
 
-A comprehensive guide to building your first application with ZenWeb.
+A comprehensive guide to building your first application with Rynex.
 
 ## Table of Contents
 
@@ -26,11 +26,11 @@ A comprehensive guide to building your first application with ZenWeb.
 
 ```bash
 # Using npx
-npx zenweb init my-app
+npx rynex init my-app
 
 # Or install globally
-npm install -g zenweb
-zenweb init my-app
+npm install -g rynex
+rynex init my-app
 
 # Navigate to project
 cd my-app
@@ -75,7 +75,7 @@ my-app/
 │   ├── index.html        # HTML template
 │   └── styles.css        # Global styles
 ├── dist/                 # Build output (generated)
-├── zenweb.config.js      # Framework configuration
+├── rynex.config.js      # Framework configuration
 ├── package.json
 └── tsconfig.json
 ```
@@ -89,7 +89,7 @@ my-app/
 Create a simple component in `src/components/Welcome.ts`:
 
 ```typescript
-import * as UI from 'zenweb';
+import * as UI from 'rynex';
 
 export default function Welcome() {
   return UI.vbox({
@@ -98,7 +98,7 @@ export default function Welcome() {
       textAlign: 'center'
     }
   }, [
-    UI.h1({}, 'Welcome to ZenWeb'),
+    UI.h1({}, 'Welcome to Rynex'),
     UI.text({}, 'Build fast, reactive web applications')
   ]);
 }
@@ -109,7 +109,7 @@ export default function Welcome() {
 Import and use it in `src/App.ts`:
 
 ```typescript
-import * as UI from 'zenweb';
+import * as UI from 'rynex';
 import Welcome from './components/Welcome.js';
 
 export default function App() {
@@ -127,11 +127,11 @@ export default function App() {
 
 ### Creating Reactive State
 
-ZenWeb uses Proxy-based reactivity for automatic UI updates:
+Rynex uses Proxy-based reactivity for automatic UI updates:
 
 ```typescript
-import { state } from 'zenweb';
-import * as UI from 'zenweb';
+import { state } from 'rynex';
+import * as UI from 'rynex';
 
 export default function Counter() {
   // Create reactive state
@@ -163,7 +163,7 @@ export default function Counter() {
 Create derived values that update automatically:
 
 ```typescript
-import { state, computed } from 'zenweb';
+import { state, computed } from 'rynex';
 
 const appState = state({
   price: 100,
@@ -181,7 +181,7 @@ UI.text({}, () => `Total: $${total()}`)
 Run side effects when state changes:
 
 ```typescript
-import { state, effect } from 'zenweb';
+import { state, effect } from 'rynex';
 
 const appState = state({ count: 0 });
 
@@ -197,7 +197,7 @@ effect(() => {
 
 ### File-Based Routing
 
-ZenWeb supports Next.js-style file-based routing. Create pages in the `src/pages/` directory:
+Rynex supports Next.js-style file-based routing. Create pages in the `src/pages/` directory:
 
 ```
 src/pages/
@@ -217,7 +217,7 @@ src/pages/
 Create `src/pages/about.ts`:
 
 ```typescript
-import * as UI from 'zenweb';
+import * as UI from 'rynex';
 
 export default function AboutPage() {
   return UI.vbox({
@@ -235,8 +235,8 @@ export default function AboutPage() {
 Create `src/pages/user/[id]/page.ts`:
 
 ```typescript
-import * as UI from 'zenweb';
-import { RouteContext } from 'zenweb';
+import * as UI from 'rynex';
+import { RouteContext } from 'rynex';
 
 export default function UserPage(ctx: RouteContext) {
   const userId = ctx.params.id;
@@ -256,8 +256,8 @@ export default function UserPage(ctx: RouteContext) {
 Set up a router in your main app:
 
 ```typescript
-import { createRouter } from 'zenweb';
-import * as UI from 'zenweb';
+import { createRouter } from 'rynex';
+import * as UI from 'rynex';
 import HomePage from './pages/index.js';
 import AboutPage from './pages/about.js';
 
@@ -308,7 +308,7 @@ This creates an optimized production build in the `dist/` directory with:
 ```bash
 pnpm start
 # or
-zenweb start
+rynex start
 ```
 
 The production server:
@@ -324,7 +324,7 @@ Deploy the `dist/` directory to any static hosting service:
 - **Netlify**: Drag and drop the `dist/` folder
 - **Vercel**: Connect your repository
 - **GitHub Pages**: Push `dist/` to gh-pages branch
-- **Custom Server**: Use `zenweb start` on your server
+- **Custom Server**: Use `rynex start` on your server
 
 ---
 
@@ -339,7 +339,7 @@ Deploy the `dist/` directory to any static hosting service:
 
 ### Key Concepts
 
-1. **No Virtual DOM**: ZenWeb updates the DOM directly for better performance
+1. **No Virtual DOM**: Rynex updates the DOM directly for better performance
 2. **Reactive State**: Use `state()` for automatic UI updates
 3. **File-Based Routing**: Organize pages by file structure
 4. **TypeScript First**: Full type safety out of the box
@@ -349,8 +349,8 @@ Deploy the `dist/` directory to any static hosting service:
 #### Form Handling
 
 ```typescript
-import { state } from 'zenweb';
-import * as UI from 'zenweb';
+import { state } from 'rynex';
+import * as UI from 'rynex';
 
 export default function LoginForm() {
   const formState = state({
@@ -393,8 +393,8 @@ export default function LoginForm() {
 #### Conditional Rendering
 
 ```typescript
-import { state } from 'zenweb';
-import * as UI from 'zenweb';
+import { state } from 'rynex';
+import * as UI from 'rynex';
 
 export default function ConditionalExample() {
   const appState = state({ showContent: false });
@@ -417,12 +417,12 @@ export default function ConditionalExample() {
 #### List Rendering
 
 ```typescript
-import { state } from 'zenweb';
-import * as UI from 'zenweb';
+import { state } from 'rynex';
+import * as UI from 'rynex';
 
 export default function TodoList() {
   const todos = state({
-    items: ['Learn ZenWeb', 'Build an app', 'Deploy']
+    items: ['Learn Rynex', 'Build an app', 'Deploy']
   });
 
   return UI.vbox({ style: { padding: '2rem' } }, [
@@ -466,7 +466,7 @@ export default function TodoList() {
 ## Summary
 
 You now know how to:
-- Create a new ZenWeb project
+- Create a new Rynex project
 - Build components with reactive state
 - Set up routing for your application
 - Build and deploy for production

@@ -1,5 +1,5 @@
 /**
- * ZenWeb Helpers - Central Export Point
+ * Rynex Helpers - Central Export Point
  * All helper functions organized by category
  */
 

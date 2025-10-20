@@ -1,5 +1,5 @@
 /**
- * ZenWeb DOM Manipulation
+ * Rynex DOM Manipulation
  * Direct DOM element creation and manipulation (vanilla JavaScript)
  * No Virtual DOM - just real DOM elements
  */

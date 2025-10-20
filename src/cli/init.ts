@@ -1,6 +1,6 @@
 /**
- * ZenWeb Project Initializer
- * Scaffolds new ZenWeb projects
+ * Rynex Project Initializer
+ * Scaffolds new Rynex projects
  */
 
 import * as fs from 'fs';
@@ -13,15 +13,15 @@ const templates = {
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "zenweb dev",
-    "build": "zenweb build"
+    "dev": "rynex dev",
+    "build": "rynex build"
   },
   "dependencies": {
-    "zenweb": "^1.0.0"
+    "rynex": "^1.0.0"
   }
 }`,
 
-  'zenweb.config.js': () => `export default {
+  'rynex.config.js': () => `export default {
   entry: 'src/index.ts',
   output: 'dist/bundle.js',
   minify: true,
@@ -30,7 +30,7 @@ const templates = {
   hotReload: true
 };`,
 
-  'src/index.ts': () => `import { render } from 'zenweb/runtime';
+  'src/index.ts': () => `import { render } from 'rynex/runtime';
 import App from './App.js';
 
 render(App, document.getElementById('root')!);`,
@@ -49,12 +49,12 @@ body {
 /* Component-specific styles added via css() function */`,
 
   'src/App.ts': () => `/**
- * ZenWeb Starter Template
+ * Rynex Starter Template
  * A premium dark-themed starter with modern UI and smooth interactions
  */
 
-import { state } from 'zenweb/runtime';
-import * as UI from 'zenweb/runtime';
+import { state } from 'rynex/runtime';
+import * as UI from 'rynex/runtime';
 
 export default function App() {
   const appState = state({
@@ -126,7 +126,7 @@ export default function App() {
             webkitTextFillColor: 'transparent',
             backgroundClip: 'text'
           }
-        }, 'Welcome to ZenWeb'),
+        }, 'Welcome to Rynex'),
 
         // Subtitle
         UI.text({
@@ -152,7 +152,7 @@ export default function App() {
           // Documentation Button
           UI.hbox({
             onClick: () => {
-              window.open('https://github.com/your-repo/zenweb/docs', '_blank');
+              window.open('https://github.com/your-repo/rynex/docs', '_blank');
             },
             style: {
               padding: '0.875rem 2rem',
@@ -187,7 +187,7 @@ export default function App() {
           // GitHub Button
           UI.hbox({
             onClick: () => {
-              window.open('https://github.com/your-repo/zenweb', '_blank');
+              window.open('https://github.com/your-repo/rynex', '_blank');
             },
             style: {
               padding: '0.875rem 2rem',
@@ -375,7 +375,7 @@ export default function App() {
           fontSize: '0.875rem',
           color: '#b0b0b0'
         }
-      }, '© 2024 ZenWeb. Built with ❤️ and modern web technologies.')
+      }, '© 2024 Rynex. Built with ❤️ and modern web technologies.')
     ])
   ]);
 }`,
@@ -386,7 +386,7 @@ export default function App() {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZenWeb - Modern Reactive Framework</title>
+  <title>Rynex - Modern Reactive Framework</title>
   
   <!-- Google Fonts - Poppins & Montserrat -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -438,7 +438,7 @@ export default function App() {
 
   'README.md': (projectName: string) => `# ${projectName}
 
-A ZenWeb application.
+A Rynex application.
 
 ## Getting Started
 
@@ -464,22 +464,22 @@ ${projectName}/
 ├── public/
 │   └── index.html         # HTML shell
 ├── dist/                  # Build output
-└── zenweb.config.js       # Configuration
+└── rynex.config.js       # Configuration
 \`\`\`
 
 ## Learn More
 
-Visit [ZenWeb Documentation](https://github.com/zenweb) to learn more.
+Visit [Rynex Documentation](https://github.com/rynex) to learn more.
 `
 };
 
 /**
- * Initialize a new ZenWeb project
+ * Initialize a new Rynex project
  */
 export async function initProject(projectName: string): Promise<void> {
   const projectPath = path.join(process.cwd(), projectName);
 
-  logger.info(`Creating ZenWeb project: ${projectName}`);
+  logger.info(`Creating Rynex project: ${projectName}`);
 
   // Create project directory
   if (fs.existsSync(projectPath)) {
@@ -505,7 +505,7 @@ export async function initProject(projectName: string): Promise<void> {
   // Create files from templates
   const files: Record<string, string> = {
     'package.json': templates['package.json'](projectName),
-    'zenweb.config.js': templates['zenweb.config.js'](),
+    'rynex.config.js': templates['rynex.config.js'](),
     'src/index.ts': templates['src/index.ts'](),
     'src/App.ts': templates['src/App.ts'](),
     'public/index.html': templates['public/index.html'](),

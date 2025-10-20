@@ -1,5 +1,5 @@
 /**
- * ZenWeb Layout Helpers
+ * Rynex Layout Helpers
  * Layout and positioning components
  */
 

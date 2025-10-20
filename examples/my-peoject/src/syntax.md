@@ -1,6 +1,6 @@
 ```typescript
 /**
- * ZenWeb App - Final All Functions Test with Namespaced Imports & Built-in Reactivity
+ * Rynex App - Final All Functions Test with Namespaced Imports & Built-in Reactivity
  * Imports: Core reactivity destructured; UI helpers via * as UI for consolidation.
  * Enhancements: Scoped reactivity via getters in primitives; local ReactiveText as bridge.
  * Usage: Assumes runtime supports reactive props (e.g., text(() => ...)); fallback to ReactiveText.
@@ -52,7 +52,7 @@ export default function App() {
   return UI.vbox({ class: 'app' },
     // Header
     UI.header({ class: 'header' },
-      UI.h1({}, 'ZenWeb - All Functions Test')
+      UI.h1({}, 'Rynex - All Functions Test')
     ),
 
     // Scrollable Content
@@ -200,7 +200,7 @@ export default function App() {
 
     // Footer
     UI.footer({ class: 'footer' },
-      UI.text('ZenWeb Framework - Vanilla JS - Namespaced & Reactive!')
+      UI.text('Rynex Framework - Vanilla JS - Namespaced & Reactive!')
     )
   );
 }

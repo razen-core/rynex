@@ -7,13 +7,13 @@ import * as http from 'http';
 import * as fs from 'fs';
 import * as path from 'path';
 import { logger } from './logger.js';
-import { ZenWebConfig } from './config.js';
+import { RynexConfig } from './config.js';
 import { scanRoutes, RouteManifest } from './route-scanner.js';
 
 export interface ServerOptions {
   port: number;
   root: string;
-  config?: ZenWebConfig;
+  config?: RynexConfig;
 }
 
 /**

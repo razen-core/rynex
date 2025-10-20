@@ -1,12 +1,12 @@
 {
-  "name": "zenweb-new-syntax-test",
+  "name": "rynex-new-syntax-test",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node ../dist/cli/bin/zenweb.js dev",
-    "build": "node ../dist/cli/bin/zenweb.js build"
+    "dev": "node ../dist/cli/bin/rynex.js dev",
+    "build": "node ../dist/cli/bin/rynex.js build"
   },
   "dependencies": {
-    "zenweb": "file:.."
+    "rynex": "file:.."
   }
 }

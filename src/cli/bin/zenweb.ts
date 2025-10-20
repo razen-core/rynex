@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * ZenWeb CLI
- * Command-line interface for ZenWeb framework
+ * Rynex CLI
+ * Command-line interface for Rynex framework
  */
 
 import { initProject } from '../init.js';
@@ -19,7 +19,7 @@ const command = args[0];
 async function main() {
   switch (command) {
     case 'init': {
-      const projectName = args[1] || 'my-zenweb-app';
+      const projectName = args[1] || 'my-rynex-app';
       await initProject(projectName);
       break;
     }
@@ -108,13 +108,13 @@ async function main() {
     case '-h':
     default: {
       console.log(`
-ZenWeb CLI - Minimalist JavaScript Framework
+Rynex CLI - Minimalist JavaScript Framework
 
 Usage:
-  zenweb <command> [options]
+  rynex <command> [options]
 
 Commands:
-  init [name]    Create a new ZenWeb project
+  init [name]    Create a new Rynex project
   build          Build project for production
   dev            Start development server with hot reload
   start          Start production server (Express or native HTTP)
@@ -122,12 +122,12 @@ Commands:
   help           Show this help message
 
 Examples:
-  zenweb init my-app
-  zenweb dev
-  zenweb build
-  zenweb start
+  rynex init my-app
+  rynex dev
+  rynex build
+  rynex start
 
-For more information, visit: https://github.com/zenweb
+For more information, visit: https://github.com/rynex
       `);
       break;
     }

@@ -1,5 +1,5 @@
 /**
- * ZenWeb Media Elements
+ * Rynex Media Elements
  * Media and embedded content elements
  */
 

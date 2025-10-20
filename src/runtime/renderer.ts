@@ -1,5 +1,5 @@
 /**
- * ZenWeb Renderer
+ * Rynex Renderer
  * Main rendering engine using vanilla JavaScript (no VDOM)
  */
 

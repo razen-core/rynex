@@ -1,6 +1,6 @@
 # Routing Guide
 
-Complete guide to routing in ZenWeb applications.
+Complete guide to routing in Rynex applications.
 
 ## Table of Contents
 
@@ -18,7 +18,7 @@ Complete guide to routing in ZenWeb applications.
 
 ## Overview
 
-ZenWeb provides two routing approaches:
+Rynex provides two routing approaches:
 
 1. **File-Based Routing**: Automatic route generation from file structure (Next.js style)
 2. **Programmatic Routing**: Manual route configuration with full control
@@ -31,7 +31,7 @@ Both approaches can be used together in the same application.
 
 ### Enable File-Based Routing
 
-Configure in `zenweb.config.js`:
+Configure in `rynex.config.js`:
 
 ```javascript
 export default {
@@ -69,7 +69,7 @@ src/pages/
 Create `src/pages/about.ts`:
 
 ```typescript
-import * as UI from 'zenweb';
+import * as UI from 'rynex';
 
 export default function AboutPage() {
   return UI.vbox({
@@ -89,8 +89,8 @@ Use square brackets for dynamic segments:
 **File**: `src/pages/blog/[slug]/page.ts`
 
 ```typescript
-import * as UI from 'zenweb';
-import { RouteContext } from 'zenweb';
+import * as UI from 'rynex';
+import { RouteContext } from 'rynex';
 
 export default function BlogPost(ctx: RouteContext) {
   const slug = ctx.params.slug;
@@ -112,8 +112,8 @@ Use `[...param]` for catch-all routes:
 **File**: `src/pages/docs/[...slug]/page.ts`
 
 ```typescript
-import * as UI from 'zenweb';
-import { RouteContext } from 'zenweb';
+import * as UI from 'rynex';
+import { RouteContext } from 'rynex';
 
 export default function DocsPage(ctx: RouteContext) {
   const path = ctx.params.slug || '';
@@ -152,7 +152,7 @@ export default function ShopPage(ctx: RouteContext) {
 ### Create Router
 
 ```typescript
-import { createRouter } from 'zenweb';
+import { createRouter } from 'rynex';
 import HomePage from './pages/Home.js';
 import AboutPage from './pages/About.js';
 import UserPage from './pages/User.js';
@@ -179,7 +179,7 @@ const router = createRouter([
 ### Mount Router
 
 ```typescript
-import * as UI from 'zenweb';
+import * as UI from 'rynex';
 
 export default function App() {
   return UI.vbox({}, [
@@ -217,7 +217,7 @@ router.addRoutes([
 Access route parameters using the context:
 
 ```typescript
-import { RouteContext } from 'zenweb';
+import { RouteContext } from 'rynex';
 
 export default function ProductPage(ctx: RouteContext) {
   const productId = ctx.params.id;
@@ -270,7 +270,7 @@ export default function DocumentPage(ctx: RouteContext) {
 ### Using Links
 
 ```typescript
-import * as UI from 'zenweb';
+import * as UI from 'rynex';
 
 // Basic link
 UI.link({ href: '/about' }, 'About Us')
@@ -296,7 +296,7 @@ UI.link({
 ### Programmatic Navigation
 
 ```typescript
-import { useNavigate } from 'zenweb';
+import { useNavigate } from 'rynex';
 
 export default function MyComponent() {
   const navigate = useNavigate(router);
@@ -622,7 +622,7 @@ UI.BackButton({
 ### Router Configuration
 
 ```javascript
-// zenweb.config.js
+// rynex.config.js
 export default {
   routing: {
     mode: 'history',              // 'history' or 'hash'
@@ -675,7 +675,7 @@ export default {
 
 ## Summary
 
-ZenWeb routing provides:
+Rynex routing provides:
 - File-based routing for automatic route generation
 - Programmatic routing for full control
 - Dynamic routes with parameters

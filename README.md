@@ -1,4 +1,4 @@
-# ZenWeb Framework
+# Rynex Framework
 
 A minimalist TypeScript framework for building reactive web applications with no Virtual DOM.
 
@@ -17,7 +17,7 @@ A minimalist TypeScript framework for building reactive web applications with no
 
 ```bash
 # Create new project
-npx zenweb init my-app
+npx rynex init my-app
 cd my-app
 
 # Install dependencies
@@ -34,8 +34,8 @@ Your application will be running at `http://localhost:3000`
 ### Simple Counter Component
 
 ```typescript
-import { state } from 'zenweb';
-import * as UI from 'zenweb';
+import { state } from 'rynex';
+import * as UI from 'rynex';
 
 export default function Counter() {
   const counterState = state({ count: 0 });
@@ -61,7 +61,7 @@ export default function Counter() {
 ### Reactive State Management
 
 ```typescript
-import { state, computed, effect } from 'zenweb';
+import { state, computed, effect } from 'rynex';
 
 // Create reactive state
 const appState = state({
@@ -101,8 +101,8 @@ src/pages/
 ### Dynamic Routes
 
 ```typescript
-import * as UI from 'zenweb';
-import { RouteContext } from 'zenweb';
+import * as UI from 'rynex';
+import { RouteContext } from 'rynex';
 
 export default function UserPage(ctx: RouteContext) {
   const userId = ctx.params.id;
@@ -121,24 +121,24 @@ export default function UserPage(ctx: RouteContext) {
 
 ```bash
 # Create new project
-zenweb init [project-name]
+rynex init [project-name]
 
 # Start development server with HMR
-zenweb dev
+rynex dev
 
 # Build for production
-zenweb build
+rynex build
 
 # Start production server
-zenweb start
+rynex start
 
 # Clean build artifacts
-zenweb clean
+rynex clean
 ```
 
 ## Configuration
 
-Create `zenweb.config.js` in your project root:
+Create `rynex.config.js` in your project root:
 
 ```javascript
 export default {
@@ -179,7 +179,7 @@ my-app/
 │   ├── index.html        # HTML template
 │   └── styles.css        # Global styles
 ├── dist/                 # Build output
-├── zenweb.config.js      # Configuration
+├── rynex.config.js      # Configuration
 ├── package.json
 └── tsconfig.json
 ```
@@ -258,10 +258,10 @@ Apache License 2.0 - see [LICENSE](./LICENSE) file for details
 
 ## Links
 
-- [GitHub Repository](https://github.com/razen-core/zenweb)
+- [GitHub Repository](https://github.com/razen-core/rynex)
 - [Documentation](./docs/)
 - [Examples](./examples/)
-- [Issue Tracker](https://github.com/razen-core/zenweb/issues)
+- [Issue Tracker](https://github.com/razen-core/rynex/issues)
 
 ---
 

@@ -1,4 +1,4 @@
-# ZenWeb Complete Functions List
+# Rynex Complete Functions List
 
 ## Core Functions (Already Implemented)
 - [x] state - Reactive state management

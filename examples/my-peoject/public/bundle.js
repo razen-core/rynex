@@ -2,7 +2,7 @@
 var debugEnabled = false;
 function enableDebug() {
   debugEnabled = true;
-  console.log("[ZenWeb Debug] Debugging enabled");
+  console.log("[Rynex Debug] Debugging enabled");
 }
 function debugLog(category, message, data) {
   if (debugEnabled) {
@@ -13,7 +13,7 @@ function debugLog(category, message, data) {
 if (typeof window !== "undefined") {
   const urlParams = new URLSearchParams(window.location.search);
   const hasDebugParam = urlParams.get("debug") === "true";
-  const hasDebugStorage = localStorage.getItem("zenweb-debug") === "true";
+  const hasDebugStorage = localStorage.getItem("rynex-debug") === "true";
   if (hasDebugParam || hasDebugStorage) {
     enableDebug();
   }
@@ -399,7 +399,7 @@ function App() {
             webkitTextFillColor: "transparent",
             backgroundClip: "text"
           }
-        }, "Welcome to ZenWeb"),
+        }, "Welcome to Rynex"),
         // Subtitle
         text({
           style: {
@@ -423,7 +423,7 @@ function App() {
           // Documentation Button
           hbox({
             onClick: () => {
-              window.open("https://github.com/your-repo/zenweb/docs", "_blank");
+              window.open("https://github.com/your-repo/rynex/docs", "_blank");
             },
             style: {
               padding: "0.875rem 2rem",
@@ -457,7 +457,7 @@ function App() {
           // GitHub Button
           hbox({
             onClick: () => {
-              window.open("https://github.com/your-repo/zenweb", "_blank");
+              window.open("https://github.com/your-repo/rynex", "_blank");
             },
             style: {
               padding: "0.875rem 2rem",

@@ -1,6 +1,6 @@
 /**
  * Counter Example - Vanilla JavaScript Approach
- * Demonstrates the new ZenWeb architecture
+ * Demonstrates the new Rynex architecture
  */
 
 import { 

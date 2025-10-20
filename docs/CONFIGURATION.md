@@ -1,6 +1,6 @@
 # Configuration Guide
 
-Complete guide to configuring your ZenWeb application.
+Complete guide to configuring your Rynex application.
 
 ## Table of Contents
 
@@ -19,7 +19,7 @@ Complete guide to configuring your ZenWeb application.
 
 ### Basic Configuration
 
-Create `zenweb.config.js` in your project root:
+Create `rynex.config.js` in your project root:
 
 ```javascript
 export default {
@@ -414,7 +414,7 @@ const apiKey = process.env.API_KEY;
 
 Create multiple config files:
 
-**zenweb.config.dev.js**:
+**rynex.config.dev.js**:
 ```javascript
 export default {
   port: 3000,
@@ -423,7 +423,7 @@ export default {
 };
 ```
 
-**zenweb.config.prod.js**:
+**rynex.config.prod.js**:
 ```javascript
 export default {
   port: 8080,
@@ -435,7 +435,7 @@ export default {
 Use based on environment:
 
 ```javascript
-// zenweb.config.js
+// rynex.config.js
 const isDev = process.env.NODE_ENV === 'development';
 
 export default {
@@ -626,7 +626,7 @@ export default {
 
 ## Summary
 
-ZenWeb configuration provides:
+Rynex configuration provides:
 - Flexible entry and output options
 - Development server with HMR
 - Comprehensive routing configuration

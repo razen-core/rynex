@@ -1,6 +1,6 @@
 /**
- * ZenWeb Global Namespace
- * Import everything with: import * as Zen from 'zenweb/runtime'
+ * Rynex Global Namespace
+ * Import everything with: import * as Zen from 'rynex/runtime'
  * Then use: Zen.vbox(), Zen.state(), etc.
  */
 

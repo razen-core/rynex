@@ -1,5 +1,5 @@
 /**
- * ZenWeb Professional Logger
+ * Rynex Professional Logger
  * Clean, minimal logging without emojis
  */
 

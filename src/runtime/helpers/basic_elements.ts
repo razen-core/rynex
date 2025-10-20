@@ -1,5 +1,5 @@
 /**
- * ZenWeb Basic Elements
+ * Rynex Basic Elements
  * Basic HTML elements and components
  */
 

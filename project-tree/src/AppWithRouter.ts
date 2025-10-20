@@ -1,5 +1,5 @@
 /**
- * ZenWeb App with Router
+ * Rynex App with Router
  * Demonstrates routing, dynamic routes, and navigation
  */
 
@@ -77,7 +77,7 @@ export default function AppWithRouter() {
           margin: 0,
           fontSize: '1.5rem'
         }
-      }, 'ZenWeb Router'),
+      }, 'Rynex Router'),
       
       UI.hbox({
         style: { 

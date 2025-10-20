@@ -1,5 +1,5 @@
 /**
- * ZenWeb Starter Template
+ * Rynex Starter Template
  * A premium dark-themed starter with modern UI and smooth interactions
  */
 
@@ -76,7 +76,7 @@ export default function App() {
             webkitTextFillColor: 'transparent',
             backgroundClip: 'text'
           }
-        }, 'Welcome to ZenWeb'),
+        }, 'Welcome to Rynex'),
 
         // Subtitle
         UI.text({
@@ -102,7 +102,7 @@ export default function App() {
           // Documentation Button
           UI.hbox({
             onClick: () => {
-              window.open('https://github.com/your-repo/zenweb/docs', '_blank');
+              window.open('https://github.com/your-repo/rynex/docs', '_blank');
             },
             style: {
               padding: '0.875rem 2rem',
@@ -137,7 +137,7 @@ export default function App() {
           // GitHub Button
           UI.hbox({
             onClick: () => {
-              window.open('https://github.com/your-repo/zenweb', '_blank');
+              window.open('https://github.com/your-repo/rynex', '_blank');
             },
             style: {
               padding: '0.875rem 2rem',
