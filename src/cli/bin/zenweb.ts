@@ -8,6 +8,7 @@
 import { initProject } from '../init.js';
 import { build, watch } from '../builder.js';
 import { startDevServer } from '../dev-server.js';
+import { startProductionServer } from '../prod-server.js';
 import { loadConfig, validateConfig } from '../config.js';
 import { logger } from '../logger.js';
 import * as path from 'path';
@@ -33,7 +34,9 @@ async function main() {
         entry: config.entry,
         output: config.output,
         minify: config.minify,
-        sourceMaps: config.sourceMaps
+        sourceMaps: config.sourceMaps,
+        routes: config.routes,
+        config
       });
       break;
     }
@@ -49,7 +52,9 @@ async function main() {
         entry: config.entry,
         output: config.output,
         minify: false,
-        sourceMaps: true
+        sourceMaps: true,
+        routes: config.routes,
+        config
       });
 
       // Start watch mode
@@ -57,15 +62,35 @@ async function main() {
         entry: config.entry,
         output: config.output,
         minify: false,
-        sourceMaps: true
+        sourceMaps: true,
+        routes: config.routes,
+        config
       });
 
       // Start dev server
-      const publicDir = path.join(process.cwd(), 'public');
+      const distDir = path.join(process.cwd(), path.dirname(config.output));
       await startDevServer({
         port: config.port,
-        root: publicDir,
-        hotReload: config.hotReload
+        root: distDir,
+        hotReload: config.hotReload,
+        routes: config.routes,
+        config
+      });
+      break;
+    }
+
+    case 'start': {
+      const config = await loadConfig();
+      if (!validateConfig(config)) {
+        process.exit(1);
+      }
+
+      // Start production server
+      const distDir = path.join(process.cwd(), path.dirname(config.output));
+      await startProductionServer({
+        port: config.port,
+        root: distDir,
+        config
       });
       break;
     }
@@ -92,6 +117,7 @@ Commands:
   init [name]    Create a new ZenWeb project
   build          Build project for production
   dev            Start development server with hot reload
+  start          Start production server (Express or native HTTP)
   clean          Remove build artifacts
   help           Show this help message
 
@@ -99,6 +125,7 @@ Examples:
   zenweb init my-app
   zenweb dev
   zenweb build
+  zenweb start
 
 For more information, visit: https://github.com/zenweb
       `);

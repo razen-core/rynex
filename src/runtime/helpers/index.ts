@@ -155,3 +155,16 @@ export {
   progressBar,
   spinner
 } from './components.js';
+
+// Routing Components
+export {
+  Link,
+  NavLink,
+  RouterOutlet,
+  RouteGuard,
+  Breadcrumb,
+  BackButton,
+  RouteParamsDebug,
+  RouteLoading,
+  NotFound
+} from './routing.js';

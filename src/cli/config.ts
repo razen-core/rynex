@@ -7,6 +7,17 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { logger } from './logger.js';
 
+export interface RouteConfig {
+  path: string;
+  component?: string;
+  lazy?: boolean;
+  middleware?: string[];
+  guards?: string[];
+  meta?: Record<string, any>;
+  name?: string;
+  children?: RouteConfig[];
+}
+
 export interface ZenWebConfig {
   entry: string;
   output: string;
@@ -14,6 +25,25 @@ export interface ZenWebConfig {
   sourceMaps: boolean;
   port: number;
   hotReload: boolean;
+  routes?: RouteConfig[];
+  routing?: {
+    mode?: 'hash' | 'history';
+    base?: string;
+    fileBasedRouting?: boolean;
+    pagesDir?: string;
+    scrollBehavior?: 'auto' | 'smooth' | 'instant';
+    trailingSlash?: boolean;
+  };
+  middleware?: {
+    global?: string[];
+    routes?: Record<string, string[]>;
+  };
+  build?: {
+    splitting?: boolean;
+    chunkSize?: number;
+    publicPath?: string;
+    analyze?: boolean;
+  };
 }
 
 const defaultConfig: ZenWebConfig = {
@@ -22,7 +52,25 @@ const defaultConfig: ZenWebConfig = {
   minify: true,
   sourceMaps: true,
   port: 3000,
-  hotReload: true
+  hotReload: true,
+  routing: {
+    mode: 'history',
+    base: '/',
+    fileBasedRouting: true,
+    pagesDir: 'src/pages',
+    scrollBehavior: 'smooth',
+    trailingSlash: false
+  },
+  middleware: {
+    global: [],
+    routes: {}
+  },
+  build: {
+    splitting: true,
+    chunkSize: 500,
+    publicPath: '/',
+    analyze: false
+  }
 };
 
 /**

@@ -11,7 +11,7 @@ export default function App() {
     hoveredButton: null as string | null
   });
 
-  return UI.vbox({
+  return UI.container({
     class: 'app',
     style: {
       minHeight: '100vh',
@@ -325,7 +325,7 @@ export default function App() {
           fontSize: '0.875rem',
           color: '#b0b0b0'
         }
-      }, '© 2024 ZenWeb. Built with ❤️ and modern web technologies.')
+      }, '© 2025 Razen Core. Built with ❤️ and modern web technologies.')
     ])
   ]);
 }

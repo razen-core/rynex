@@ -335,7 +335,7 @@ function App() {
   const appState = state({
     hoveredButton: null
   });
-  return vbox({
+  return container({
     class: "app",
     style: {
       minHeight: "100vh",
@@ -640,7 +640,7 @@ function App() {
           fontSize: "0.875rem",
           color: "#b0b0b0"
         }
-      }, "\xA9 2024 ZenWeb. Built with \u2764\uFE0F and modern web technologies.")
+      }, "\xA9 2025 Razen Core. Built with \u2764\uFE0F and modern web technologies.")
     ])
   ]);
 }
