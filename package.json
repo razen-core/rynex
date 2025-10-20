@@ -1,5 +1,5 @@
 {
-  "name": "zenweb",
+  "name": "@razen-core/zenweb",
   "version": "0.1.0",
   "description": "A minimalist TypeScript framework for building reactive web applications with no virtual DOM",
   "main": "dist/runtime/index.js",
