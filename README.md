@@ -1,275 +1,269 @@
 # ZenWeb Framework
 
-A minimalist TypeScript framework for building reactive web applications without complex tooling.
+A minimalist TypeScript framework for building reactive web applications with no Virtual DOM.
 
-## ✨ Features
+## Features
 
-- **🎯 Minimalist**: Clean, declarative syntax using pure TypeScript
-- **⚡ Reactive**: Fine-grained reactivity with automatic dependency tracking
-- **🔧 Zero Config**: Works out of the box with sensible defaults
-- **📦 Tiny Bundle**: Under 15KB gzipped
-- **🎨 Scoped Styles**: Component-scoped CSS with the `style` keyword
-- **🚀 Fast**: Virtual DOM with efficient diffing algorithm
-- **💪 TypeScript**: Full TypeScript support with type safety
+- **No Virtual DOM**: Direct DOM manipulation for maximum performance
+- **Reactive State**: Proxy-based reactivity with automatic UI updates
+- **File-Based Routing**: Next.js style routing with dynamic routes
+- **TypeScript First**: Full type safety out of the box
+- **Zero Configuration**: Sensible defaults, works immediately
+- **Production Ready**: Express server with native HTTP fallback
+- **Hot Module Replacement**: Instant feedback during development
+- **Tiny Bundle**: Approximately 15KB gzipped
 
-## 🚀 Quick Start
-
-### Installation
-
-```bash
-npm install -g zenweb-cli
-```
-
-### Create a New Project
+## Quick Start
 
 ```bash
-zenweb init my-app
+# Create new project
+npx zenweb init my-app
 cd my-app
-npm install
-npm run dev
+
+# Install dependencies
+pnpm install
+
+# Start development server
+pnpm dev
 ```
 
-## 📖 Core Concepts
+Your application will be running at `http://localhost:3000`
 
-### Components
+## Example
 
-Components are pure functions that return UI structures:
+### Simple Counter Component
 
 ```typescript
-import { state } from 'zenweb/runtime';
-import { vbox, text, button } from 'zenweb/runtime';
+import { state } from 'zenweb';
+import * as UI from 'zenweb';
 
 export default function Counter() {
-  const [count, setCount] = state(0);
+  const counterState = state({ count: 0 });
 
-  view {
-    vbox({ class: 'counter' }, [
-      text({}, `Count: ${count()}`),
-      button({ onClick: () => setCount(count() + 1) }, 'Increment')
+  return UI.vbox({
+    style: { padding: '2rem', gap: '1rem' }
+  }, [
+    UI.text({}, () => `Count: ${counterState.count}`),
+    UI.hbox({ style: { gap: '0.5rem' } }, [
+      UI.button({
+        onClick: () => counterState.count--
+      }, 'Decrement'),
+      UI.button({
+        onClick: () => counterState.count++
+      }, 'Increment')
     ])
-  }
-
-  style {
-    .counter {
-      padding: 2rem;
-      text-align: center;
-    }
-    
-    button {
-      padding: 0.5rem 1rem;
-      background: #667eea;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-  }
+  ]);
 }
 ```
 
-### State Management
+## Core Concepts
 
-Reactive state with automatic dependency tracking:
+### Reactive State Management
 
 ```typescript
-import { state, computed, effect } from 'zenweb/runtime';
+import { state, computed, effect } from 'zenweb';
 
-// Simple state
-const [count, setCount] = state(0);
+// Create reactive state
+const appState = state({
+  count: 0,
+  name: 'John'
+});
 
 // Computed values
-const doubled = computed(() => count() * 2);
+const doubled = computed(() => appState.count * 2);
 
 // Side effects
 effect(() => {
-  console.log('Count changed:', count());
+  console.log('Count changed:', appState.count);
 });
+
+// Updates trigger automatic re-renders
+appState.count++;
 ```
 
-### Helper Functions
+### File-Based Routing
 
-Built-in layout and component helpers:
+Organize pages by file structure:
 
-- **Layout**: `vbox`, `hbox`, `grid`
-- **Elements**: `text`, `button`, `input`, `image`, `link`
-- **HTML**: `div`, `span`, `h1-h6`, `p`, `form`, `textarea`, `select`, `option`
-- **Lists**: `list` with virtual scrolling support
+```
+src/pages/
+├── index.ts              # Route: /
+├── about.ts              # Route: /about
+├── blog/
+│   ├── page.ts           # Route: /blog
+│   └── [slug]/
+│       └── page.ts       # Route: /blog/:slug (dynamic)
+└── user/
+    └── [id]/
+        └── page.ts       # Route: /user/:id (dynamic)
+```
 
-## 🎨 View & Style Keywords
-
-### View Keyword
-
-The `view` keyword declares component template structure:
+### Dynamic Routes
 
 ```typescript
-view {
-  vbox({ class: 'container' }, [
-    text({}, 'Hello World')
-  ])
+import * as UI from 'zenweb';
+import { RouteContext } from 'zenweb';
+
+export default function UserPage(ctx: RouteContext) {
+  const userId = ctx.params.id;
+  
+  return UI.vbox({
+    style: { padding: '2rem' }
+  }, [
+    UI.h1({}, `User Profile: ${userId}`),
+    UI.text({}, `Viewing profile for user ${userId}`),
+    UI.link({ href: '/' }, 'Go Home')
+  ]);
 }
 ```
 
-### Style Keyword
-
-The `style` keyword defines scoped component styling:
-
-```typescript
-style {
-  .container {
-    padding: 1rem;
-    background: #f0f0f0;
-  }
-}
-```
-
-Styles are automatically scoped to the component and won't leak to other components.
-
-## 🛠️ CLI Commands
+## CLI Commands
 
 ```bash
 # Create new project
 zenweb init [project-name]
 
-# Start development server
+# Start development server with HMR
 zenweb dev
 
 # Build for production
 zenweb build
 
+# Start production server
+zenweb start
+
 # Clean build artifacts
 zenweb clean
 ```
 
-## ⚙️ Configuration
+## Configuration
 
-Create a `zenweb.config.js` file in your project root:
+Create `zenweb.config.js` in your project root:
 
 ```javascript
 export default {
   entry: 'src/index.ts',
   output: 'dist/bundle.js',
+  port: 3000,
   minify: true,
   sourceMaps: true,
-  port: 3000,
-  hotReload: true
+  hotReload: true,
+  
+  // Routing configuration
+  routing: {
+    mode: 'history',
+    fileBasedRouting: true,
+    pagesDir: 'src/pages',
+    scrollBehavior: 'smooth'
+  },
+  
+  // Build configuration
+  build: {
+    splitting: true,
+    chunkSize: 500,
+    publicPath: '/'
+  }
 };
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
-my-zenweb-app/
+my-app/
 ├── src/
-│   ├── index.ts           # Entry point
-│   ├── App.ts             # Root component
-│   └── components/        # Component directory
-│       ├── Header.ts
-│       └── Footer.ts
+│   ├── index.ts          # Entry point
+│   ├── App.ts            # Main component
+│   ├── components/       # Reusable components
+│   └── pages/            # Route pages
 ├── public/
-│   ├── index.html         # HTML shell
-│   └── assets/            # Static assets
-├── dist/                  # Build output
-├── zenweb.config.js       # Configuration
-└── package.json
+│   ├── index.html        # HTML template
+│   └── styles.css        # Global styles
+├── dist/                 # Build output
+├── zenweb.config.js      # Configuration
+├── package.json
+└── tsconfig.json
 ```
 
-## 🎯 Design Philosophy
+## Documentation
 
-ZenWeb follows these principles:
+Complete documentation is available in the `docs/` directory:
 
-1. **Simplicity First**: No complex build configurations or tooling
-2. **Pure Functions**: Components are just functions
-3. **Reactive by Default**: State changes automatically update the UI
+- [Getting Started](./docs/GETTING_STARTED.md) - Installation and first steps
+- [Routing Guide](./docs/ROUTING_GUIDE.md) - File-based routing and navigation
+- [Configuration](./docs/CONFIGURATION.md) - Project configuration options
+- [Examples](./docs/EXAMPLES.md) - Real-world code examples
+
+## Key Features
+
+### UI Helper Functions
+
+- **Layout**: `vbox`, `hbox`, `grid`, `container`, `center`, `stack`
+- **Elements**: `text`, `button`, `input`, `link`, `image`, `div`, `span`
+- **Typography**: `h1-h6`, `p`, `strong`, `em`, `code`, `pre`
+- **Forms**: `form`, `textarea`, `select`, `checkbox`, `radio`
+- **Components**: `card`, `badge`, `avatar`, `modal`, `dropdown`, `tooltip`
+- **Utilities**: `show`, `each`, `when`, `fragment`, `portal`
+
+### Router Features
+
+- File-based routing (Next.js style)
+- Dynamic routes with parameters
+- Catch-all routes
+- Route middleware and guards
+- Lazy loading with code splitting
+- Navigation hooks
+- Router components (Link, NavLink, Breadcrumb)
+
+### State Management
+
+- Proxy-based reactivity
+- Computed values
+- Side effects
+- Batch updates
+- Automatic dependency tracking
+
+## Design Philosophy
+
+1. **Simplicity First**: No complex build configurations
+2. **Direct DOM**: No Virtual DOM overhead
+3. **Reactive by Default**: State changes automatically update UI
 4. **TypeScript Native**: Built with TypeScript for TypeScript
-5. **Performance**: Minimal runtime overhead with efficient updates
+5. **Performance**: Minimal runtime with efficient updates
+6. **Developer Experience**: Hot reload, source maps, clear errors
 
-## 📚 Examples
+## Performance
 
-### Todo List
+- No Virtual DOM diffing overhead
+- Direct DOM updates
+- Lazy loading support
+- Code splitting
+- Tree shaking
+- Minification
+- Compression (with Express)
 
-```typescript
-import { state } from 'zenweb/runtime';
-import { vbox, input, button, list, text } from 'zenweb/runtime';
+## Browser Support
 
-interface Todo {
-  id: number;
-  text: string;
-  done: boolean;
-}
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
 
-export default function TodoList() {
-  const [todos, setTodos] = state<Todo[]>([]);
-  const [input, setInput] = state('');
-
-  const addTodo = () => {
-    if (input().trim()) {
-      setTodos([...todos(), {
-        id: Date.now(),
-        text: input(),
-        done: false
-      }]);
-      setInput('');
-    }
-  };
-
-  view {
-    vbox({ class: 'todo-app' }, [
-      vbox({ class: 'input-section' }, [
-        input({
-          value: input(),
-          onInput: (e: Event) => setInput((e.target as HTMLInputElement).value),
-          placeholder: 'What needs to be done?'
-        }),
-        button({ onClick: addTodo }, 'Add')
-      ]),
-      
-      list({
-        items: todos(),
-        renderItem: (todo) => 
-          vbox({ class: 'todo-item' }, [
-            text({}, todo.text)
-          ]),
-        keyExtractor: (todo) => todo.id
-      })
-    ])
-  }
-
-  style {
-    .todo-app {
-      max-width: 600px;
-      margin: 2rem auto;
-      padding: 2rem;
-    }
-    
-    .input-section {
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-    
-    .todo-item {
-      padding: 1rem;
-      background: white;
-      border-radius: 4px;
-      margin-bottom: 0.5rem;
-    }
-  }
-}
-```
-
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📄 License
+## License
 
-MIT License - see LICENSE file for details
+Apache License 2.0 - see [LICENSE](./LICENSE) file for details
 
-## 🔗 Links
+## Links
 
-- [Documentation](https://github.com/zenweb/docs)
-- [Examples](https://github.com/zenweb/examples)
-- [Community](https://github.com/zenweb/community)
+- [GitHub Repository](https://github.com/razen-core/zenweb)
+- [Documentation](./docs/)
+- [Examples](./examples/)
+- [Issue Tracker](https://github.com/razen-core/zenweb/issues)
 
 ---
 
-Built with 🧘 by the ZenWeb team
+Built with care by the Razen Core 
+- Developer: Prathmesh Barot
