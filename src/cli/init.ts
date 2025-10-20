@@ -17,7 +17,7 @@ const templates = {
     "build": "rynex build"
   },
   "dependencies": {
-    "rynex": "^1.0.0"
+    "rynex": "^0.1.0"
   }
 }`,
 
@@ -30,7 +30,7 @@ const templates = {
   hotReload: true
 };`,
 
-  'src/index.ts': () => `import { render } from 'rynex/runtime';
+  'src/index.ts': () => `import { render } from 'rynex';
 import App from './App.js';
 
 render(App, document.getElementById('root')!);`,
@@ -53,8 +53,8 @@ body {
  * A premium dark-themed starter with modern UI and smooth interactions
  */
 
-import { state } from 'rynex/runtime';
-import * as UI from 'rynex/runtime';
+import { state } from 'rynex';
+import * as UI from 'rynex';
 
 export default function App() {
   const appState = state({
@@ -152,7 +152,7 @@ export default function App() {
           // Documentation Button
           UI.hbox({
             onClick: () => {
-              window.open('https://github.com/your-repo/rynex/docs', '_blank');
+              window.open('https://github.com/razen-core/rynex#readme', '_blank');
             },
             style: {
               padding: '0.875rem 2rem',
@@ -187,7 +187,7 @@ export default function App() {
           // GitHub Button
           UI.hbox({
             onClick: () => {
-              window.open('https://github.com/your-repo/rynex', '_blank');
+              window.open('https://github.com/razen-core/rynex', '_blank');
             },
             style: {
               padding: '0.875rem 2rem',
