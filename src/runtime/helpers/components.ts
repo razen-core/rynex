@@ -410,6 +410,221 @@ export function spinner(props: DOMProps & { size?: string | number }): HTMLEleme
   });
 }
 
+/**
+ * Tabs component
+ */
+export function tabs(props: DOMProps & {
+  tabs: Array<{ label: string; content: HTMLElement }>;
+  defaultIndex?: number;
+  onChange?: (index: number) => void;
+}): HTMLElement {
+  const { tabs: tabsData, defaultIndex = 0, onChange, ...restProps } = props;
+  let activeIndex = defaultIndex;
+
+  const container = createElement('div', {
+    ...restProps,
+    class: `tabs ${restProps.class || ''}`,
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      ...(restProps.style as any || {})
+    }
+  });
+
+  // Tab headers
+  const tabHeaders = createElement('div', {
+    class: 'tab-headers',
+    style: {
+      display: 'flex',
+      borderBottom: '1px solid #333333',
+      gap: '0.5rem'
+    }
+  });
+
+  // Tab content container
+  const tabContent = createElement('div', {
+    class: 'tab-content',
+    style: {
+      padding: '1rem'
+    }
+  });
+
+  const updateActiveTab = (index: number) => {
+    activeIndex = index;
+    tabContent.innerHTML = '';
+    tabContent.appendChild(tabsData[index].content);
+
+    // Update header styles
+    Array.from(tabHeaders.children).forEach((header, i) => {
+      const headerEl = header as HTMLElement;
+      if (i === index) {
+        headerEl.style.borderBottom = '2px solid #00ff88';
+        headerEl.style.color = '#00ff88';
+      } else {
+        headerEl.style.borderBottom = '2px solid transparent';
+        headerEl.style.color = '#b0b0b0';
+      }
+    });
+
+    if (onChange) {
+      onChange(index);
+    }
+  };
+
+  // Create tab headers
+  tabsData.forEach((tab, index) => {
+    const header = createElement('button', {
+      class: 'tab-header',
+      style: {
+        padding: '0.75rem 1rem',
+        background: 'transparent',
+        border: 'none',
+        borderBottom: index === activeIndex ? '2px solid #00ff88' : '2px solid transparent',
+        color: index === activeIndex ? '#00ff88' : '#b0b0b0',
+        cursor: 'pointer',
+        fontSize: '1rem',
+        transition: 'all 0.2s'
+      },
+      onClick: () => updateActiveTab(index),
+      onMouseEnter: (e: MouseEvent) => {
+        if (index !== activeIndex) {
+          (e.target as HTMLElement).style.color = '#ffffff';
+        }
+      },
+      onMouseLeave: (e: MouseEvent) => {
+        if (index !== activeIndex) {
+          (e.target as HTMLElement).style.color = '#b0b0b0';
+        }
+      }
+    });
+    header.textContent = tab.label;
+    tabHeaders.appendChild(header);
+  });
+
+  // Set initial content
+  tabContent.appendChild(tabsData[activeIndex].content);
+
+  container.appendChild(tabHeaders);
+  container.appendChild(tabContent);
+
+  return container;
+}
+
+/**
+ * Accordion component
+ */
+export function accordion(props: DOMProps & {
+  items: Array<{ title: string; content: HTMLElement }>;
+  allowMultiple?: boolean;
+  defaultOpen?: number[];
+}): HTMLElement {
+  const { items, allowMultiple = false, defaultOpen = [], ...restProps } = props;
+  const openIndices = new Set<number>(defaultOpen);
+
+  const container = createElement('div', {
+    ...restProps,
+    class: `accordion ${restProps.class || ''}`,
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '0.5rem',
+      ...(restProps.style as any || {})
+    }
+  });
+
+  const toggleItem = (index: number, itemContent: HTMLElement, icon: HTMLElement) => {
+    const isOpen = openIndices.has(index);
+
+    if (isOpen) {
+      openIndices.delete(index);
+      itemContent.style.display = 'none';
+      icon.style.transform = 'rotate(0deg)';
+    } else {
+      if (!allowMultiple) {
+        // Close all other items
+        openIndices.clear();
+        Array.from(container.children).forEach((child, i) => {
+          const content = child.querySelector('.accordion-content') as HTMLElement;
+          const itemIcon = child.querySelector('.accordion-icon') as HTMLElement;
+          if (content && itemIcon) {
+            content.style.display = 'none';
+            itemIcon.style.transform = 'rotate(0deg)';
+          }
+        });
+      }
+      openIndices.add(index);
+      itemContent.style.display = 'block';
+      icon.style.transform = 'rotate(180deg)';
+    }
+  };
+
+  items.forEach((item, index) => {
+    const itemContainer = createElement('div', {
+      class: 'accordion-item',
+      style: {
+        border: '1px solid #333333',
+        borderRadius: '0.5rem',
+        overflow: 'hidden'
+      }
+    });
+
+    const icon = createElement('span', {
+      class: 'accordion-icon',
+      style: {
+        transition: 'transform 0.2s',
+        transform: openIndices.has(index) ? 'rotate(180deg)' : 'rotate(0deg)'
+      }
+    });
+    icon.textContent = '▼';
+
+    const header = createElement('button', {
+      class: 'accordion-header',
+      style: {
+        width: '100%',
+        padding: '1rem',
+        background: '#0a0a0a',
+        border: 'none',
+        color: '#ffffff',
+        cursor: 'pointer',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        fontSize: '1rem',
+        textAlign: 'left'
+      },
+      onMouseEnter: (e: MouseEvent) => {
+        (e.currentTarget as HTMLElement).style.background = '#1a1a1a';
+      },
+      onMouseLeave: (e: MouseEvent) => {
+        (e.currentTarget as HTMLElement).style.background = '#0a0a0a';
+      }
+    });
+
+    const title = createElement('span');
+    title.textContent = item.title;
+    header.appendChild(title);
+    header.appendChild(icon);
+
+    const content = createElement('div', {
+      class: 'accordion-content',
+      style: {
+        padding: '1rem',
+        display: openIndices.has(index) ? 'block' : 'none',
+        background: '#000000'
+      }
+    });
+    content.appendChild(item.content);
+
+    header.addEventListener('click', () => toggleItem(index, content, icon));
+
+    itemContainer.appendChild(header);
+    itemContainer.appendChild(content);
+    container.appendChild(itemContainer);
+  });
+
+  return container;
+}
+
 // Add keyframes for spinner animation
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');

@@ -3,15 +3,15 @@
  * A premium dark-themed starter with modern UI and smooth interactions
  */
 
-import { state } from '../../../dist/runtime/index.js';
-import * as UI from '../../../dist/runtime/index.js';
+import { state } from 'rynex';
+import * as UI from 'rynex';
 
 export default function App() {
   const appState = state({
     hoveredButton: null as string | null
   });
 
-  return UI.container({
+  return UI.vbox({
     class: 'app',
     style: {
       minHeight: '100vh',
@@ -102,7 +102,7 @@ export default function App() {
           // Documentation Button
           UI.hbox({
             onClick: () => {
-              window.open('https://github.com/your-repo/rynex/docs', '_blank');
+              window.open('https://github.com/razen-core/rynex#readme', '_blank');
             },
             style: {
               padding: '0.875rem 2rem',
@@ -137,7 +137,7 @@ export default function App() {
           // GitHub Button
           UI.hbox({
             onClick: () => {
-              window.open('https://github.com/your-repo/rynex', '_blank');
+              window.open('https://github.com/razen-core/rynex', '_blank');
             },
             style: {
               padding: '0.875rem 2rem',
@@ -325,7 +325,7 @@ export default function App() {
           fontSize: '0.875rem',
           color: '#b0b0b0'
         }
-      }, '© 2025 Razen Core. Built with ❤️ and modern web technologies.')
+      }, '© 2024 Rynex. Built with ❤️ and modern web technologies.')
     ])
   ]);
 }

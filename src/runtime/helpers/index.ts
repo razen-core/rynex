@@ -138,7 +138,11 @@ export {
   switchCase,
   dynamic,
   portal,
-  css
+  css,
+  lazy,
+  suspense,
+  errorBoundary,
+  memo
 } from './utilities.js';
 
 // UI Components
@@ -153,7 +157,9 @@ export {
   toggle,
   slider,
   progressBar,
-  spinner
+  spinner,
+  tabs,
+  accordion
 } from './components.js';
 
 // Routing Components
@@ -168,3 +174,46 @@ export {
   RouteLoading,
   NotFound
 } from './routing.js';
+
+// Lifecycle Hooks
+export {
+  onMount,
+  onUnmount,
+  onUpdate,
+  watch,
+  watchEffect,
+  onError
+} from './lifecycle.js';
+
+// Performance Utilities
+export {
+  debounce,
+  throttle,
+  preload,
+  getPreloaded,
+  onIdle,
+  cancelIdle
+} from './performance.js';
+
+// Refs and DOM Access
+export {
+  ref,
+  useRef,
+  forwardRef,
+  callbackRef,
+  mergeRefs
+} from './refs.js';
+
+// Style Utilities
+export {
+  styled,
+  classNames,
+  mergeStyles,
+  setTheme,
+  getTheme,
+  useTheme,
+  createCSSVariables,
+  applyThemeVariables,
+  getCSSVariable,
+  setCSSVariable
+} from './styles.js';

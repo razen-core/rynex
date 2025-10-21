@@ -158,3 +158,149 @@ export function css(selector: string, styles: Partial<CSSStyleDeclaration> | str
     }
   }
 }
+
+/**
+ * Lazy load component
+ * Loads component dynamically when needed
+ */
+export function lazy<T>(
+  loader: () => Promise<{ default: T }>
+): () => Promise<T> {
+  let cached: T | null = null;
+  let loading: Promise<T> | null = null;
+
+  return async () => {
+    if (cached) {
+      return cached;
+    }
+
+    if (loading) {
+      return loading.then(() => cached!);
+    }
+
+    loading = loader().then(module => {
+      cached = module.default;
+      loading = null;
+      return cached;
+    });
+
+    return loading;
+  };
+}
+
+/**
+ * Suspense boundary for async components
+ * Shows fallback while loading
+ */
+export function suspense(
+  props: {
+    fallback: HTMLElement;
+    onError?: (error: Error) => void;
+  },
+  children: () => Promise<HTMLElement> | HTMLElement
+): HTMLElement {
+  const container = createElement('div', { 'data-suspense': 'true' });
+  container.appendChild(props.fallback);
+
+  const loadContent = async () => {
+    try {
+      const content = await Promise.resolve(children());
+      container.innerHTML = '';
+      container.appendChild(content);
+    } catch (error) {
+      if (props.onError) {
+        props.onError(error as Error);
+      } else {
+        console.error('Suspense error:', error);
+      }
+    }
+  };
+
+  loadContent();
+  return container;
+}
+
+/**
+ * Error boundary component
+ * Catches errors in child components
+ */
+export function errorBoundary(
+  props: {
+    fallback: (error: Error) => HTMLElement;
+    onError?: (error: Error) => void;
+  },
+  children: HTMLElement | (() => HTMLElement)
+): HTMLElement {
+  const container = createElement('div', { 'data-error-boundary': 'true' });
+
+  try {
+    const content = typeof children === 'function' ? children() : children;
+    container.appendChild(content);
+
+    // Add global error listener for this boundary
+    window.addEventListener('error', (event) => {
+      if (container.contains(event.target as Node)) {
+        event.preventDefault();
+        const error = event.error || new Error(event.message);
+        
+        if (props.onError) {
+          props.onError(error);
+        }
+
+        container.innerHTML = '';
+        container.appendChild(props.fallback(error));
+      }
+    });
+  } catch (error) {
+    if (props.onError) {
+      props.onError(error as Error);
+    }
+    container.appendChild(props.fallback(error as Error));
+  }
+
+  return container;
+}
+
+/**
+ * Memoize component to prevent unnecessary re-renders
+ * Caches result based on props equality
+ */
+export function memo<P extends Record<string, any>>(
+  component: (props: P) => HTMLElement,
+  areEqual?: (prevProps: P, nextProps: P) => boolean
+): (props: P) => HTMLElement {
+  let lastProps: P | null = null;
+  let lastResult: HTMLElement | null = null;
+
+  return (props: P) => {
+    const shouldUpdate = !lastProps || 
+      (areEqual ? !areEqual(lastProps, props) : !shallowEqual(lastProps, props));
+
+    if (shouldUpdate) {
+      lastProps = { ...props };
+      lastResult = component(props);
+    }
+
+    return lastResult!;
+  };
+}
+
+/**
+ * Shallow equality check for objects
+ */
+function shallowEqual(obj1: any, obj2: any): boolean {
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
+
+  if (keys1.length !== keys2.length) {
+    return false;
+  }
+
+  for (const key of keys1) {
+    if (obj1[key] !== obj2[key]) {
+      return false;
+    }
+  }
+
+  return true;
+}

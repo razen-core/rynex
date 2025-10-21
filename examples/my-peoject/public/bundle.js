@@ -384,7 +384,7 @@ function App() {
               fontWeight: "600",
               letterSpacing: "0.05em"
             }
-          }, "ZEN WEB")
+          }, "Rynex")
         ]),
         // Main Title
         h1({
