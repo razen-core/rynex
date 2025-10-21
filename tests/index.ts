@@ -3,6 +3,9 @@
  * Runs all test suites for new functions
  */
 
+// Import CSS for Tailwind processing
+import './public/styles.css';
+
 import { render, div, text, tabs } from '../dist/runtime/index.js';
 import UtilitiesTest from './test-utilities.js';
 import LifecycleTest from './test-lifecycle.js';
@@ -10,6 +13,7 @@ import PerformanceTest from './test-performance.js';
 import RefsTest from './test-refs.js';
 import StylesTest from './test-styles.js';
 import ComponentsTest from './test-components.js';
+import TailwindTest from './test-tailwind.js';
 
 function TestRunner() {
   return div({ 
@@ -61,9 +65,13 @@ function TestRunner() {
           {
             label: 'Components',
             content: ComponentsTest()
+          },
+          {
+            label: 'Tailwind CSS',
+            content: TailwindTest()
           }
         ],
-        defaultIndex: 0,
+        defaultIndex: 6,
         style: { 
           background: '#fff',
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',

@@ -132,9 +132,62 @@ rynex build
 # Start production server
 rynex start
 
+# Add integrations (e.g., Tailwind CSS)
+rynex add tailwind
+
 # Clean build artifacts
 rynex clean
 ```
+
+## Styling with Tailwind CSS
+
+Rynex supports Tailwind CSS out of the box with a simple opt-in setup:
+
+```bash
+# Add Tailwind CSS to your project
+rynex add tailwind
+
+# Choose your package manager (npm/pnpm/yarn/bun)
+# The command will:
+# - Install tailwindcss, postcss, and autoprefixer
+# - Create tailwind.config.js
+# - Configure your CSS files
+# - Add necessary imports
+
+# Start development
+pnpm dev
+```
+
+### Using Tailwind Classes
+
+```typescript
+import * as UI from 'rynex';
+
+export default function App() {
+  return UI.container({
+    class: 'flex items-center justify-center min-h-screen bg-gray-100'
+  }, [
+    UI.vbox({
+      class: 'bg-white p-8 rounded-lg shadow-lg max-w-md'
+    }, [
+      UI.text({
+        class: 'text-3xl font-bold text-gray-800 mb-4'
+      }, 'Hello Tailwind!'),
+      UI.button({
+        class: 'bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors',
+        onClick: () => console.log('Clicked!')
+      }, 'Get Started')
+    ])
+  ]);
+}
+```
+
+**Features:**
+- ✅ Automatic class detection in `class: 'flex'` syntax
+- ✅ JIT mode for fast compilation
+- ✅ Hot reload in development
+- ✅ Auto-purging in production
+- ✅ Latest Tailwind CSS v4.x
 
 ## Configuration
 

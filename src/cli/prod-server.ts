@@ -42,7 +42,7 @@ function startWithExpress(express: any, options: ServerOptions, routeManifest: R
       const duration = Date.now() - start;
       const status = res.statusCode;
       const color = status >= 500 ? '\x1b[31m' : status >= 400 ? '\x1b[33m' : '\x1b[32m';
-      logger.info(`${req.method} ${req.url} ${color}${status}\x1b[0m - ${duration}ms`);
+      logger.debug(`${req.method} ${req.url} ${color}${status}\x1b[0m - ${duration}ms`);
     });
     next();
   });
@@ -58,10 +58,18 @@ function startWithExpress(express: any, options: ServerOptions, routeManifest: R
     }
   });
 
-  // Static files
+  // Static files with proper headers
   app.use(express.static(root, {
     maxAge: '1d',
-    etag: true
+    etag: true,
+    setHeaders: (res: any, filePath: string) => {
+      // Set proper content types
+      if (filePath.endsWith('.js') || filePath.endsWith('.mjs')) {
+        res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+      } else if (filePath.endsWith('.css')) {
+        res.setHeader('Content-Type', 'text/css; charset=utf-8');
+      }
+    }
   }));
 
   // SPA fallback for file-based routing
@@ -77,9 +85,9 @@ function startWithExpress(express: any, options: ServerOptions, routeManifest: R
   }
 
   app.listen(port, () => {
-    logger.success(`🚀 Production server running at http://localhost:${port}`);
-    logger.info(`📁 Serving files from: ${root}`);
-    logger.info(`⚡ Using Express server`);
+    logger.success(`Production server running at http://localhost:${port}`);
+    logger.info(`Serving files from: ${root}`);
+    logger.info('Using Express server');
   });
 }
 
@@ -126,6 +134,7 @@ function startWithNativeHTTP(options: ServerOptions, routeManifest: RouteManifes
     const contentTypes: Record<string, string> = {
       '.html': 'text/html; charset=utf-8',
       '.js': 'application/javascript; charset=utf-8',
+      '.mjs': 'application/javascript; charset=utf-8',
       '.css': 'text/css; charset=utf-8',
       '.json': 'application/json',
       '.png': 'image/png',
@@ -134,10 +143,12 @@ function startWithNativeHTTP(options: ServerOptions, routeManifest: RouteManifes
       '.gif': 'image/gif',
       '.svg': 'image/svg+xml',
       '.ico': 'image/x-icon',
+      '.webp': 'image/webp',
       '.woff': 'font/woff',
       '.woff2': 'font/woff2',
       '.ttf': 'font/ttf',
-      '.eot': 'application/vnd.ms-fontobject'
+      '.eot': 'application/vnd.ms-fontobject',
+      '.map': 'application/json'
     };
 
     const contentType = contentTypes[ext] || 'application/octet-stream';
@@ -161,9 +172,9 @@ function startWithNativeHTTP(options: ServerOptions, routeManifest: RouteManifes
   });
 
   server.listen(port, () => {
-    logger.success(`🚀 Production server running at http://localhost:${port}`);
-    logger.info(`📁 Serving files from: ${root}`);
-    logger.info(`⚡ Using native HTTP server`);
+    logger.success(`Production server running at http://localhost:${port}`);
+    logger.info(`Serving files from: ${root}`);
+    logger.info('Using native HTTP server');
   });
 }
 
@@ -179,7 +190,7 @@ export async function startProductionServer(options: ServerOptions): Promise<voi
     const pagesDir = path.join(process.cwd(), config.routing.pagesDir || 'src/pages');
     if (fs.existsSync(pagesDir)) {
       routeManifest = scanRoutes(pagesDir);
-      logger.info(`📍 File-based routing enabled with ${routeManifest.routes.length} routes`);
+      logger.info(`File-based routing enabled with ${routeManifest.routes.length} routes`);
     }
   }
 

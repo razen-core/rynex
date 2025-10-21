@@ -1,6 +1,6 @@
 # Rynex Documentation
 
-> **Version:** 0.1.35  
+> **Version:** 0.1.4  
 > **Status:** Production Ready (88% Complete)
 
 Welcome to the Rynex documentation. This guide will help you get started with building reactive web applications using Rynex.
@@ -11,6 +11,7 @@ Welcome to the Rynex documentation. This guide will help you get started with bu
 - [Configuration](./CONFIGURATION.md) - Project configuration options
 - [Examples](./EXAMPLES.md) - Code examples and patterns
 - [Routing Guide](./ROUTING_GUIDE.md) - Client-side routing
+- [Tailwind CSS Integration](./TAILWIND_CSS.md) - Styling with Tailwind CSS
 
 ### API Documentation
 

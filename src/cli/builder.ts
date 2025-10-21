@@ -12,6 +12,31 @@ import { RouteConfig, RynexConfig } from './config.js';
 import { logger } from './logger.js';
 import { scanRoutes, generateRouteManifest, generateRouterConfig } from './route-scanner.js';
 
+/**
+ * Load Tailwind CSS plugin if configured
+ */
+async function loadTailwindPlugin(projectRoot: string): Promise<esbuild.Plugin | null> {
+  // Check if Tailwind is configured
+  const configFiles = ['tailwind.config.js', 'tailwind.config.cjs', 'tailwind.config.mjs', 'tailwind.config.ts'];
+  const hasTailwindConfig = configFiles.some(file => fs.existsSync(path.join(projectRoot, file)));
+  
+  if (!hasTailwindConfig) {
+    return null;
+  }
+  
+  try {
+    // Dynamic import of esbuild-plugin-tailwindcss
+    const tailwindPluginModule = await import('esbuild-plugin-tailwindcss');
+    const tailwindPlugin = tailwindPluginModule.default || tailwindPluginModule;
+    
+    logger.info('Tailwind CSS enabled');
+    return tailwindPlugin();
+  } catch (error) {
+    logger.warning('Tailwind config found but esbuild-plugin-tailwindcss not available');
+    return null;
+  }
+}
+
 export interface BuildOptions {
   entry: string;
   output: string;
@@ -280,6 +305,18 @@ async function buildMainEntry(
 
   logger.debug(`Building main entry: ${options.entry}`);
   
+  // Setup plugins array
+  const plugins: esbuild.Plugin[] = [];
+  
+  // Add Tailwind CSS plugin if configured
+  const tailwindPlugin = await loadTailwindPlugin(projectRoot);
+  if (tailwindPlugin) {
+    plugins.push(tailwindPlugin);
+  }
+  
+  // Add Rynex plugin
+  plugins.push(rynexPlugin);
+  
   // Build with esbuild
   const result = await esbuild.build({
     entryPoints: [path.join(projectRoot, options.entry)],
@@ -290,7 +327,7 @@ async function buildMainEntry(
     target: 'es2020',
     minify: options.minify,
     sourcemap: options.sourceMaps,
-    plugins: [rynexPlugin],
+    plugins: plugins,
     external: [],
     write: true,
     logLevel: isDebug ? 'debug' : 'warning',
@@ -470,6 +507,18 @@ export async function watch(options: BuildOptions): Promise<void> {
     }
   };
 
+  // Setup plugins for watch mode
+  const watchPlugins: esbuild.Plugin[] = [];
+  
+  // Add Tailwind CSS plugin if configured
+  const tailwindPlugin = await loadTailwindPlugin(projectRoot);
+  if (tailwindPlugin) {
+    watchPlugins.push(tailwindPlugin);
+  }
+  
+  // Add Rynex plugin
+  watchPlugins.push(rynexPlugin);
+
   const ctx = await esbuild.context({
     entryPoints: [path.join(projectRoot, options.entry)],
     bundle: true,
@@ -479,7 +528,7 @@ export async function watch(options: BuildOptions): Promise<void> {
     target: 'es2020',
     minify: false,
     sourcemap: true,
-    plugins: [rynexPlugin]
+    plugins: watchPlugins
   });
 
   await ctx.watch();

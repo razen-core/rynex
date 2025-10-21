@@ -11,6 +11,7 @@ import { startDevServer } from '../dev-server.js';
 import { startProductionServer } from '../prod-server.js';
 import { loadConfig, validateConfig } from '../config.js';
 import { logger } from '../logger.js';
+import { handleAddCommand } from '../add-command.js';
 import * as path from 'path';
 
 const args = process.argv.slice(2);
@@ -95,6 +96,12 @@ async function main() {
       break;
     }
 
+    case 'add': {
+      const integration = args[1];
+      await handleAddCommand(integration);
+      break;
+    }
+
     case 'clean': {
       const { execSync } = await import('child_process');
       logger.info('Cleaning build artifacts');
@@ -118,6 +125,7 @@ Commands:
   build          Build project for production
   dev            Start development server with hot reload
   start          Start production server (Express or native HTTP)
+  add <name>     Add integrations (e.g., tailwind)
   clean          Remove build artifacts
   help           Show this help message
 
@@ -125,6 +133,7 @@ Examples:
   rynex init my-app
   rynex dev
   rynex build
+  rynex add tailwind
   rynex start
 
 For more information, visit: https://github.com/rynex

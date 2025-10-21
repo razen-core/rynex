@@ -1,6 +1,6 @@
 {
   "name": "rynex",
-  "version": "0.1.35",
+  "version": "0.1.4",
   "description": "A minimalist TypeScript framework for building reactive web applications with no virtual DOM",
   "main": "dist/runtime/index.js",
   "types": "dist/runtime/index.d.ts",
@@ -70,7 +70,8 @@
   "dependencies": {
     "esbuild": "^0.19.0",
     "chokidar": "^3.5.3",
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "esbuild-plugin-tailwindcss": "^2.1.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
