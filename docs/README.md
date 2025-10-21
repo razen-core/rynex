@@ -1,6 +1,6 @@
 # Rynex Documentation
 
-> **Version:** 0.1.4  
+> **Version:** 0.1.40  
 > **Status:** Production Ready (88% Complete)
 
 Welcome to the Rynex documentation. This guide will help you get started with building reactive web applications using Rynex.
