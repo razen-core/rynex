@@ -5,6 +5,8 @@ pnpm-workspace.yaml
 
 # Examples
 examples/
+tests/
+test-rynex-install/
 
 # Development files
 .git/

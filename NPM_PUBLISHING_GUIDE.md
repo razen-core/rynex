@@ -31,7 +31,7 @@ Current package.json needs these updates:
 ```json
 {
   "name": "rynex",
-  "version": "0.1.3",
+  "version": "0.1.35",
   "description": "A minimalist TypeScript framework for building reactive web applications",
   "main": "dist/runtime/index.js",
   "types": "dist/runtime/index.d.ts",
@@ -156,9 +156,9 @@ pnpm build:framework
 # Test pack (creates a tarball without publishing)
 npm pack
 
-# This creates: rynex-0.1.3.tgz
+# This creates: rynex-0.1.35.tgz
 # You can test install it locally:
-npm install ./rynex-0.1.3.tgz
+npm install ./rynex-0.1.35.tgz
 ```
 
 ### Step 3: Check Package Contents

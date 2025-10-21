@@ -3,12 +3,12 @@
  * Demonstrates routing, dynamic routes, and navigation
  */
 
-import { state, createRouter, RouteContext } from '../../dist/runtime/index.js';
-import * as UI from '../../dist/runtime/index.js';
+import { state, createRouter, RouteContext } from 'rynex';
+import * as UI from 'rynex';
 import HomePage from './pages/home/page.js';
 import AboutPage from './pages/about/page.js';
 
-export default function AppWithRouter() {
+export default function App() {
   // Create router with routes
   const router = createRouter([
     {
@@ -20,11 +20,6 @@ export default function AppWithRouter() {
       path: '/about',
       component: (ctx: RouteContext) => AboutPage(),
       name: 'about'
-    },
-    {
-      path: '/user/:id',
-      lazy: () => import('./pages/user/[id]/page.js'),
-      name: 'user'
     },
     {
       path: '/blog',
@@ -65,7 +60,8 @@ export default function AppWithRouter() {
     return UI.nav({
       style: {
         padding: '1rem 2rem',
-        background: '#2c3e50',
+        background: '#0a0a0a',
+        borderBottom: '1px solid #333333',
         display: 'flex',
         gap: '2rem',
         alignItems: 'center'
@@ -73,11 +69,13 @@ export default function AppWithRouter() {
     }, [
       UI.h2({
         style: { 
-          color: 'white',
+          color: '#00ff88',
           margin: 0,
-          fontSize: '1.5rem'
+          fontSize: '1.5rem',
+          fontWeight: '800',
+          fontFamily: '"Montserrat", sans-serif'
         }
-      }, 'Rynex Router'),
+      }, 'Rynex'),
       
       UI.hbox({
         style: { 
@@ -85,47 +83,42 @@ export default function AppWithRouter() {
           flex: 1
         }
       }, [
-        UI.link({
-          href: '/',
+        UI.NavLink({
+          to: '/',
+          activeClass: 'active',
           class: 'nav-link',
           style: {
-            color: 'white',
+            color: '#ffffff',
             textDecoration: 'none',
             padding: '0.5rem 1rem',
-            borderRadius: '4px',
-            transition: 'background 0.3s'
+            borderRadius: '0.5rem',
+            transition: 'all 0.2s ease-in-out'
           }
         }, 'Home'),
-        UI.link({
-          href: '/about',
+        UI.NavLink({
+          to: '/about',
+          activeClass: 'active',
           class: 'nav-link',
           style: {
-            color: 'white',
+            color: '#ffffff',
             textDecoration: 'none',
             padding: '0.5rem 1rem',
-            borderRadius: '4px'
+            borderRadius: '0.5rem',
+            transition: 'all 0.2s ease-in-out'
           }
         }, 'About'),
-        UI.link({
-          href: '/blog',
+        UI.NavLink({
+          to: '/blog',
+          activeClass: 'active',
           class: 'nav-link',
           style: {
-            color: 'white',
+            color: '#ffffff',
             textDecoration: 'none',
             padding: '0.5rem 1rem',
-            borderRadius: '4px'
+            borderRadius: '0.5rem',
+            transition: 'all 0.2s ease-in-out'
           }
-        }, 'Blog'),
-        UI.link({
-          href: '/user/123',
-          class: 'nav-link',
-          style: {
-            color: 'white',
-            textDecoration: 'none',
-            padding: '0.5rem 1rem',
-            borderRadius: '4px'
-          }
-        }, 'User Demo')
+        }, 'Blog')
       ])
     ]);
   };
@@ -134,7 +127,9 @@ export default function AppWithRouter() {
   const app = UI.vbox({
     style: {
       minHeight: '100vh',
-      background: '#ecf0f1'
+      background: '#000000',
+      color: '#ffffff',
+      fontFamily: '"Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     }
   }, [
     Navigation(),
@@ -146,8 +141,12 @@ export default function AppWithRouter() {
   // Add active link styles
   const style = document.createElement('style');
   style.textContent = `
-    .active {
-      background: rgba(255, 255, 255, 0.2) !important;
+    .nav-link:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .nav-link.active {
+      background: rgba(0, 255, 136, 0.2) !important;
+      color: #00ff88 !important;
       font-weight: 600;
     }
   `;

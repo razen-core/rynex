@@ -1,4 +1,4 @@
-import * as UI from '../../../dist/runtime/index.js';
+import * as UI from 'rynex';
 
 export default function Sidebar() {
   return UI.vbox({

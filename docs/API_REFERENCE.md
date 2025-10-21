@@ -1,6 +1,6 @@
 # Rynex API Reference
 
-> **Version:** 0.1.3  
+> **Version:** 0.1.35  
 > **Last Updated:** October 21, 2025  
 > **Package:** rynex
 

@@ -1,4 +1,4 @@
-import { render } from '../../dist/runtime/index.js';
+import { render } from 'rynex';
 import App from './App.js';
 
 // Render app with router

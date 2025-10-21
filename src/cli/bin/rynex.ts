@@ -5,7 +5,7 @@
  * Command-line interface for Rynex framework
  */
 
-import { initProject } from '../init.js';
+import { initProject } from '../init-new.js';
 import { build, watch } from '../builder.js';
 import { startDevServer } from '../dev-server.js';
 import { startProductionServer } from '../prod-server.js';
@@ -19,7 +19,7 @@ const command = args[0];
 async function main() {
   switch (command) {
     case 'init': {
-      const projectName = args[1] || 'my-rynex-app';
+      const projectName = args[1]; // Optional, will prompt if not provided
       await initProject(projectName);
       break;
     }

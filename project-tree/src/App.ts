@@ -1,153 +1,156 @@
 /**
- * Rynex App - New Syntax Test
- * Uses namespaced imports and reactive getters for auto-updates
- * No manual effect() needed - reactivity is built into UI functions
+ * Rynex App with Router
+ * Demonstrates routing, dynamic routes, and navigation
  */
 
-import { state } from '../../dist/runtime/index.js';
+import { state, createRouter, RouteContext } from '../../dist/runtime/index.js';
 import * as UI from '../../dist/runtime/index.js';
-import Header from './components/Header.js';
-import Sidebar from './components/Sidebar.js';
 import HomePage from './pages/home/page.js';
+import AboutPage from './pages/about/page.js';
 
 export default function App() {
-  // Reactive state
-  const appState = state({
-    count: 0,
-    name: '',
-    showSection: true
+  // Create router with routes
+  const router = createRouter([
+    {
+      path: '/',
+      component: (ctx: RouteContext) => HomePage(),
+      name: 'home'
+    },
+    {
+      path: '/about',
+      component: (ctx: RouteContext) => AboutPage(),
+      name: 'about'
+    },
+    {
+      path: '/blog',
+      lazy: () => import('./pages/blog/page.js'),
+      name: 'blog'
+    },
+    {
+      path: '/blog/:slug',
+      lazy: () => import('./pages/blog/[slug]/page.js'),
+      name: 'blog-post'
+    }
+  ]);
+
+  // Add logging middleware
+  router.use((ctx: RouteContext, next: () => void) => {
+    console.log(`[Router] Navigating to: ${ctx.path}`);
+    console.log(`[Router] Params:`, ctx.params);
+    console.log(`[Router] Query:`, ctx.query);
+    next();
   });
 
-  return UI.vbox({
-    class: 'app',
-    style: {
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-    }
-  }, [
-    Header(),
-    Sidebar(),
-    HomePage(),
-    
-    UI.vbox({
-      class: 'content',
+  // Set 404 handler
+  router.setNotFound((ctx: RouteContext) => {
+    return UI.NotFound({
+      title: '404',
+      message: `Page "${ctx.path}" not found`,
+      homeLink: true
+    });
+  });
+
+  // App state
+  const appState = state({
+    currentRoute: '/'
+  });
+
+  // Navigation component
+  const Navigation = () => {
+    return UI.nav({
       style: {
-        flex: '1',
-        padding: '2rem',
-        gap: '1.5rem',
+        padding: '1rem 2rem',
+        background: '#0a0a0a',
+        borderBottom: '1px solid #333333',
+        display: 'flex',
+        gap: '2rem',
         alignItems: 'center'
       }
     }, [
-      // Reactive text with getter
-      UI.text({
-        class: 'greeting',
-        style: {
-          fontSize: '2rem',
-          color: 'white',
-          fontWeight: 'bold'
+      UI.h2({
+        style: { 
+          color: '#00ff88',
+          margin: 0,
+          fontSize: '1.5rem',
+          fontWeight: '800',
+          fontFamily: '"Montserrat", sans-serif'
         }
-      }, () => `Hello, ${appState.name || 'Guest'}!`),
+      }, 'Rynex'),
       
-      // Input with state binding
-      UI.input({
-        placeholder: 'Enter your name',
-        value: appState.name,
-        onInput: (e: Event) => { appState.name = (e.target as HTMLInputElement).value; },
-        style: {
-          padding: '0.75rem',
-          borderRadius: '8px',
-          border: '2px solid white',
-          fontSize: '1rem',
-          width: '300px'
-        }
-      }),
-      
-      // Counter section
       UI.hbox({
-        class: 'counter',
-        style: {
+        style: { 
           gap: '1rem',
-          alignItems: 'center'
+          flex: 1
         }
       }, [
-        UI.button({
-          onClick: () => { appState.count--; },
+        UI.NavLink({
+          to: '/',
+          activeClass: 'active',
+          class: 'nav-link',
           style: {
-            padding: '0.75rem 1.5rem',
-            border: 'none',
-            borderRadius: '8px',
-            background: 'white',
-            color: '#667eea',
-            fontWeight: '600',
-            cursor: 'pointer'
+            color: '#ffffff',
+            textDecoration: 'none',
+            padding: '0.5rem 1rem',
+            borderRadius: '0.5rem',
+            transition: 'all 0.2s ease-in-out'
           }
-        }, 'Decrement'),
-        
-        // Reactive count display
-        UI.text({
+        }, 'Home'),
+        UI.NavLink({
+          to: '/about',
+          activeClass: 'active',
+          class: 'nav-link',
           style: {
-            fontSize: '1.5rem',
-            color: 'white',
-            minWidth: '120px',
-            textAlign: 'center'
+            color: '#ffffff',
+            textDecoration: 'none',
+            padding: '0.5rem 1rem',
+            borderRadius: '0.5rem',
+            transition: 'all 0.2s ease-in-out'
           }
-        }, () => `Count: ${appState.count}`),
-        
-        UI.button({
-          onClick: () => { appState.count++; },
+        }, 'About'),
+        UI.NavLink({
+          to: '/blog',
+          activeClass: 'active',
+          class: 'nav-link',
           style: {
-            padding: '0.75rem 1.5rem',
-            border: 'none',
-            borderRadius: '8px',
-            background: 'white',
-            color: '#667eea',
-            fontWeight: '600',
-            cursor: 'pointer'
+            color: '#ffffff',
+            textDecoration: 'none',
+            padding: '0.5rem 1rem',
+            borderRadius: '0.5rem',
+            transition: 'all 0.2s ease-in-out'
           }
-        }, 'Increment')
-      ]),
-      
-      // Reactive button with dynamic text
-      UI.button({
-        onClick: () => { appState.showSection = !appState.showSection; },
-        style: {
-          padding: '0.75rem 1.5rem',
-          border: 'none',
-          borderRadius: '8px',
-          background: 'rgba(255, 255, 255, 0.2)',
-          color: 'white',
-          fontWeight: '600',
-          cursor: 'pointer'
-        }
-      }, () => appState.showSection ? 'Hide Section' : 'Show Section'),
-      
-      // Conditional rendering with show()
-      UI.show(() => appState.showSection,
-        UI.vbox({
-          class: 'conditional',
-          style: {
-            padding: '1rem',
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '8px',
-            color: 'white'
-          }
-        }, [
-          UI.text({}, 'This content is conditionally rendered!'),
-          UI.text({}, () => `Current count: ${appState.count}`)
-        ])
-      )
-    ]),
+        }, 'Blog')
+      ])
+    ]);
+  };
+
+  // Main app layout
+  const app = UI.vbox({
+    style: {
+      minHeight: '100vh',
+      background: '#000000',
+      color: '#ffffff',
+      fontFamily: '"Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    }
+  }, [
+    Navigation(),
     
-    UI.footer({
-      class: 'footer',
-      style: {
-        padding: '1rem',
-        background: 'rgba(0, 0, 0, 0.2)',
-        textAlign: 'center',
-        color: 'white'
-      }
-    }, [
-      UI.text({}, 'Rynex - New Syntax with Reactive Getters! 🧘')
-    ])
+    // Router outlet - where pages are rendered
+    UI.RouterOutlet(router)
   ]);
+
+  // Add active link styles
+  const style = document.createElement('style');
+  style.textContent = `
+    .nav-link:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .nav-link.active {
+      background: rgba(0, 255, 136, 0.2) !important;
+      color: #00ff88 !important;
+      font-weight: 600;
+    }
+  `;
+  document.head.appendChild(style);
+
+  return app;
 }

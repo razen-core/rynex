@@ -1,5 +1,5 @@
-import * as UI from '../../../../dist/runtime/index.js';
-import { state, Link } from '../../../../dist/runtime/index.js';
+import * as UI from 'rynex';
+import { state, Link } from 'rynex';
 
 export default function BlogPage() {
   const blogState = state({

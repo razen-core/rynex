@@ -1,5 +1,5 @@
-import * as UI from '../../../../../dist/runtime/index.js';
-import { RouteContext, Link } from '../../../../../dist/runtime/index.js';
+import * as UI from 'rynex';
+import { RouteContext, Link } from 'rynex';
 
 export default function BlogPostPage(ctx: RouteContext) {
   const slug = ctx.params.slug || 'unknown';
