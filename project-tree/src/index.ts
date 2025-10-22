@@ -1,5 +1,5 @@
 import { render } from '../../dist/runtime/index.js';
-import App from './App.js';
+import { TestErrorCases } from './test-errors.js';
 
 // Render app with router
-render(App, document.getElementById('root')!);
+render(TestErrorCases, document.getElementById('root')!);

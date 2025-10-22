@@ -29,6 +29,26 @@ export {
   off
 } from './dom.js';
 
+// Error System
+export {
+  RynexError,
+  ValidationError,
+  DOMError,
+  StateError,
+  ComponentError,
+  RouterError,
+  LifecycleError,
+  ErrorSeverity,
+  ErrorCategory,
+  errorHandler,
+  validators,
+  devValidate,
+  safeExecute,
+  setDevelopmentMode,
+  isDevelopmentMode,
+  assert
+} from './errors.js';
+
 // Renderer
 export { render, createComponent, mountComponent } from './renderer.js';
 export type { ComponentInstance } from './renderer.js';

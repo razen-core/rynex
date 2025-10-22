@@ -28,21 +28,11 @@ importers:
         specifier: ^5.3.0
         version: 5.9.3
 
-  tests:
+  project-tree:
     dependencies:
       rynex:
         specifier: file:..
         version: 'file:'
-    devDependencies:
-      autoprefixer:
-        specifier: ^10.4.21
-        version: 10.4.21(postcss@8.5.6)
-      postcss:
-        specifier: ^8.5.6
-        version: 8.5.6
-      tailwindcss:
-        specifier: ^4.1.15
-        version: 4.1.15
 
 packages:
 

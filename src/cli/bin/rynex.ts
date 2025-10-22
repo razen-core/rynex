@@ -12,6 +12,8 @@ import { startProductionServer } from '../prod-server.js';
 import { loadConfig, validateConfig } from '../config.js';
 import { logger } from '../logger.js';
 import { handleAddCommand } from '../add-command.js';
+import { runTypeCheck } from '../type-checker.js';
+import { runRynexValidation } from '../rynex-validator.js';
 import * as path from 'path';
 
 const args = process.argv.slice(2);
@@ -31,6 +33,23 @@ async function main() {
         process.exit(1);
       }
 
+      // Run Rynex validation FIRST
+      const rynexValid = runRynexValidation(process.cwd());
+      
+      if (!rynexValid) {
+        logger.error('\n❌ Build failed: Fix Rynex validation errors above\n');
+        process.exit(1);
+      }
+
+      // Run type checking
+      const typeCheckResult = runTypeCheck(process.cwd());
+      
+      if (!typeCheckResult.success) {
+        logger.error(`\n❌ Build failed: Found ${typeCheckResult.errorCount} type error(s)`);
+        logger.error('Fix the errors above and try again.\n');
+        process.exit(1);
+      }
+
       await build({
         entry: config.entry,
         output: config.output,
@@ -46,6 +65,22 @@ async function main() {
       const config = await loadConfig();
       if (!validateConfig(config)) {
         process.exit(1);
+      }
+
+      // Run Rynex validation (show warnings in dev mode)
+      const rynexValid = runRynexValidation(process.cwd());
+      
+      if (!rynexValid) {
+        logger.warning('\n⚠️  Found Rynex validation errors');
+        logger.warning('Continuing in development mode, but please fix these errors.\n');
+      }
+
+      // Run type checking (show warnings but don't fail in dev mode)
+      const typeCheckResult = runTypeCheck(process.cwd());
+      
+      if (!typeCheckResult.success) {
+        logger.warning(`\n⚠️  Found ${typeCheckResult.errorCount} type error(s)`);
+        logger.warning('Continuing in development mode, but please fix these errors.\n');
       }
 
       // Build first
