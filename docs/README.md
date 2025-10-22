@@ -1,81 +1,96 @@
 # Rynex Documentation
 
-> **Version:** 0.1.40  
-> **Status:** Production Ready (88% Complete)
+Welcome to the Rynex documentation. This guide will help you get started building web applications with Rynex.
 
-Welcome to the Rynex documentation. This guide will help you get started with building reactive web applications using Rynex.
+## Getting Started
 
-### Quick Links
-- [API Reference](./API_REFERENCE.md) - Complete API documentation
-- [Getting Started Guide](./GETTING_STARTED.md) - Installation and basic usage
-- [Configuration](./CONFIGURATION.md) - Project configuration options
-- [Examples](./EXAMPLES.md) - Code examples and patterns
-- [Routing Guide](./ROUTING_GUIDE.md) - Client-side routing
-- [Tailwind CSS Integration](./TAILWIND_CSS.md) - Styling with Tailwind CSS
+New to Rynex? Start here:
 
-### API Documentation
+1. **[Getting Started](./getting-started.md)** - Learn the core concepts and key features
+2. **[Installation](./installation.md)** - Set up Rynex in your environment
+3. **[Project Creation](./project-creation.md)** - Create your first project with the interactive wizard
 
-**Core & State**
-- [API Reference](./API_REFERENCE.md) - Main API overview with state, computed, effect, render
+## Documentation
 
-**Helper Functions**
-- [Utility Functions](./api/utilities.md) - lazy, suspense, errorBoundary, memo, fragment, when, show, each, switchCase, dynamic, portal, css
-- [Lifecycle Hooks](./api/lifecycle.md) - onMount, onUnmount, onUpdate, watch, watchEffect, onError
-- [Performance Utilities](./api/performance.md) - debounce, throttle, preload, getPreloaded, onIdle, cancelIdle
-- [Refs & DOM Access](./api/refs.md) - ref, useRef, forwardRef, callbackRef, mergeRefs
-- [Style Utilities](./api/styles.md) - styled, classNames, mergeStyles, theme management, CSS variables
+### Helper Functions
 
-**Recently Added (30 Functions)**
-- 4 Utility functions for lazy loading and error handling
-- 6 Lifecycle hooks for component management
-- 6 Performance utilities for optimization
-- 5 Ref utilities for DOM access
-- 10 Style utilities for theming and styling
-- 2 UI components (tabs, accordion)
+Explore all available helper functions organized by category:
 
-### Framework Features
+- **[Helper Functions Overview](./helpers/index.md)** - Complete reference with all categories and functions
+- **[Layout Helpers](./helpers/layout.md)** - Arrange elements with flexbox and grid
+- **[Basic Elements](./helpers/basic-elements.md)** - Core HTML elements
+- **[Typography](./helpers/typography.md)** - Text formatting and semantic elements
+- **[Forms](./helpers/forms.md)** - Form elements and inputs
+- **[Semantic Elements](./helpers/semantic.md)** - HTML5 semantic structure
+- **[Media Elements](./helpers/media.md)** - Audio, video, and images
+- **[Table Elements](./helpers/table.md)** - Data tables
+- **[Components](./helpers/components.md)** - Pre-built UI components
+- **[Utilities](./helpers/utilities.md)** - Conditional rendering and advanced patterns
+- **[Routing](./helpers/routing.md)** - Client-side routing
+- **[Lifecycle Hooks](./helpers/lifecycle.md)** - Component lifecycle management
+- **[Performance](./helpers/performance.md)** - Performance optimization
+- **[Refs](./helpers/refs.md)** - DOM element access
+- **[Styles](./helpers/styles.md)** - Dynamic styling and themes
+- **[Animations](./helpers/animations.md)** - Animations and transitions
+- **[State Management](./helpers/state-management.md)** - Global state and context
+- **[Developer Tools](./helpers/devtools.md)** - Debugging and profiling
 
-**Production Ready**
-- 150+ functions implemented
-- TypeScript support throughout
-- Comprehensive error handling
-- Performance optimized
-- Hot reload support
+## Learning Resources
 
-**Developer Experience**
-- Clean, intuitive API
-- Minimal boilerplate
-- Reactive by default
-- No virtual DOM overhead
+- **[Examples](./examples.md)** - Real-world code examples and patterns
+- **[Best Practices](./best-practices.md)** - Development guidelines and recommendations
+- **[FAQ](./faq.md)** - Frequently asked questions and answers
 
-### Quick Start
+## Quick Links
 
-```bash
-npm install rynex
-# or
-pnpm install rynex
+- [Rynex GitHub Repository](https://github.com/razen-core/rynex)
+- [Report Issues](https://github.com/razen-core/rynex/issues)
+- [Contribute](https://github.com/razen-core/rynex/contributing)
+
+## Documentation Structure
+
+```
+docs/
+├── README.md                    # This file
+├── getting-started.md           # Core concepts
+├── installation.md              # Setup guide
+├── project-creation.md          # Project initialization
+├── examples.md                  # Code examples
+├── best-practices.md            # Tips and recommendations
+├── faq.md                       # Common questions
+└── helpers/
+    ├── index.md                 # Helper functions overview
+    ├── layout.md                # Layout helpers
+    ├── basic-elements.md        # Basic elements
+    ├── typography.md            # Typography
+    ├── forms.md                 # Forms
+    ├── semantic.md              # Semantic elements
+    ├── media.md                 # Media elements
+    ├── table.md                 # Tables
+    ├── components.md            # Components
+    ├── utilities.md             # Utilities
+    ├── routing.md               # Routing
+    ├── lifecycle.md             # Lifecycle hooks
+    ├── performance.md           # Performance
+    ├── refs.md                  # Refs
+    ├── styles.md                # Styles
+    ├── animations.md            # Animations
+    ├── state-management.md      # State management
+    └── devtools.md              # Developer tools
 ```
 
-```typescript
-import { render, state, div, text, button } from 'rynex';
+## Getting Help
 
-function App() {
-  const appState = state({ count: 0 });
+- Read the relevant helper documentation
+- Check the examples section
+- Review best practices
+- Look at the FAQ
+- Open an issue on GitHub
 
-  return div({}, [
-    text(() => `Count: ${appState.count}`),
-    button({ onClick: () => appState.count++ }, 'Increment')
-  ]);
-}
+## What's Next?
 
-render(App, document.getElementById('root'));
-```
+1. Choose a template and create your first project
+2. Explore the helper functions
+3. Build something amazing!
 
-### Resources
-- [GitHub Repository](https://github.com/razen-core/rynex)
-- [NPM Package](https://www.npmjs.com/package/rynex)
-- [Test Suite](../tests/) - Interactive test examples
-
-### Learn More
-
-Start with the [Getting Started](./GETTING_STARTED.md) guide to build your first application.
+Happy coding with Rynex!

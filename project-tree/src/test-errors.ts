@@ -3,15 +3,15 @@
  * This file intentionally contains errors to test validation
  */
 
-import { 
-  div, 
-  h1, 
+import {
+  div,
+  h1,
   h2,
-  button, 
-  vbox, 
-  image, 
+  button,
+  vbox,
+  image,
   link,
-  createElement 
+  createElement
 } from '../../dist/runtime/index.js';
 
 export function TestErrorCases() {
@@ -23,7 +23,13 @@ export function TestErrorCases() {
   
   // This should be caught at build time - empty tag name
   const badElement = createElement('', {}, 'test');
-  
+
+  // Invalid style object type - should be caught by validation
+  const badStyle = div({ style: 'color: red;' as any }, 'Invalid style');
+
+  // Missing children array but passing primitive props intentionally wrong
+  const badChildren = div({} as any, 123 as any);
+
   const container = vbox(
     { style: { padding: '40px', maxWidth: '800px', margin: '0 auto' } },
     
@@ -97,7 +103,23 @@ export function TestErrorCases() {
           image({ alt: 'test' } as any);
         }
       }, '❌ Test 3: Image Without Src'),
-      
+
+      button({
+        style: {
+          padding: '12px 24px',
+          background: '#ff9944',
+          color: 'white',
+          border: 'none',
+          borderRadius: '6px',
+          cursor: 'pointer',
+          fontSize: '16px'
+        },
+        onClick: () => {
+          // Test 4: Invalid style type at runtime
+          createElement('div', { style: 'should be object' } as any, 'Invalid style');
+        }
+      }, '❌ Test 4: Invalid Style Type'),
+
       button({
         style: {
           padding: '12px 24px',
@@ -113,7 +135,23 @@ export function TestErrorCases() {
           link({ class: 'link' } as any, 'Click me');
         }
       }, '❌ Test 4: Link Without Href'),
-      
+
+      button({
+        style: {
+          padding: '12px 24px',
+          background: '#ffbb44',
+          color: 'white',
+          border: 'none',
+          borderRadius: '6px',
+          cursor: 'pointer',
+          fontSize: '16px'
+        },
+        onClick: () => {
+          // Test 5: Invalid children type
+          div({ class: 'test' }, [123, 456] as any);
+        }
+      }, '❌ Test 5: Invalid Children Type'),
+
       button({
         style: {
           padding: '12px 24px',
@@ -125,7 +163,7 @@ export function TestErrorCases() {
           fontSize: '16px'
         },
         onClick: () => {
-          // Test 5: Valid code (should work)
+          // Test 6: Valid code (should work)
           const validDiv = div(
             { class: 'container' },
             h1({}, 'Success!'),
@@ -133,10 +171,25 @@ export function TestErrorCases() {
           );
           alert('✅ Valid code executed successfully!');
         }
-      }, '✅ Test 5: Valid Code (Should Work)')
+      }, '✅ Test 6: Valid Code (Should Work)'),
+
+      button({
+        style: {
+          padding: '12px 24px',
+          background: '#4488ff',
+          color: 'white',
+          border: 'none',
+          borderRadius: '6px',
+          cursor: 'pointer',
+          fontSize: '16px'
+        },
+        onClick: () => {
+          // Test 7: Throw synchronous runtime error
+          throw new Error('Intentional runtime error from Test 7');
+        }
+      }, '❌ Test 7: Runtime Exception')
     )
   );
-  
+
   return container;
 }
-
