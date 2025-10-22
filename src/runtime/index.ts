@@ -61,16 +61,3 @@ export type {
 
 // Types
 export type { DOMProps, DOMChildren, DOMChild } from './dom.js';
-
-// Error System (comprehensive error handling and validation)
-export * from './error-system/index.js';
-export type {
-  ErrorCategory,
-  ErrorSeverity,
-  ErrorContext,
-  ErrorSuggestion,
-  ValidationSchema,
-  ValidationResult,
-  ErrorSystemConfig,
-  Diagnosis
-} from './error-system/types.js';
