@@ -217,3 +217,35 @@ export {
   getCSSVariable,
   setCSSVariable
 } from './styles.js';
+
+// Animation & Transitions
+export {
+  transition,
+  animate,
+  fade,
+  slide,
+  scale,
+  rotate
+} from './animations.js';
+
+// State Management & Context
+export {
+  createStore,
+  useStore,
+  createContext,
+  useContext,
+  provider,
+  getStores,
+  removeStore,
+  clearStores
+} from './context.js';
+
+// Developer Tools
+export {
+  devtools,
+  logger,
+  profiler,
+  log,
+  profile,
+  LogLevel
+} from './devtools.js';

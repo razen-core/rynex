@@ -14,6 +14,9 @@ import RefsTest from './test-refs.js';
 import StylesTest from './test-styles.js';
 import ComponentsTest from './test-components.js';
 import TailwindTest from './test-tailwind.js';
+import AnimationsTest from './test-animations.js';
+import DevToolsTest from './test-devtools.js';
+import StateManagementTest from './test-state-management.js';
 
 function TestRunner() {
   return div({ 
@@ -35,7 +38,7 @@ function TestRunner() {
       }
     }, [
       text({ style: { fontSize: '2.5rem', fontWeight: 'bold', display: 'block', marginBottom: '0.5rem' } }, 'Rynex Test Suite'),
-      text({ style: { fontSize: '1.1rem', color: '#00ff88' } }, '30 New Functions - Comprehensive Testing')
+      text({ style: { fontSize: '1.1rem', color: '#00ff88' } }, '44 New Functions - Comprehensive Testing')
     ]),
 
     // Test Tabs
@@ -69,7 +72,19 @@ function TestRunner() {
           {
             label: 'Tailwind CSS',
             content: TailwindTest()
-          }
+          },
+          {
+            label: 'Animation',
+            content: AnimationsTest()
+          },
+          {
+            label: 'DevTools',
+            content: DevToolsTest()
+          },
+          /* {
+            label: 'State Management',
+            content: StateManagementTest()
+          } */
         ],
         defaultIndex: 6,
         style: { 

@@ -1,6 +1,6 @@
 {
   "name": "rynex",
-  "version": "0.1.40",
+  "version": "0.1.41",
   "description": "A minimalist TypeScript framework for building reactive web applications with no virtual DOM",
   "main": "dist/runtime/index.js",
   "types": "dist/runtime/index.d.ts",
@@ -32,6 +32,7 @@
   },
   "files": [
     "dist",
+    "templates",
     "README.md",
     "LICENSE"
   ],

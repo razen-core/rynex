@@ -56,6 +56,7 @@
     --font-weight-bold: 700;
     --radius-lg: 0.5rem;
     --radius-2xl: 1rem;
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
     --default-transition-duration: 150ms;
     --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     --default-font-family: var(--font-sans);
@@ -585,6 +586,10 @@
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
     transition-duration: var(--tw-duration, var(--default-transition-duration));
   }
+  .ease-in-out {
+    --tw-ease: var(--ease-in-out);
+    transition-timing-function: var(--ease-in-out);
+  }
   .hover\:scale-105 {
     &:hover {
       @media (hover: hover) {
@@ -682,6 +687,7 @@ body {
 @property --tw-ring-offset-color { syntax: "*"; inherits: false; initial-value: #fff; }
 @property --tw-ring-offset-shadow { syntax: "*"; inherits: false; initial-value: 0 0 #0000; }
 @property --tw-outline-style { syntax: "*"; inherits: false; initial-value: solid; }
+@property --tw-ease { syntax: "*"; inherits: false; }
 @property --tw-scale-x { syntax: "*"; inherits: false; initial-value: 1; }
 @property --tw-scale-y { syntax: "*"; inherits: false; initial-value: 1; }
 @property --tw-scale-z { syntax: "*"; inherits: false; initial-value: 1; }
@@ -723,6 +729,7 @@ body {
       --tw-ring-offset-color: #fff;
       --tw-ring-offset-shadow: 0 0 #0000;
       --tw-outline-style: solid;
+      --tw-ease: initial;
       --tw-scale-x: 1;
       --tw-scale-y: 1;
       --tw-scale-z: 1;

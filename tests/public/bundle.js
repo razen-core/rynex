@@ -10,6 +10,12 @@ function debugLog(category, message, data) {
     console.log(`[${timestamp}] [DEBUG:${category}] ${message}`, data || "");
   }
 }
+function debugWarn(category, message, data) {
+  if (debugEnabled) {
+    const timestamp = (/* @__PURE__ */ new Date()).toISOString().split("T")[1].split(".")[0];
+    console.warn(`[${timestamp}] [WARN:${category}] ${message}`, data || "");
+  }
+}
 if (typeof window !== "undefined") {
   const urlParams = new URLSearchParams(window.location.search);
   const hasDebugParam = urlParams.get("debug") === "true";
@@ -304,6 +310,14 @@ function button(props, content) {
 }
 function input(props) {
   return createElement("input", props);
+}
+
+// ../dist/runtime/helpers/typography.js
+function h2(props, ...content) {
+  return createElement("h2", props, ...content);
+}
+function h3(props, ...content) {
+  return createElement("h3", props, ...content);
 }
 
 // ../dist/runtime/helpers/utilities.js
@@ -786,6 +800,505 @@ function mergeStyles(...styles) {
   });
   return merged;
 }
+
+// ../dist/runtime/helpers/animations.js
+function transition(element, config = {}) {
+  if (!element || !(element instanceof HTMLElement)) {
+    debugWarn("Animation", "Invalid element provided to transition");
+    return element;
+  }
+  const { duration = 300, easing = "ease", delay = 0, onStart, onEnd } = config;
+  try {
+    element.style.transition = `all ${duration}ms ${easing} ${delay}ms`;
+    debugLog("Animation", `Transition applied: ${duration}ms ${easing}`);
+    if (onStart) {
+      onStart();
+    }
+    if (onEnd) {
+      element.addEventListener("transitionend", () => onEnd(), { once: true });
+    }
+  } catch (error) {
+    debugWarn("Animation", "Error applying transition:", error);
+  }
+  return element;
+}
+function animate(element, config) {
+  if (!element || !(element instanceof HTMLElement)) {
+    debugWarn("Animation", "Invalid element provided to animate");
+    return null;
+  }
+  const { keyframes, duration = 300, easing = "ease", delay = 0, iterations = 1, direction = "normal", fill = "both", onStart, onEnd } = config;
+  try {
+    if (onStart) {
+      onStart();
+    }
+    const animation = element.animate(keyframes, {
+      duration,
+      easing,
+      delay,
+      iterations,
+      direction,
+      fill
+    });
+    debugLog("Animation", `Animation started: ${duration}ms`);
+    if (onEnd) {
+      animation.onfinish = () => onEnd();
+    }
+    return animation;
+  } catch (error) {
+    debugWarn("Animation", "Error creating animation:", error);
+    return null;
+  }
+}
+function fade(element, direction = "in", config = {}) {
+  if (!element || !(element instanceof HTMLElement)) {
+    debugWarn("Animation", "Invalid element provided to fade");
+    return null;
+  }
+  const { duration = 300, easing = "ease", delay = 0, onStart, onEnd } = config;
+  const currentOpacity = window.getComputedStyle(element).opacity;
+  let keyframes;
+  if (direction === "toggle") {
+    direction = parseFloat(currentOpacity) > 0.5 ? "out" : "in";
+  }
+  if (direction === "in") {
+    keyframes = [
+      { opacity: 0 },
+      { opacity: 1 }
+    ];
+  } else {
+    keyframes = [
+      { opacity: 1 },
+      { opacity: 0 }
+    ];
+  }
+  return animate(element, {
+    keyframes,
+    duration,
+    easing,
+    delay,
+    onStart,
+    onEnd
+  });
+}
+function slide(element, direction = "down", config = {}) {
+  if (!element || !(element instanceof HTMLElement)) {
+    debugWarn("Animation", "Invalid element provided to slide");
+    return null;
+  }
+  const { duration = 300, easing = "ease", delay = 0, onStart, onEnd } = config;
+  let keyframes;
+  switch (direction) {
+    case "up":
+      keyframes = [
+        { transform: "translateY(100%)", opacity: 0 },
+        { transform: "translateY(0)", opacity: 1 }
+      ];
+      break;
+    case "down":
+      keyframes = [
+        { transform: "translateY(-100%)", opacity: 0 },
+        { transform: "translateY(0)", opacity: 1 }
+      ];
+      break;
+    case "left":
+      keyframes = [
+        { transform: "translateX(100%)", opacity: 0 },
+        { transform: "translateX(0)", opacity: 1 }
+      ];
+      break;
+    case "right":
+      keyframes = [
+        { transform: "translateX(-100%)", opacity: 0 },
+        { transform: "translateX(0)", opacity: 1 }
+      ];
+      break;
+  }
+  return animate(element, {
+    keyframes,
+    duration,
+    easing,
+    delay,
+    onStart,
+    onEnd
+  });
+}
+function scale(element, direction = "in", config = {}) {
+  if (!element || !(element instanceof HTMLElement)) {
+    debugWarn("Animation", "Invalid element provided to scale");
+    return null;
+  }
+  const { duration = 300, easing = "ease", delay = 0, onStart, onEnd } = config;
+  const currentTransform = window.getComputedStyle(element).transform;
+  let keyframes;
+  if (direction === "toggle") {
+    direction = currentTransform !== "none" && currentTransform.includes("scale") ? "out" : "in";
+  }
+  if (direction === "in") {
+    keyframes = [
+      { transform: "scale(0)", opacity: 0 },
+      { transform: "scale(1)", opacity: 1 }
+    ];
+  } else {
+    keyframes = [
+      { transform: "scale(1)", opacity: 1 },
+      { transform: "scale(0)", opacity: 0 }
+    ];
+  }
+  return animate(element, {
+    keyframes,
+    duration,
+    easing,
+    delay,
+    onStart,
+    onEnd
+  });
+}
+function rotate(element, degrees = 360, config = {}) {
+  if (!element || !(element instanceof HTMLElement)) {
+    debugWarn("Animation", "Invalid element provided to rotate");
+    return null;
+  }
+  const { duration = 300, easing = "ease", delay = 0, onStart, onEnd } = config;
+  const keyframes = [
+    { transform: "rotate(0deg)" },
+    { transform: `rotate(${degrees}deg)` }
+  ];
+  return animate(element, {
+    keyframes,
+    duration,
+    easing,
+    delay,
+    onStart,
+    onEnd
+  });
+}
+
+// ../dist/runtime/helpers/devtools.js
+var LogLevel;
+(function(LogLevel2) {
+  LogLevel2[LogLevel2["DEBUG"] = 0] = "DEBUG";
+  LogLevel2[LogLevel2["INFO"] = 1] = "INFO";
+  LogLevel2[LogLevel2["WARN"] = 2] = "WARN";
+  LogLevel2[LogLevel2["ERROR"] = 3] = "ERROR";
+  LogLevel2[LogLevel2["NONE"] = 4] = "NONE";
+})(LogLevel || (LogLevel = {}));
+var Logger = class {
+  constructor(config = {}) {
+    this.logs = [];
+    this.config = {
+      level: LogLevel.INFO,
+      prefix: "[Rynex]",
+      timestamp: true,
+      colors: true,
+      ...config
+    };
+  }
+  shouldLog(level) {
+    return level >= this.config.level;
+  }
+  formatMessage(level, message, data) {
+    const parts = [];
+    if (this.config.prefix) {
+      parts.push(this.config.prefix);
+    }
+    if (this.config.timestamp) {
+      parts.push(`[${(/* @__PURE__ */ new Date()).toISOString()}]`);
+    }
+    parts.push(`[${level}]`);
+    parts.push(message);
+    return parts.join(" ");
+  }
+  logToConsole(level, message, data, color) {
+    try {
+      const formatted = this.formatMessage(level, message, data);
+      if (this.config.colors && color) {
+        console.log(`%c${formatted}`, `color: ${color}`, data || "");
+      } else {
+        console.log(formatted, data || "");
+      }
+    } catch (error) {
+      console.error("Logger error:", error);
+    }
+  }
+  debug(message, data) {
+    if (!message)
+      return;
+    if (this.shouldLog(LogLevel.DEBUG)) {
+      this.logToConsole("DEBUG", message, data, "#888");
+      this.logs.push({ level: "DEBUG", message, timestamp: Date.now(), data });
+    }
+  }
+  info(message, data) {
+    if (!message)
+      return;
+    if (this.shouldLog(LogLevel.INFO)) {
+      this.logToConsole("INFO", message, data, "#2196F3");
+      this.logs.push({ level: "INFO", message, timestamp: Date.now(), data });
+    }
+  }
+  warn(message, data) {
+    if (!message)
+      return;
+    if (this.shouldLog(LogLevel.WARN)) {
+      this.logToConsole("WARN", message, data, "#FF9800");
+      this.logs.push({ level: "WARN", message, timestamp: Date.now(), data });
+    }
+  }
+  error(message, data) {
+    if (!message)
+      return;
+    if (this.shouldLog(LogLevel.ERROR)) {
+      this.logToConsole("ERROR", message, data, "#F44336");
+      this.logs.push({ level: "ERROR", message, timestamp: Date.now(), data });
+    }
+  }
+  getLogs() {
+    return [...this.logs];
+  }
+  clearLogs() {
+    this.logs = [];
+  }
+  setLevel(level) {
+    this.config.level = level;
+  }
+};
+var globalLogger = null;
+function logger(config) {
+  if (!globalLogger || config) {
+    globalLogger = new Logger(config);
+  }
+  return globalLogger;
+}
+var Profiler = class {
+  constructor() {
+    this.profiles = /* @__PURE__ */ new Map();
+    this.completed = [];
+  }
+  start(name, metadata) {
+    if (!name || typeof name !== "string") {
+      console.warn("Profile name must be a non-empty string");
+      return;
+    }
+    if (this.profiles.has(name)) {
+      console.warn(`Profile "${name}" is already running`);
+      return;
+    }
+    try {
+      const entry = {
+        name,
+        startTime: performance.now(),
+        metadata
+      };
+      this.profiles.set(name, entry);
+      if (globalLogger) {
+        globalLogger.debug(`Profile started: ${name}`, metadata);
+      }
+    } catch (error) {
+      console.error("Error starting profile:", error);
+    }
+  }
+  end(name) {
+    if (!name || typeof name !== "string") {
+      console.warn("Profile name must be a non-empty string");
+      return void 0;
+    }
+    const entry = this.profiles.get(name);
+    if (!entry) {
+      console.warn(`Profile "${name}" not found`);
+      return void 0;
+    }
+    try {
+      entry.endTime = performance.now();
+      entry.duration = entry.endTime - entry.startTime;
+      this.completed.push(entry);
+      this.profiles.delete(name);
+      if (globalLogger) {
+        globalLogger.debug(`Profile ended: ${name}`, {
+          duration: `${entry.duration.toFixed(2)}ms`,
+          ...entry.metadata
+        });
+      }
+      return entry.duration;
+    } catch (error) {
+      console.error("Error ending profile:", error);
+      return void 0;
+    }
+  }
+  measure(name, fn, metadata) {
+    if (!name || typeof name !== "string") {
+      console.warn("Profile name must be a non-empty string");
+      return void 0;
+    }
+    if (typeof fn !== "function") {
+      console.warn("Second argument must be a function");
+      return void 0;
+    }
+    this.start(name, metadata);
+    try {
+      const result = fn();
+      this.end(name);
+      return result;
+    } catch (error) {
+      this.end(name);
+      console.error(`Error in measured function "${name}":`, error);
+      throw error;
+    }
+  }
+  async measureAsync(name, fn, metadata) {
+    if (!name || typeof name !== "string") {
+      console.warn("Profile name must be a non-empty string");
+      return void 0;
+    }
+    if (typeof fn !== "function") {
+      console.warn("Second argument must be a function");
+      return void 0;
+    }
+    this.start(name, metadata);
+    try {
+      const result = await fn();
+      this.end(name);
+      return result;
+    } catch (error) {
+      this.end(name);
+      console.error(`Error in async measured function "${name}":`, error);
+      throw error;
+    }
+  }
+  getProfile(name) {
+    return this.completed.find((p2) => p2.name === name);
+  }
+  getAllProfiles() {
+    return [...this.completed];
+  }
+  getAverageDuration(name) {
+    const profiles = this.completed.filter((p2) => p2.name === name);
+    if (profiles.length === 0)
+      return 0;
+    const total = profiles.reduce((sum, p2) => sum + (p2.duration || 0), 0);
+    return total / profiles.length;
+  }
+  clear() {
+    this.profiles.clear();
+    this.completed = [];
+  }
+  report() {
+    const report = {
+      active: Array.from(this.profiles.values()),
+      completed: this.completed,
+      summary: this.getSummary()
+    };
+    console.table(report.completed);
+    return report;
+  }
+  getSummary() {
+    const names = new Set(this.completed.map((p2) => p2.name));
+    const summary2 = {};
+    names.forEach((name) => {
+      const profiles = this.completed.filter((p2) => p2.name === name);
+      const durations = profiles.map((p2) => p2.duration || 0);
+      summary2[name] = {
+        count: profiles.length,
+        total: durations.reduce((a, b) => a + b, 0).toFixed(2) + "ms",
+        average: (durations.reduce((a, b) => a + b, 0) / profiles.length).toFixed(2) + "ms",
+        min: Math.min(...durations).toFixed(2) + "ms",
+        max: Math.max(...durations).toFixed(2) + "ms"
+      };
+    });
+    return summary2;
+  }
+};
+var globalProfiler = null;
+function profiler() {
+  if (!globalProfiler) {
+    globalProfiler = new Profiler();
+  }
+  return globalProfiler;
+}
+var DevTools = class {
+  constructor(config = {}) {
+    this.config = {
+      enabled: true,
+      ...config
+    };
+    this.logger = config.logger || logger();
+    this.profiler = config.profiler || profiler();
+    if (this.config.enabled) {
+      this.attachToWindow();
+    }
+  }
+  attachToWindow() {
+    if (typeof window !== "undefined") {
+      window.__RYNEX_DEVTOOLS__ = {
+        logger: this.logger,
+        profiler: this.profiler,
+        version: "0.1.40",
+        inspect: this.inspect.bind(this),
+        getState: this.getState.bind(this)
+      };
+      this.logger.info("DevTools attached to window.__RYNEX_DEVTOOLS__");
+    }
+  }
+  inspect(element) {
+    if (!element || !(element instanceof HTMLElement)) {
+      this.logger.warn("Invalid element provided to inspect");
+      return null;
+    }
+    try {
+      const info = {
+        tagName: element.tagName,
+        id: element.id,
+        className: element.className,
+        attributes: Array.from(element.attributes).map((attr) => ({
+          name: attr.name,
+          value: attr.value
+        })),
+        children: element.children.length,
+        dataset: { ...element.dataset }
+      };
+      console.log("Element Inspector:", info);
+      return info;
+    } catch (error) {
+      this.logger.error("Error inspecting element:", error);
+      return null;
+    }
+  }
+  getState() {
+    return {
+      message: "State inspection not yet implemented"
+    };
+  }
+  enable() {
+    this.config.enabled = true;
+    this.attachToWindow();
+  }
+  disable() {
+    this.config.enabled = false;
+    if (typeof window !== "undefined") {
+      delete window.__RYNEX_DEVTOOLS__;
+    }
+  }
+};
+var globalDevTools = null;
+function devtools(config) {
+  if (!globalDevTools || config) {
+    globalDevTools = new DevTools(config);
+  }
+  return globalDevTools;
+}
+var log = {
+  debug: (msg, data) => logger().debug(msg, data),
+  info: (msg, data) => logger().info(msg, data),
+  warn: (msg, data) => logger().warn(msg, data),
+  error: (msg, data) => logger().error(msg, data)
+};
+var profile = {
+  start: (name, metadata) => profiler().start(name, metadata),
+  end: (name) => profiler().end(name),
+  measure: (name, fn, metadata) => profiler().measure(name, fn, metadata),
+  measureAsync: (name, fn, metadata) => profiler().measureAsync(name, fn, metadata),
+  report: () => profiler().report()
+};
 
 // test-utilities.ts
 function UtilitiesTest() {
@@ -1574,6 +2087,1034 @@ function TailwindTest() {
   ]);
 }
 
+// test-animations.ts
+function AnimationsTest() {
+  const testState = state({
+    status: "Ready to test animations",
+    lastAnimation: "None",
+    animationCount: 0
+  });
+  function createTestBox(label2) {
+    return div({
+      class: "test-box",
+      style: {
+        padding: "2rem",
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        color: "#fff",
+        borderRadius: "12px",
+        textAlign: "center",
+        fontSize: "1.2rem",
+        fontWeight: "bold",
+        boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+        margin: "1rem 0",
+        minHeight: "100px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center"
+      }
+    }, text(label2));
+  }
+  function testTransition() {
+    const box = createTestBox("Transition Test Box");
+    const applyTransition = () => {
+      transition(box, {
+        duration: 500,
+        easing: "ease-in-out",
+        onStart: () => {
+          testState.status = "Transition started...";
+          testState.lastAnimation = "transition";
+        },
+        onEnd: () => {
+          testState.status = "Transition completed!";
+          testState.animationCount++;
+        }
+      });
+      box.style.transform = box.style.transform === "scale(1.1)" ? "scale(1)" : "scale(1.1)";
+      box.style.background = box.style.background.includes("667eea") ? "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
+    };
+    return vbox({ style: { gap: "1rem" } }, [
+      h3({}, "1. Transition Test"),
+      text({ style: { color: "#666" } }, "Apply CSS transitions to elements"),
+      box,
+      button({
+        onclick: applyTransition,
+        style: {
+          padding: "0.75rem 1.5rem",
+          background: "#667eea",
+          color: "#fff",
+          border: "none",
+          borderRadius: "8px",
+          cursor: "pointer",
+          fontSize: "1rem",
+          fontWeight: "600"
+        }
+      }, "Apply Transition")
+    ]);
+  }
+  function testFade() {
+    const box = createTestBox("Fade Animation Box");
+    const fadeIn = () => {
+      testState.status = "Fading in...";
+      testState.lastAnimation = "fade in";
+      fade(box, "in", {
+        duration: 600,
+        onEnd: () => {
+          testState.status = "Fade in complete!";
+          testState.animationCount++;
+        }
+      });
+    };
+    const fadeOut = () => {
+      testState.status = "Fading out...";
+      testState.lastAnimation = "fade out";
+      fade(box, "out", {
+        duration: 600,
+        onEnd: () => {
+          testState.status = "Fade out complete!";
+          testState.animationCount++;
+        }
+      });
+    };
+    const fadeToggle = () => {
+      testState.status = "Toggling fade...";
+      testState.lastAnimation = "fade toggle";
+      fade(box, "toggle", {
+        duration: 600,
+        onEnd: () => {
+          testState.status = "Fade toggle complete!";
+          testState.animationCount++;
+        }
+      });
+    };
+    return vbox({ style: { gap: "1rem" } }, [
+      h3({}, text("2. Fade Animation Test")),
+      text({ style: { color: "#666" } }, "Fade in, out, and toggle"),
+      box,
+      hbox({ style: { gap: "0.5rem", flexWrap: "wrap" } }, [
+        button({
+          onclick: fadeIn,
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#10b981",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "Fade In"),
+        button({
+          onclick: fadeOut,
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#ef4444",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "Fade Out"),
+        button({
+          onclick: fadeToggle,
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#8b5cf6",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "Toggle")
+      ])
+    ]);
+  }
+  function testSlide() {
+    const box = createTestBox("Slide Animation Box");
+    const slideDirection = (dir) => {
+      testState.status = `Sliding ${dir}...`;
+      testState.lastAnimation = `slide ${dir}`;
+      slide(box, dir, {
+        duration: 500,
+        onEnd: () => {
+          testState.status = `Slide ${dir} complete!`;
+          testState.animationCount++;
+        }
+      });
+    };
+    return vbox({ style: { gap: "1rem" } }, [
+      h3({}, text("3. Slide Animation Test")),
+      text({ style: { color: "#666" } }, "Slide from different directions"),
+      box,
+      hbox({ style: { gap: "0.5rem", flexWrap: "wrap" } }, [
+        button({
+          onclick: () => slideDirection("up"),
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#3b82f6",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "\u2191 Up"),
+        button({
+          onclick: () => slideDirection("down"),
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#3b82f6",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "\u2193 Down"),
+        button({
+          onclick: () => slideDirection("left"),
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#3b82f6",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "\u2190 Left"),
+        button({
+          onclick: () => slideDirection("right"),
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#3b82f6",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "\u2192 Right")
+      ])
+    ]);
+  }
+  function testScale() {
+    const box = createTestBox("Scale Animation Box");
+    const scaleIn = () => {
+      testState.status = "Scaling in...";
+      testState.lastAnimation = "scale in";
+      scale(box, "in", {
+        duration: 500,
+        onEnd: () => {
+          testState.status = "Scale in complete!";
+          testState.animationCount++;
+        }
+      });
+    };
+    const scaleOut = () => {
+      testState.status = "Scaling out...";
+      testState.lastAnimation = "scale out";
+      scale(box, "out", {
+        duration: 500,
+        onEnd: () => {
+          testState.status = "Scale out complete!";
+          testState.animationCount++;
+        }
+      });
+    };
+    const scaleToggle = () => {
+      testState.status = "Toggling scale...";
+      testState.lastAnimation = "scale toggle";
+      scale(box, "toggle", {
+        duration: 500,
+        onEnd: () => {
+          testState.status = "Scale toggle complete!";
+          testState.animationCount++;
+        }
+      });
+    };
+    return vbox({ style: { gap: "1rem" } }, [
+      h3({}, text("4. Scale Animation Test")),
+      text({ style: { color: "#666" } }, "Scale in, out, and toggle"),
+      box,
+      hbox({ style: { gap: "0.5rem", flexWrap: "wrap" } }, [
+        button({
+          onclick: scaleIn,
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#f59e0b",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "Scale In"),
+        button({
+          onclick: scaleOut,
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#f59e0b",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "Scale Out"),
+        button({
+          onclick: scaleToggle,
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#f59e0b",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "Toggle")
+      ])
+    ]);
+  }
+  function testRotate() {
+    const box = createTestBox("Rotate Animation Box");
+    const rotate360 = () => {
+      testState.status = "Rotating 360\xB0...";
+      testState.lastAnimation = "rotate 360";
+      rotate(box, 360, {
+        duration: 1e3,
+        onEnd: () => {
+          testState.status = "Rotation complete!";
+          testState.animationCount++;
+        }
+      });
+    };
+    const rotate180 = () => {
+      testState.status = "Rotating 180\xB0...";
+      testState.lastAnimation = "rotate 180";
+      rotate(box, 180, {
+        duration: 500,
+        onEnd: () => {
+          testState.status = "Rotation complete!";
+          testState.animationCount++;
+        }
+      });
+    };
+    const rotateNegative = () => {
+      testState.status = "Rotating -360\xB0...";
+      testState.lastAnimation = "rotate -360";
+      rotate(box, -360, {
+        duration: 1e3,
+        onEnd: () => {
+          testState.status = "Rotation complete!";
+          testState.animationCount++;
+        }
+      });
+    };
+    return vbox({ style: { gap: "1rem" } }, [
+      h3({}, text("5. Rotate Animation Test")),
+      text({ style: { color: "#666" } }, "Rotate by different degrees"),
+      box,
+      hbox({ style: { gap: "0.5rem", flexWrap: "wrap" } }, [
+        button({
+          onclick: rotate360,
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#ec4899",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "360\xB0"),
+        button({
+          onclick: rotate180,
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#ec4899",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "180\xB0"),
+        button({
+          onclick: rotateNegative,
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#ec4899",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "-360\xB0")
+      ])
+    ]);
+  }
+  function testCustomAnimation() {
+    const box = createTestBox("Custom Animation Box");
+    const customAnim = () => {
+      testState.status = "Running custom animation...";
+      testState.lastAnimation = "custom keyframes";
+      animate(box, {
+        keyframes: [
+          { transform: "translateX(0) rotate(0deg)", background: "#667eea" },
+          { transform: "translateX(50px) rotate(180deg)", background: "#f093fb" },
+          { transform: "translateX(0) rotate(360deg)", background: "#667eea" }
+        ],
+        duration: 1500,
+        easing: "ease-in-out",
+        onEnd: () => {
+          testState.status = "Custom animation complete!";
+          testState.animationCount++;
+        }
+      });
+    };
+    return vbox({ style: { gap: "1rem" } }, [
+      h3({}, text("6. Custom Animation Test")),
+      text({ style: { color: "#666" } }, "Complex keyframe animation"),
+      box,
+      button({
+        onclick: customAnim,
+        style: {
+          padding: "0.75rem 1.5rem",
+          background: "#06b6d4",
+          color: "#fff",
+          border: "none",
+          borderRadius: "8px",
+          cursor: "pointer",
+          fontSize: "1rem",
+          fontWeight: "600"
+        }
+      }, "Run Custom Animation")
+    ]);
+  }
+  const statusDisplay = div({
+    style: {
+      position: "sticky",
+      top: "0",
+      background: "#000",
+      color: "#00ff88",
+      padding: "1rem",
+      borderRadius: "8px",
+      marginBottom: "2rem",
+      boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+      zIndex: "100"
+    }
+  }, [
+    div({ style: { marginBottom: "0.5rem" } }, [
+      text({ style: { fontWeight: "bold", color: "#fff" } }, "Status: "),
+      text(() => testState.status)
+    ]),
+    div({ style: { marginBottom: "0.5rem" } }, [
+      text({ style: { fontWeight: "bold", color: "#fff" } }, "Last Animation: "),
+      text(() => testState.lastAnimation)
+    ]),
+    div({}, [
+      text({ style: { fontWeight: "bold", color: "#fff" } }, "Animations Run: "),
+      text(() => String(testState.animationCount))
+    ])
+  ]);
+  return div({
+    style: {
+      padding: "2rem",
+      maxWidth: "1000px",
+      margin: "0 auto"
+    }
+  }, [
+    h2({ style: { marginBottom: "1rem", color: "#000" } }, text("Animation & Transitions Test Suite")),
+    text({
+      style: {
+        color: "#666",
+        marginBottom: "2rem",
+        display: "block",
+        fontSize: "1.1rem"
+      }
+    }, "Testing 6 animation functions: transition, animate, fade, slide, scale, rotate"),
+    statusDisplay,
+    vbox({ style: { gap: "3rem" } }, [
+      testTransition(),
+      testFade(),
+      testSlide(),
+      testScale(),
+      testRotate(),
+      testCustomAnimation()
+    ])
+  ]);
+}
+
+// test-devtools.ts
+function DevToolsTest() {
+  const testState = state({
+    status: "Ready to test developer tools",
+    logCount: 0,
+    profileCount: 0,
+    lastLogLevel: "None",
+    lastProfileDuration: 0
+  });
+  const appLogger = logger({
+    level: LogLevel.DEBUG,
+    prefix: "[TestApp]",
+    timestamp: true,
+    colors: true
+  });
+  const appProfiler = profiler();
+  const tools = devtools({ enabled: true });
+  function testLogger() {
+    const logOutput = state({
+      logs: []
+    });
+    const addLog = (level, message) => {
+      logOutput.logs = [...logOutput.logs, `[${level}] ${message}`];
+      if (logOutput.logs.length > 10) {
+        logOutput.logs = logOutput.logs.slice(-10);
+      }
+    };
+    return vbox({ style: { gap: "1rem" } }, [
+      h3({}, "1. Logger Test"),
+      text({ style: { color: "#666" } }, "Test different log levels and structured logging"),
+      div({
+        style: {
+          padding: "1.5rem",
+          background: "#1f2937",
+          color: "#00ff88",
+          borderRadius: "12px",
+          fontFamily: "monospace",
+          fontSize: "0.9rem",
+          maxHeight: "200px",
+          overflowY: "auto"
+        }
+      }, [
+        (() => {
+          if (logOutput.logs.length === 0) {
+            return div({}, text("No logs yet..."));
+          }
+          return vbox(
+            { style: { gap: "0.25rem" } },
+            logOutput.logs.map(
+              (logMsg) => div({}, text(logMsg))
+            )
+          );
+        })()
+      ]),
+      hbox({ style: { gap: "0.5rem", flexWrap: "wrap" } }, [
+        button({
+          onclick: () => {
+            log.debug("Debug message", { timestamp: Date.now() });
+            appLogger.debug("This is a debug message");
+            addLog("DEBUG", "Debug message logged");
+            testState.lastLogLevel = "DEBUG";
+            testState.logCount++;
+            testState.status = "Debug log created";
+          },
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#6b7280",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "Debug"),
+        button({
+          onclick: () => {
+            log.info("Info message", { status: "ok" });
+            appLogger.info("This is an info message");
+            addLog("INFO", "Info message logged");
+            testState.lastLogLevel = "INFO";
+            testState.logCount++;
+            testState.status = "Info log created";
+          },
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#3b82f6",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "Info"),
+        button({
+          onclick: () => {
+            log.warn("Warning message", { level: "medium" });
+            appLogger.warn("This is a warning message");
+            addLog("WARN", "Warning message logged");
+            testState.lastLogLevel = "WARN";
+            testState.logCount++;
+            testState.status = "Warning log created";
+          },
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#f59e0b",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "Warn"),
+        button({
+          onclick: () => {
+            log.error("Error message", { code: 500 });
+            appLogger.error("This is an error message");
+            addLog("ERROR", "Error message logged");
+            testState.lastLogLevel = "ERROR";
+            testState.logCount++;
+            testState.status = "Error log created";
+          },
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#ef4444",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "Error"),
+        button({
+          onclick: () => {
+            logOutput.logs = [];
+            testState.status = "Logs cleared";
+          },
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#8b5cf6",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "Clear")
+      ])
+    ]);
+  }
+  function testProfiler() {
+    const profileResults = state({
+      results: []
+    });
+    const runHeavyTask = (iterations) => {
+      let sum = 0;
+      for (let i = 0; i < iterations; i++) {
+        sum += Math.sqrt(i) * Math.random();
+      }
+      return sum;
+    };
+    return vbox({ style: { gap: "1rem" } }, [
+      h3({}, "2. Profiler Test"),
+      text({ style: { color: "#666" } }, "Measure performance of operations"),
+      div({
+        style: {
+          padding: "1.5rem",
+          background: "#f3f4f6",
+          borderRadius: "12px"
+        }
+      }, [
+        div({ style: { marginBottom: "1rem" } }, [
+          text({ style: { fontWeight: "bold", color: "#000" } }, "Last Duration: "),
+          text(() => `${testState.lastProfileDuration.toFixed(2)}ms`)
+        ]),
+        div({
+          style: {
+            background: "#fff",
+            padding: "1rem",
+            borderRadius: "8px",
+            maxHeight: "150px",
+            overflowY: "auto"
+          }
+        }, [
+          (() => {
+            if (profileResults.results.length === 0) {
+              return div({}, text("No profiles yet..."));
+            }
+            return vbox(
+              { style: { gap: "0.5rem" } },
+              profileResults.results.map(
+                (result) => div({ style: { display: "flex", justifyContent: "space-between" } }, [
+                  text({ style: { fontWeight: "600", color: "#667eea" } }, result.name),
+                  text({ style: { color: "#10b981" } }, result.duration)
+                ])
+              )
+            );
+          })()
+        ])
+      ]),
+      hbox({ style: { gap: "0.5rem", flexWrap: "wrap" } }, [
+        button({
+          onclick: () => {
+            profile.start("light-task");
+            runHeavyTask(1e4);
+            const duration = profile.end("light-task") || 0;
+            testState.lastProfileDuration = duration;
+            profileResults.results = [...profileResults.results, {
+              name: "Light Task (10k)",
+              duration: `${duration.toFixed(2)}ms`
+            }];
+            testState.profileCount++;
+            testState.status = `Light task: ${duration.toFixed(2)}ms`;
+          },
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#10b981",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "Light Task"),
+        button({
+          onclick: () => {
+            profile.start("medium-task");
+            runHeavyTask(1e5);
+            const duration = profile.end("medium-task") || 0;
+            testState.lastProfileDuration = duration;
+            profileResults.results = [...profileResults.results, {
+              name: "Medium Task (100k)",
+              duration: `${duration.toFixed(2)}ms`
+            }];
+            testState.profileCount++;
+            testState.status = `Medium task: ${duration.toFixed(2)}ms`;
+          },
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#f59e0b",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "Medium Task"),
+        button({
+          onclick: () => {
+            profile.start("heavy-task");
+            runHeavyTask(1e6);
+            const duration = profile.end("heavy-task") || 0;
+            testState.lastProfileDuration = duration;
+            profileResults.results = [...profileResults.results, {
+              name: "Heavy Task (1M)",
+              duration: `${duration.toFixed(2)}ms`
+            }];
+            testState.profileCount++;
+            testState.status = `Heavy task: ${duration.toFixed(2)}ms`;
+          },
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#ef4444",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "Heavy Task"),
+        button({
+          onclick: () => {
+            const report = profile.report();
+            console.log("Profile Report:", report);
+            testState.status = "Report generated (check console)";
+          },
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#8b5cf6",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "Show Report"),
+        button({
+          onclick: () => {
+            profileResults.results = [];
+            testState.status = "Profile results cleared";
+          },
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#6b7280",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "Clear")
+      ])
+    ]);
+  }
+  function testMeasure() {
+    const measureResults = state({
+      syncResult: 0,
+      asyncResult: "",
+      syncDuration: 0,
+      asyncDuration: 0
+    });
+    const syncTask = () => {
+      let sum = 0;
+      for (let i = 0; i < 5e5; i++) {
+        sum += i;
+      }
+      return sum;
+    };
+    const asyncTask = async () => {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      return "Async task completed!";
+    };
+    return vbox({ style: { gap: "1rem" } }, [
+      h3({}, "3. Measure Function Test"),
+      text({ style: { color: "#666" } }, "Measure synchronous and asynchronous functions"),
+      div({
+        style: {
+          padding: "1.5rem",
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          color: "#fff",
+          borderRadius: "12px"
+        }
+      }, [
+        div({ style: { marginBottom: "0.5rem" } }, [
+          text({ style: { fontWeight: "bold" } }, "Sync Result: "),
+          text(() => String(measureResults.syncResult))
+        ]),
+        div({ style: { marginBottom: "0.5rem" } }, [
+          text({ style: { fontWeight: "bold" } }, "Sync Duration: "),
+          text(() => `${measureResults.syncDuration.toFixed(2)}ms`)
+        ]),
+        div({ style: { marginBottom: "0.5rem" } }, [
+          text({ style: { fontWeight: "bold" } }, "Async Result: "),
+          text(() => measureResults.asyncResult || "Not run yet")
+        ]),
+        div({}, [
+          text({ style: { fontWeight: "bold" } }, "Async Duration: "),
+          text(() => `${measureResults.asyncDuration.toFixed(2)}ms`)
+        ])
+      ]),
+      hbox({ style: { gap: "0.5rem", flexWrap: "wrap" } }, [
+        button({
+          onclick: () => {
+            const result = profile.measure("sync-measure", syncTask);
+            const duration = appProfiler.getProfile("sync-measure")?.duration || 0;
+            measureResults.syncResult = result;
+            measureResults.syncDuration = duration;
+            testState.status = `Sync measured: ${duration.toFixed(2)}ms`;
+            testState.profileCount++;
+          },
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#3b82f6",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "Measure Sync"),
+        button({
+          onclick: async () => {
+            testState.status = "Running async task...";
+            const result = await profile.measureAsync("async-measure", asyncTask);
+            const duration = appProfiler.getProfile("async-measure")?.duration || 0;
+            measureResults.asyncResult = result;
+            measureResults.asyncDuration = duration;
+            testState.status = `Async measured: ${duration.toFixed(2)}ms`;
+            testState.profileCount++;
+          },
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#10b981",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "Measure Async")
+      ])
+    ]);
+  }
+  function testDevToolsIntegration() {
+    const devtoolsState = state({
+      attached: typeof window !== "undefined" && !!window.__RYNEX_DEVTOOLS__,
+      version: "0.1.41"
+    });
+    return vbox({ style: { gap: "1rem" } }, [
+      h3({}, "4. DevTools Integration Test"),
+      text({ style: { color: "#666" } }, "Test browser console integration"),
+      div({
+        style: {
+          padding: "1.5rem",
+          background: "#000",
+          color: "#00ff88",
+          borderRadius: "12px",
+          fontFamily: "monospace"
+        }
+      }, [
+        div({ style: { marginBottom: "0.5rem" } }, [
+          text({ style: { color: "#fff" } }, "> window.__RYNEX_DEVTOOLS__")
+        ]),
+        div({ style: { marginBottom: "0.5rem" } }, [
+          text({ style: { color: "#666" } }, "  Attached: "),
+          text(() => devtoolsState.attached ? "Yes \u2713" : "No \u2717")
+        ]),
+        div({ style: { marginBottom: "0.5rem" } }, [
+          text({ style: { color: "#666" } }, "  Version: "),
+          text(() => devtoolsState.version)
+        ]),
+        div({}, [
+          text({ style: { color: "#666" } }, "  Available: logger, profiler, inspect, getState")
+        ])
+      ]),
+      hbox({ style: { gap: "0.5rem", flexWrap: "wrap" } }, [
+        button({
+          onclick: () => {
+            if (window.__RYNEX_DEVTOOLS__) {
+              window.__RYNEX_DEVTOOLS__.logger.info("DevTools test from UI");
+              testState.status = "DevTools logger called (check console)";
+            } else {
+              testState.status = "DevTools not attached";
+            }
+          },
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#3b82f6",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "Test Logger"),
+        button({
+          onclick: () => {
+            if (window.__RYNEX_DEVTOOLS__) {
+              const report = window.__RYNEX_DEVTOOLS__.profiler.report();
+              console.log("DevTools Profiler Report:", report);
+              testState.status = "Profiler report shown (check console)";
+            } else {
+              testState.status = "DevTools not attached";
+            }
+          },
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#10b981",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "Test Profiler"),
+        button({
+          onclick: () => {
+            console.log("Open browser console and type: window.__RYNEX_DEVTOOLS__");
+            testState.status = "Check browser console for DevTools API";
+          },
+          style: {
+            padding: "0.75rem 1.5rem",
+            background: "#8b5cf6",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "600"
+          }
+        }, "Show in Console")
+      ])
+    ]);
+  }
+  const statusDisplay = div({
+    style: {
+      position: "sticky",
+      top: "0",
+      background: "#000",
+      color: "#00ff88",
+      padding: "1rem",
+      borderRadius: "8px",
+      marginBottom: "2rem",
+      boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+      zIndex: "100"
+    }
+  }, [
+    div({ style: { marginBottom: "0.5rem" } }, [
+      text({ style: { fontWeight: "bold", color: "#fff" } }, "Status: "),
+      text(() => testState.status)
+    ]),
+    div({ style: { marginBottom: "0.5rem" } }, [
+      text({ style: { fontWeight: "bold", color: "#fff" } }, "Logs Created: "),
+      text(() => String(testState.logCount))
+    ]),
+    div({ style: { marginBottom: "0.5rem" } }, [
+      text({ style: { fontWeight: "bold", color: "#fff" } }, "Profiles Run: "),
+      text(() => String(testState.profileCount))
+    ]),
+    div({}, [
+      text({ style: { fontWeight: "bold", color: "#fff" } }, "Last Log Level: "),
+      text(() => testState.lastLogLevel)
+    ])
+  ]);
+  return div({
+    style: {
+      padding: "2rem",
+      maxWidth: "1000px",
+      margin: "0 auto"
+    }
+  }, [
+    h2({ style: { marginBottom: "1rem", color: "#000" } }, text("Developer Tools Test Suite")),
+    text({
+      style: {
+        color: "#666",
+        marginBottom: "2rem",
+        display: "block",
+        fontSize: "1.1rem"
+      }
+    }, "Testing 3 devtools functions: logger, profiler, devtools integration"),
+    statusDisplay,
+    vbox({ style: { gap: "3rem" } }, [
+      testLogger(),
+      testProfiler(),
+      testMeasure(),
+      testDevToolsIntegration()
+    ])
+  ]);
+}
+
 // index.ts
 function TestRunner() {
   return div({
@@ -1595,7 +3136,7 @@ function TestRunner() {
       }
     }, [
       text({ style: { fontSize: "2.5rem", fontWeight: "bold", display: "block", marginBottom: "0.5rem" } }, "Rynex Test Suite"),
-      text({ style: { fontSize: "1.1rem", color: "#00ff88" } }, "30 New Functions - Comprehensive Testing")
+      text({ style: { fontSize: "1.1rem", color: "#00ff88" } }, "44 New Functions - Comprehensive Testing")
     ]),
     // Test Tabs
     div({ style: { padding: "2rem 0" } }, [
@@ -1628,7 +3169,19 @@ function TestRunner() {
           {
             label: "Tailwind CSS",
             content: TailwindTest()
+          },
+          {
+            label: "Animation",
+            content: AnimationsTest()
+          },
+          {
+            label: "DevTools",
+            content: DevToolsTest()
           }
+          /* {
+            label: 'State Management',
+            content: StateManagementTest()
+          } */
         ],
         defaultIndex: 6,
         style: {

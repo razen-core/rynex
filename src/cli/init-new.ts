@@ -140,11 +140,11 @@ export async function initProject(projectName?: string): Promise<void> {
   console.log();
 
   try {
-    // Get template path - resolve from source directory
+    // Get template path - resolve from package root
+    // When running from dist/cli/init-new.js, __dirname is dist/cli
+    // We need to go up to package root and then into templates
     const templatePath = path.join(
-      path.dirname(path.dirname(__dirname)), // Go up to project root
-      'src',
-      'cli',
+      path.dirname(path.dirname(__dirname)), // Go up to package root
       'templates',
       config.template,
       'typescript'

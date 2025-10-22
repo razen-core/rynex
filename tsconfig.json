@@ -17,5 +17,5 @@
     "allowSyntheticDefaultImports": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "examples", "src/cli/templates", "tests", "project-tree", "test-rynex-install"]
+  "exclude": ["node_modules", "dist", "examples", "templates", "tests", "project-tree", "test-rynex-install"]
 }

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rynex - New Features Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .test-box {
+      padding: 20px;
+      margin: 10px 0;
+      background: #e3f2fd;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 4px;
+      background: #2196F3;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      background: #1976D2;
+    }
+    .log-output {
+      background: #263238;
+      color: #aed581;
+      padding: 15px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Rynex Framework - New Features Test</h1>
+  <p>Testing Animation, State Management, and Developer Tools</p>
+
+  <div class="test-section">
+    <h2>1. Animation & Transitions</h2>
+    <div id="animation-test"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>2. State Management (Store & Context)</h2>
+    <div id="state-test"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>3. Developer Tools (Logger & Profiler)</h2>
+    <div id="devtools-test"></div>
+    <div class="log-output" id="log-output"></div>
+  </div>
+
+  <script type="module">
+    import { 
+      div, button, text, h3, p,
+      fade, slide, scale, rotate,
+      createStore, useStore, createContext, useContext, provider,
+      logger, profiler, log, profile, LogLevel
+    } from './dist/runtime/helpers/index.js';
+
+    // Test 1: Animations
+    function testAnimations() {
+      const container = document.getElementById('animation-test');
+      
+      const testBox = div({ class: 'test-box' }, 
+        text('Animated Box')
+      );
+      
+      const fadeBtn = button({ 
+        onclick: () => fade(testBox, 'toggle', { duration: 500 })
+      }, text('Fade Toggle'));
+      
+      const slideBtn = button({ 
+        onclick: () => slide(testBox, 'down', { duration: 500 })
+      }, text('Slide Down'));
+      
+      const scaleBtn = button({ 
+        onclick: () => scale(testBox, 'toggle', { duration: 500 })
+      }, text('Scale Toggle'));
+      
+      const rotateBtn = button({ 
+        onclick: () => rotate(testBox, 360, { duration: 1000 })
+      }, text('Rotate 360°'));
+      
+      container.appendChild(h3({}, text('Animation Controls')));
+      container.appendChild(fadeBtn);
+      container.appendChild(slideBtn);
+      container.appendChild(scaleBtn);
+      container.appendChild(rotateBtn);
+      container.appendChild(testBox);
+    }
+
+    // Test 2: State Management
+    function testStateManagement() {
+      const container = document.getElementById('state-test');
+      
+      // Create a store
+      const counterStore = createStore('counter', 
+        { count: 0 },
+        (state) => ({
+          increment: () => state.count++,
+          decrement: () => state.count--,
+          reset: () => state.count = 0
+        })
+      );
+      
+      const countDisplay = div({ class: 'test-box' }, 
+        text(`Count: ${counterStore.state.count}`)
+      );
+      
+      // Subscribe to updates
+      counterStore.subscribe(() => {
+        countDisplay.textContent = `Count: ${counterStore.state.count}`;
+      });
+      
+      const incBtn = button({ 
+        onclick: () => counterStore.actions.increment()
+      }, text('Increment'));
+      
+      const decBtn = button({ 
+        onclick: () => counterStore.actions.decrement()
+      }, text('Decrement'));
+      
+      const resetBtn = button({ 
+        onclick: () => counterStore.actions.reset()
+      }, text('Reset'));
+      
+      container.appendChild(h3({}, text('Counter Store')));
+      container.appendChild(countDisplay);
+      container.appendChild(incBtn);
+      container.appendChild(decBtn);
+      container.appendChild(resetBtn);
+      
+      // Test Context API
+      const ThemeContext = createContext({ theme: 'light' });
+      log.info('Context created', { context: 'ThemeContext' });
+    }
+
+    // Test 3: Developer Tools
+    function testDevTools() {
+      const container = document.getElementById('devtools-test');
+      const output = document.getElementById('log-output');
+      
+      // Configure logger
+      const appLogger = logger({ level: LogLevel.DEBUG, colors: false });
+      
+      // Redirect logs to output
+      const originalLog = console.log;
+      console.log = function(...args) {
+        output.innerHTML += args.join(' ') + '\n';
+        originalLog.apply(console, args);
+      };
+      
+      const logBtn = button({ 
+        onclick: () => {
+          log.debug('Debug message', { test: true });
+          log.info('Info message', { status: 'ok' });
+          log.warn('Warning message', { level: 'medium' });
+          log.error('Error message', { code: 500 });
+        }
+      }, text('Test Logger'));
+      
+      const profileBtn = button({ 
+        onclick: () => {
+          profile.start('test-operation');
+          
+          // Simulate work
+          let sum = 0;
+          for (let i = 0; i < 1000000; i++) {
+            sum += i;
+          }
+          
+          const duration = profile.end('test-operation');
+          log.info('Profile completed', { duration: duration + 'ms' });
+        }
+      }, text('Test Profiler'));
+      
+      const reportBtn = button({ 
+        onclick: () => {
+          const report = profile.report();
+          log.info('Profile Report', report);
+        }
+      }, text('Show Report'));
+      
+      const clearBtn = button({ 
+        onclick: () => {
+          output.innerHTML = '';
+        }
+      }, text('Clear Logs'));
+      
+      container.appendChild(h3({}, text('Logger & Profiler')));
+      container.appendChild(logBtn);
+      container.appendChild(profileBtn);
+      container.appendChild(reportBtn);
+      container.appendChild(clearBtn);
+      
+      log.info('DevTools initialized', { version: '0.1.40' });
+    }
+
+    // Run all tests
+    testAnimations();
+    testStateManagement();
+    testDevTools();
+    
+    console.log('All tests loaded successfully!');
+    console.log('Check window.__RYNEX_DEVTOOLS__ for DevTools API');
+  </script>
+</body>
+</html>
