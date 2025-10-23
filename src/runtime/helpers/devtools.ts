@@ -360,7 +360,7 @@ class DevTools {
       (window as any).__RYNEX_DEVTOOLS__ = {
         logger: this.logger,
         profiler: this.profiler,
-        version: '0.1.40',
+        version: '0.1.55',
         inspect: this.inspect.bind(this),
         getState: this.getState.bind(this)
       };

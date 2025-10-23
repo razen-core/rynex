@@ -39,6 +39,7 @@ Explore all available helper functions organized by category:
 
 - **[Examples](./examples.md)** - Real-world code examples and patterns
 - **[Best Practices](./best-practices.md)** - Development guidelines and recommendations
+- **[Cross-Browser Compatibility](./browsers.md)** - Browser support, polyfills, and compatibility features
 - **[FAQ](./faq.md)** - Frequently asked questions and answers
 
 ## Quick Links
@@ -57,6 +58,7 @@ docs/
 ├── project-creation.md          # Project initialization
 ├── examples.md                  # Code examples
 ├── best-practices.md            # Tips and recommendations
+├── browsers.md                  # Cross-browser compatibility
 ├── faq.md                       # Common questions
 └── helpers/
     ├── index.md                 # Helper functions overview

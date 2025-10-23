@@ -81,3 +81,16 @@ export type {
 
 // Types
 export type { DOMProps, DOMChildren, DOMChild } from './dom.js';
+
+// Browser Compatibility (Cross-browser support for Firefox, Safari, Edge, etc.)
+export {
+  detectBrowser,
+  initializeBrowserSupport,
+  browserDOM,
+  browserState,
+  getLenisInstance,
+  destroyLenis,
+  isBrowserSupportInitialized,
+  Bowser
+} from './browsers.js';
+export type { BrowserCapabilities, Lenis } from './browsers.js';

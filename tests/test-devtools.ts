@@ -451,7 +451,7 @@ export default function DevToolsTest() {
   function testDevToolsIntegration() {
     const devtoolsState = state({
       attached: typeof window !== 'undefined' && !!(window as any).__RYNEX_DEVTOOLS__,
-      version: '0.1.41'
+      version: '0.1.55'
     });
 
     return vbox({ style: { gap: '1rem' } }, [
