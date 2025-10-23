@@ -69,6 +69,12 @@ function startWithExpress(express: any, options: ServerOptions, routeManifest: R
       } else if (filePath.endsWith('.css')) {
         res.setHeader('Content-Type', 'text/css; charset=utf-8');
       }
+      // Prevent HTML caching to ensure updates are always fetched
+      if (filePath.endsWith('.html')) {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+      }
     }
   }));
 
@@ -162,11 +168,23 @@ function startWithNativeHTTP(options: ServerOptions, routeManifest: RouteManifes
       }
 
       // Set caching headers
-      res.writeHead(200, {
+      const isHTML = ext === '.html';
+      const cacheControl = isHTML 
+        ? 'no-cache, no-store, must-revalidate' 
+        : 'public, max-age=86400';
+      
+      const headers: Record<string, string> = {
         'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=86400',
+        'Cache-Control': cacheControl,
         'ETag': `"${data.length}-${fs.statSync(filePath).mtime.getTime()}"`
-      });
+      };
+      
+      if (isHTML) {
+        headers['Pragma'] = 'no-cache';
+        headers['Expires'] = '0';
+      }
+      
+      res.writeHead(200, headers);
       res.end(data);
     });
   });

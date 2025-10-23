@@ -11,6 +11,7 @@ A minimalist TypeScript framework for building reactive web applications with no
 - **Zero Configuration**: Sensible defaults, works immediately
 - **Production Ready**: Express server with native HTTP fallback
 - **Hot Module Replacement**: Instant feedback during development
+- **Automatic Cache-Busting**: Always serve fresh content to users on deployment
 - **Tiny Bundle**: Approximately 15KB gzipped
 
 ## Quick Start
@@ -244,6 +245,7 @@ Complete documentation is available in the `docs/` directory:
 - [Getting Started](./docs/GETTING_STARTED.md) - Installation and first steps
 - [Routing Guide](./docs/ROUTING_GUIDE.md) - File-based routing and navigation
 - [Configuration](./docs/CONFIGURATION.md) - Project configuration options
+- [Cache-Busting](./docs/CACHE-BUSTING.md) - Automatic cache invalidation for deployments
 - [Examples](./docs/EXAMPLES.md) - Real-world code examples
 
 ## Key Features

@@ -7,6 +7,7 @@
 import * as esbuild from 'esbuild';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as crypto from 'crypto';
 import { parseRynexFile, transformImports } from './parser.js';
 import { RouteConfig, RynexConfig } from './config.js';
 import { logger } from './logger.js';
@@ -135,27 +136,39 @@ async function buildComponents(
 }
 
 /**
- * Generate HTML file for a page
+ * Generate a cache-busting hash based on timestamp
  */
-function generatePageHTML(pageName: string, distPageDir: string): void {
+function generateBuildHash(): string {
+  const timestamp = Date.now().toString();
+  return crypto.createHash('md5').update(timestamp).digest('hex').substring(0, 8);
+}
+
+/**
+ * Generate HTML file for a page with cache-busting
+ */
+function generatePageHTML(pageName: string, distPageDir: string, buildHash: string): void {
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="build-version" content="${buildHash}">
   <title>${pageName.charAt(0).toUpperCase() + pageName.slice(1)} - Rynex</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=${buildHash}">
 </head>
 <body>
   <div id="root"></div>
-  <script type="module" src="bundel.js"></script>
+  <script type="module" src="bundel.js?v=${buildHash}"></script>
 </body>
 </html>
 `;
 
   const htmlPath = path.join(distPageDir, 'page.html');
   fs.writeFileSync(htmlPath, html, 'utf8');
-  logger.debug(`Generated HTML for page: ${pageName}`);
+  logger.debug(`Generated HTML for page: ${pageName} with build hash: ${buildHash}`);
 }
 
 /**
@@ -186,7 +199,8 @@ async function buildPages(
   projectRoot: string,
   distDir: string,
   minify: boolean,
-  sourceMaps: boolean
+  sourceMaps: boolean,
+  buildHash: string
 ): Promise<void> {
   const pagesDir = path.join(projectRoot, 'src', 'pages');
   if (!fs.existsSync(pagesDir)) {
@@ -239,8 +253,8 @@ async function buildPages(
         absWorkingDir: projectRoot
       });
 
-      // Generate page.html
-      generatePageHTML(pageDir, distPageDir);
+      // Generate page.html with cache-busting
+      generatePageHTML(pageDir, distPageDir, buildHash);
 
       // Generate styles.css
       generatePageCSS(distPageDir);
@@ -258,7 +272,8 @@ async function buildPages(
 async function buildMainEntry(
   projectRoot: string,
   options: BuildOptions,
-  allStyles: string
+  allStyles: string,
+  buildHash: string
 ): Promise<void> {
   const isDebug = process.argv.includes('--debug');
   const distDir = path.join(projectRoot, path.dirname(options.output));
@@ -413,6 +428,10 @@ export async function build(options: BuildOptions): Promise<void> {
     fs.mkdirSync(distDir, { recursive: true });
   }
 
+  // Generate build hash for cache-busting
+  const buildHash = generateBuildHash();
+  logger.info(`Build hash: ${buildHash}`);
+
   // Collect all styles
   let allStyles = '';
 
@@ -450,12 +469,38 @@ export async function build(options: BuildOptions): Promise<void> {
       
       // Build pages
       if (hasPages) {
-        await buildPages(projectRoot, distDir, options.minify, options.sourceMaps);
+        await buildPages(projectRoot, distDir, options.minify, options.sourceMaps, buildHash);
       }
     }
     
     // Always build main entry point
-    await buildMainEntry(projectRoot, options, allStyles);
+    await buildMainEntry(projectRoot, options, allStyles, buildHash);
+    
+    // Update index.html with cache-busting if it exists
+    const indexHtmlPath = path.join(distDir, 'index.html');
+    if (fs.existsSync(indexHtmlPath)) {
+      let indexHtml = fs.readFileSync(indexHtmlPath, 'utf8');
+      
+      // Add cache-busting meta tags if not present
+      if (!indexHtml.includes('Cache-Control')) {
+        indexHtml = indexHtml.replace(
+          '<head>',
+          `<head>\n  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">\n  <meta http-equiv="Pragma" content="no-cache">\n  <meta http-equiv="Expires" content="0">\n  <meta name="build-version" content="${buildHash}">`
+        );
+      }
+      
+      // Add version query params to JS and CSS files
+      indexHtml = indexHtml.replace(
+        /(src|href)="([^"]+\.(js|css|mjs))"/g,
+        (match, attr, file) => {
+          if (file.includes('?v=')) return match;
+          return `${attr}="${file}?v=${buildHash}"`;
+        }
+      );
+      
+      fs.writeFileSync(indexHtmlPath, indexHtml, 'utf8');
+      logger.success(`Updated index.html with cache-busting (v=${buildHash})`);
+    }
 
     // Copy public files to dist
     const publicDir = path.join(projectRoot, 'public');
