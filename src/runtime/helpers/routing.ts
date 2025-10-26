@@ -1,14 +1,71 @@
 /**
  * Routing Helper Functions
  * UI components and utilities for routing
+ * Now with Builder API support
  */
 
 import { createElement } from '../dom.js';
 import { Router, RouteContext, createLink as createRouterLink } from '../router.js';
+import { ElementBuilder } from './builder.js';
 
 /**
- * Link component - creates a router-aware link
+ * Link component - Builder API
  */
+export class LinkBuilder extends ElementBuilder<HTMLAnchorElement> {
+  private toPath: string = '/';
+  private activeClassName: string = '';
+  private isExact: boolean = false;
+
+  constructor(to?: string) {
+    super('a');
+    if (to) this.toPath = to;
+    this.element.href = this.toPath;
+  }
+
+  to(path: string): this {
+    this.toPath = path;
+    this.element.href = path;
+    return this;
+  }
+
+  activeClass(className: string): this {
+    this.activeClassName = className;
+    return this;
+  }
+
+  exact(value: boolean = true): this {
+    this.isExact = value;
+    return this;
+  }
+
+  build(): HTMLAnchorElement {
+    if (this.activeClassName) {
+      const updateActiveClass = () => {
+        const currentPath = window.location.pathname;
+        const isActive = this.isExact 
+          ? currentPath === this.toPath
+          : currentPath.startsWith(this.toPath);
+        
+        if (isActive) {
+          this.element.classList.add(this.activeClassName);
+        } else {
+          this.element.classList.remove(this.activeClassName);
+        }
+      };
+      
+      updateActiveClass();
+      window.addEventListener('popstate', updateActiveClass);
+    }
+    
+    return super.build();
+  }
+}
+
+export function link(to?: string): LinkBuilder {
+  return new LinkBuilder(to);
+}
+
+// Legacy support
 export function Link(
   props: {
     to: string;
@@ -63,8 +120,13 @@ export function Link(
 }
 
 /**
- * NavLink component - Link with automatic active styling
+ * NavLink component - Builder API
  */
+export function navLink(to?: string): LinkBuilder {
+  return new LinkBuilder(to).activeClass('active');
+}
+
+// Legacy support
 export function NavLink(
   props: {
     to: string;
@@ -111,8 +173,65 @@ export function RouteGuard(
 }
 
 /**
- * Breadcrumb component
+ * Breadcrumb component - Builder API
  */
+export class BreadcrumbBuilder extends ElementBuilder<HTMLElement> {
+  private separator: string = '/';
+
+  constructor() {
+    super('nav');
+    this.element.className = 'breadcrumb';
+  }
+
+  setSeparator(value: string): this {
+    this.separator = value;
+    return this;
+  }
+
+  build(): HTMLElement {
+    const updateBreadcrumb = () => {
+      this.element.innerHTML = '';
+      const paths = window.location.pathname.split('/').filter(Boolean);
+      
+      // Home link
+      const homeLink = Link({ to: '/', class: 'breadcrumb-item' }, 'Home');
+      this.element.appendChild(homeLink);
+      
+      // Path segments
+      let currentPath = '';
+      paths.forEach((segment, index) => {
+        currentPath += '/' + segment;
+        
+        if (this.separator) {
+          const sep = document.createTextNode(` ${this.separator} `);
+          this.element.appendChild(sep);
+        }
+        
+        const isLast = index === paths.length - 1;
+        if (isLast) {
+          const span = document.createElement('span');
+          span.className = 'breadcrumb-item active';
+          span.textContent = segment;
+          this.element.appendChild(span);
+        } else {
+          const linkEl = Link({ to: currentPath, class: 'breadcrumb-item' }, segment);
+          this.element.appendChild(linkEl);
+        }
+      });
+    };
+    
+    updateBreadcrumb();
+    window.addEventListener('popstate', updateBreadcrumb);
+    
+    return super.build();
+  }
+}
+
+export function breadcrumb(): BreadcrumbBuilder {
+  return new BreadcrumbBuilder();
+}
+
+// Legacy support
 export function Breadcrumb(
   props: {
     separator?: string;
@@ -162,8 +281,27 @@ export function Breadcrumb(
 }
 
 /**
- * Back button component
+ * Back button component - Builder API
  */
+export class BackButtonBuilder extends ElementBuilder<HTMLButtonElement> {
+  constructor(text?: string) {
+    super('button');
+    this.element.className = 'back-button';
+    this.element.textContent = text || '← Back';
+    this.element.onclick = () => window.history.back();
+  }
+
+  text(value: string): this {
+    this.element.textContent = value;
+    return this;
+  }
+}
+
+export function backButton(text?: string): BackButtonBuilder {
+  return new BackButtonBuilder(text);
+}
+
+// Legacy support
 export function BackButton(
   props: {
     text?: string;
@@ -275,8 +413,92 @@ export function RouteLoading(
 }
 
 /**
- * 404 Not Found component
+ * 404 Not Found component - Builder API
  */
+export class NotFoundBuilder extends ElementBuilder<HTMLDivElement> {
+  private titleText: string = '404';
+  private messageText: string = 'Page not found';
+  private showHomeLink: boolean = true;
+
+  constructor() {
+    super('div');
+    this.applyDefaultStyles();
+  }
+
+  title(value: string): this {
+    this.titleText = value;
+    return this;
+  }
+
+  message(value: string): this {
+    this.messageText = value;
+    return this;
+  }
+
+  homeLink(show: boolean = true): this {
+    this.showHomeLink = show;
+    return this;
+  }
+
+  build(): HTMLDivElement {
+    const titleEl = document.createElement('h1');
+    Object.assign(titleEl.style, {
+      fontSize: '4rem',
+      margin: '0 0 1rem 0',
+      color: '#333'
+    });
+    titleEl.textContent = this.titleText;
+    
+    const messageEl = document.createElement('p');
+    Object.assign(messageEl.style, {
+      fontSize: '1.25rem',
+      margin: '0 0 2rem 0',
+      color: '#666'
+    });
+    messageEl.textContent = this.messageText;
+    
+    this.element.appendChild(titleEl);
+    this.element.appendChild(messageEl);
+    
+    if (this.showHomeLink) {
+      const homeLink = Link(
+        {
+          to: '/',
+          style: {
+            padding: '0.75rem 1.5rem',
+            background: '#3498db',
+            color: 'white',
+            textDecoration: 'none',
+            borderRadius: '4px',
+            fontSize: '1rem'
+          }
+        },
+        'Go Home'
+      );
+      this.element.appendChild(homeLink);
+    }
+    
+    return super.build();
+  }
+
+  private applyDefaultStyles(): void {
+    this.element.className = 'not-found';
+    Object.assign(this.element.style, {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '4rem 2rem',
+      textAlign: 'center'
+    });
+  }
+}
+
+export function notFound(): NotFoundBuilder {
+  return new NotFoundBuilder();
+}
+
+// Legacy support
 export function NotFound(
   props: {
     title?: string;

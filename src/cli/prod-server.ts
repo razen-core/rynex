@@ -60,7 +60,7 @@ function startWithExpress(express: any, options: ServerOptions, routeManifest: R
 
   // Static files with proper headers
   app.use(express.static(root, {
-    maxAge: '1d',
+    maxAge: 0, // Don't set default maxAge, we'll handle it per file type
     etag: true,
     setHeaders: (res: any, filePath: string) => {
       // Set proper content types
@@ -69,11 +69,24 @@ function startWithExpress(express: any, options: ServerOptions, routeManifest: R
       } else if (filePath.endsWith('.css')) {
         res.setHeader('Content-Type', 'text/css; charset=utf-8');
       }
+      
       // Prevent HTML caching to ensure updates are always fetched
       if (filePath.endsWith('.html')) {
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');
+      } 
+      // Cache hashed JS/CSS files for 1 year (they have content hash in filename)
+      else if (filePath.match(/\.[a-f0-9]{8}\.(js|css)$/)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+      // Cache other static assets for 1 day
+      else if (!filePath.endsWith('.js') && !filePath.endsWith('.css') && !filePath.endsWith('.mjs')) {
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+      }
+      // Non-hashed JS/CSS files - short cache
+      else {
+        res.setHeader('Cache-Control', 'public, max-age=300');
       }
     }
   }));
@@ -169,9 +182,22 @@ function startWithNativeHTTP(options: ServerOptions, routeManifest: RouteManifes
 
       // Set caching headers
       const isHTML = ext === '.html';
-      const cacheControl = isHTML 
-        ? 'no-cache, no-store, must-revalidate' 
-        : 'public, max-age=86400';
+      const fileName = path.basename(filePath);
+      const isHashedAsset = fileName.match(/\.[a-f0-9]{8}\.(js|css)$/);
+      
+      let cacheControl: string;
+      if (isHTML) {
+        cacheControl = 'no-cache, no-store, must-revalidate';
+      } else if (isHashedAsset) {
+        // Hashed assets can be cached forever
+        cacheControl = 'public, max-age=31536000, immutable';
+      } else if (ext === '.js' || ext === '.mjs' || ext === '.css') {
+        // Non-hashed JS/CSS - short cache
+        cacheControl = 'public, max-age=300';
+      } else {
+        // Other assets - 1 day cache
+        cacheControl = 'public, max-age=86400';
+      }
       
       const headers: Record<string, string> = {
         'Content-Type': contentType,

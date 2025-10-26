@@ -10,6 +10,7 @@ import { watch } from 'chokidar';
 import { logger } from './logger.js';
 import { RouteConfig, RynexConfig } from './config.js';
 import { scanRoutes, RouteManifest } from './route-scanner.js';
+import { readBuildManifest } from './hash-utils.js';
 
 export interface DevServerOptions {
   port: number;
@@ -82,6 +83,20 @@ export async function startDevServer(options: DevServerOptions): Promise<void> {
   function handleRequest(req: http.IncomingMessage, res: http.ServerResponse) {
     const url = req.url || '/';
 
+    // Handle build info endpoint
+    if (url === '/__rynex_build_info') {
+      const manifest = readBuildManifest(root);
+      res.writeHead(200, { 
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate'
+      });
+      res.end(JSON.stringify({
+        buildHash: manifest?.buildHash || 'dev',
+        timestamp: manifest?.timestamp || Date.now()
+      }));
+      return;
+    }
+
     // Handle SSE for hot reload
     if (hotReload && url === '/__rynex_hmr') {
       res.writeHead(200, {
@@ -140,41 +155,88 @@ export async function startDevServer(options: DevServerOptions): Promise<void> {
     // Determine content type
     const ext = path.extname(filePath);
     const contentTypes: Record<string, string> = {
-      '.html': 'text/html',
-      '.js': 'application/javascript',
-      '.css': 'text/css',
+      '.html': 'text/html; charset=utf-8',
+      '.js': 'application/javascript; charset=utf-8',
+      '.mjs': 'application/javascript; charset=utf-8',
+      '.css': 'text/css; charset=utf-8',
       '.json': 'application/json',
       '.png': 'image/png',
       '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
       '.gif': 'image/gif',
       '.svg': 'image/svg+xml',
-      '.ico': 'image/x-icon'
+      '.ico': 'image/x-icon',
+      '.webp': 'image/webp',
+      '.map': 'application/json'
     };
 
-    const contentType = contentTypes[ext] || 'text/plain';
+    const contentType = contentTypes[ext] || 'application/octet-stream';
 
     // Read and serve file
     fs.readFile(filePath, (err, data) => {
       if (err) {
-        res.writeHead(500);
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
         res.end('500 Internal Server Error');
         return;
       }
 
-      res.writeHead(200, { 'Content-Type': contentType });
+      // Set cache headers based on file type
+      const isAsset = ext === '.html' || ext === '.js' || ext === '.mjs' || ext === '.css';
+      const headers: Record<string, string> = {
+        'Content-Type': contentType
+      };
+      
+      if (isAsset) {
+        // Force no-cache for HTML, JS, and CSS in development
+        headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+        headers['Pragma'] = 'no-cache';
+        headers['Expires'] = '0';
+      } else {
+        // Allow caching for images and other static assets
+        headers['Cache-Control'] = 'public, max-age=3600';
+      }
+      
+      res.writeHead(200, headers);
       
       // Inject HMR script into HTML
       if (hotReload && ext === '.html') {
         const html = data.toString();
+        
+        // Read build manifest to get current build hash
+        const manifest = readBuildManifest(root);
+        const buildHash = manifest?.buildHash || 'dev';
+        
         const hmrScript = `
           <script>
+            // Store current build version
+            const CURRENT_BUILD = '${buildHash}';
+            
             const eventSource = new EventSource('/__rynex_hmr');
             eventSource.onmessage = (event) => {
               if (event.data === 'reload') {
-                console.log('[Rynex] Reloading...');
-                window.location.reload();
+                console.log('[Rynex] Changes detected, reloading...');
+                // Force hard reload to bypass cache
+                window.location.reload(true);
               }
             };
+            
+            eventSource.onerror = (error) => {
+              console.error('[Rynex] HMR connection error:', error);
+            };
+            
+            // Check build version on focus
+            window.addEventListener('focus', async () => {
+              try {
+                const response = await fetch('/__rynex_build_info');
+                const data = await response.json();
+                if (data.buildHash && data.buildHash !== CURRENT_BUILD) {
+                  console.log('[Rynex] New build detected, reloading...');
+                  window.location.reload(true);
+                }
+              } catch (e) {
+                // Ignore errors
+              }
+            });
           </script>
         `;
         const modifiedHtml = html.replace('</body>', `${hmrScript}</body>`);
@@ -209,7 +271,7 @@ export async function startDevServer(options: DevServerOptions): Promise<void> {
   // Watch for file changes
   if (hotReload) {
     const watcher = watch(root, {
-      ignored: /(^|[\/\\])\../, // ignore dotfiles
+      ignored: /(^|[/\\])\../, // ignore dotfiles
       persistent: true
     });
 

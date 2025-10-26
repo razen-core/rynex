@@ -7,11 +7,19 @@
 import { rolldown, Plugin as RolldownPlugin } from 'rolldown';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as crypto from 'crypto';
 import { parseRynexFile, transformImports } from './parser.js';
 import { RouteConfig, RynexConfig } from './config.js';
 import { logger } from './logger.js';
 import { scanRoutes, generateRouteManifest, generateRouterConfig } from './route-scanner.js';
+import { 
+  generateBuildHash, 
+  generateFileHash, 
+  cleanOldBundles, 
+  createBuildManifest,
+  cleanOldBuildArtifacts 
+} from './hash-utils.js';
+import { validateHTMLDirectory, printValidationResults } from './html-validator.js';
+import { confirm } from './prompts.js';
 
 /**
  * Check if Tailwind CSS is configured
@@ -68,6 +76,7 @@ async function buildComponents(
   minify: boolean,
   sourceMaps: boolean
 ): Promise<void> {
+  const isDebug = process.argv.includes('--debug');
   const componentsDir = path.join(projectRoot, 'src', 'components');
   if (!fs.existsSync(componentsDir)) {
     logger.debug('No components directory found');
@@ -93,7 +102,9 @@ async function buildComponents(
   for (const file of componentFiles) {
     const componentPath = path.join(componentsDir, file);
     const componentName = path.basename(file, path.extname(file));
-    const outputPath = path.join(distComponentsDir, `${componentName}.bundel.js`);
+    
+    // Build to temporary file first
+    const tempOutputPath = path.join(distComponentsDir, `${componentName}.temp.js`);
 
     logger.debug(`Building component: ${componentName}`);
 
@@ -101,36 +112,51 @@ async function buildComponents(
       const build = await rolldown({
         input: componentPath,
         cwd: projectRoot,
-        external: []
+        platform: 'browser',
+        treeshake: minify,
+        external: [],
+        logLevel: isDebug ? 'debug' : 'info'
       });
 
       await build.write({
-        file: outputPath,
+        file: tempOutputPath,
         format: 'es',
         sourcemap: sourceMaps,
-        minify
+        minify,
+        exports: 'auto'
       });
 
       await build.close();
-      logger.success(`Built component: ${componentName}.bundel.js`);
+      
+      // Generate hash from built file content
+      const fileHash = generateFileHash(tempOutputPath);
+      const finalOutputPath = path.join(distComponentsDir, `${componentName}.${fileHash}.js`);
+      
+      // Clean old bundles with different hashes
+      cleanOldBundles(distComponentsDir, componentName, fileHash);
+      
+      // Rename temp file to final hashed name
+      fs.renameSync(tempOutputPath, finalOutputPath);
+      
+      // Rename source map if it exists
+      const tempMapPath = `${tempOutputPath}.map`;
+      if (fs.existsSync(tempMapPath)) {
+        const finalMapPath = `${finalOutputPath}.map`;
+        fs.renameSync(tempMapPath, finalMapPath);
+      }
+      
+      logger.success(`Built component: ${componentName}.${fileHash}.js`);
     } catch (error) {
       logger.error(`Failed to build component ${componentName}`, error as Error);
     }
   }
 }
 
-/**
- * Generate a cache-busting hash based on timestamp
- */
-function generateBuildHash(): string {
-  const timestamp = Date.now().toString();
-  return crypto.createHash('md5').update(timestamp).digest('hex').substring(0, 8);
-}
 
 /**
  * Generate HTML file for a page with cache-busting
  */
-function generatePageHTML(pageName: string, distPageDir: string, buildHash: string): void {
+function generatePageHTML(pageName: string, distPageDir: string, bundleFileName: string, buildHash: string): void {
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -141,18 +167,18 @@ function generatePageHTML(pageName: string, distPageDir: string, buildHash: stri
   <meta http-equiv="Expires" content="0">
   <meta name="build-version" content="${buildHash}">
   <title>${pageName.charAt(0).toUpperCase() + pageName.slice(1)} - Rynex</title>
-  <link rel="stylesheet" href="styles.css?v=${buildHash}">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div id="root"></div>
-  <script type="module" src="bundel.js?v=${buildHash}"></script>
+  <script type="module" src="${bundleFileName}"></script>
 </body>
 </html>
 `;
 
   const htmlPath = path.join(distPageDir, 'page.html');
   fs.writeFileSync(htmlPath, html, 'utf8');
-  logger.debug(`Generated HTML for page: ${pageName} with build hash: ${buildHash}`);
+  logger.debug(`Generated HTML for page: ${pageName} with bundle: ${bundleFileName}`);
 }
 
 /**
@@ -186,6 +212,7 @@ async function buildPages(
   sourceMaps: boolean,
   buildHash: string
 ): Promise<void> {
+  const isDebug = process.argv.includes('--debug');
   const pagesDir = path.join(projectRoot, 'src', 'pages');
   if (!fs.existsSync(pagesDir)) {
     logger.debug('No pages directory found');
@@ -218,33 +245,55 @@ async function buildPages(
       fs.mkdirSync(distPageDir, { recursive: true });
     }
 
-    // Build page TypeScript to bundel.js
-    const outputPath = path.join(distPageDir, 'bundel.js');
+    // Build page TypeScript to temporary file first
+    const tempOutputPath = path.join(distPageDir, 'bundel.temp.js');
     logger.debug(`Building page: ${pageDir}`);
 
     try {
       const build = await rolldown({
         input: pageFile,
         cwd: projectRoot,
-        external: []
+        platform: 'browser',
+        treeshake: minify,
+        external: [],
+        logLevel: isDebug ? 'debug' : 'info'
       });
 
       await build.write({
-        file: outputPath,
+        file: tempOutputPath,
         format: 'es',
         sourcemap: sourceMaps,
-        minify
+        minify,
+        exports: 'auto'
       });
 
       await build.close();
+      
+      // Generate hash from built file content
+      const fileHash = generateFileHash(tempOutputPath);
+      const finalOutputPath = path.join(distPageDir, `bundel.${fileHash}.js`);
+      const bundleFileName = `bundel.${fileHash}.js`;
+      
+      // Clean old bundles with different hashes
+      cleanOldBundles(distPageDir, 'bundel', fileHash);
+      
+      // Rename temp file to final hashed name
+      fs.renameSync(tempOutputPath, finalOutputPath);
+      
+      // Rename source map if it exists
+      const tempMapPath = `${tempOutputPath}.map`;
+      if (fs.existsSync(tempMapPath)) {
+        const finalMapPath = `${finalOutputPath}.map`;
+        fs.renameSync(tempMapPath, finalMapPath);
+      }
 
-      // Generate page.html with cache-busting
-      generatePageHTML(pageDir, distPageDir, buildHash);
+      // Generate page.html with hashed bundle reference
+      generatePageHTML(pageDir, distPageDir, bundleFileName, buildHash);
 
       // Generate styles.css
       generatePageCSS(distPageDir);
 
-      logger.success(`Built page: ${pageDir}`);
+      logger.success(`Built page: ${pageDir} -> ${bundleFileName}`);
     } catch (error) {
       logger.error(`Failed to build page ${pageDir}`, error as Error);
     }
@@ -318,19 +367,35 @@ async function buildMainEntry(
   // Add Rynex plugin
   plugins.push(rynexPlugin);
   
-  // Build with Rolldown
+  // Determine environment
+  const isDevelopment = !options.minify;
+  
+  // Build with Rolldown - using all advanced features
   const build = await rolldown({
     input: path.join(projectRoot, options.entry),
     cwd: projectRoot,
     plugins: plugins,
-    external: []
+    external: [],
+    platform: 'browser',
+    treeshake: options.minify ? {
+      moduleSideEffects: 'no-external',
+      propertyReadSideEffects: false
+    } : false,
+    logLevel: isDebug ? 'debug' : 'info',
+    // Define global constants for build-time replacement
+    define: {
+      'process.env.NODE_ENV': JSON.stringify(isDevelopment ? 'development' : 'production'),
+      '__DEV__': JSON.stringify(isDevelopment),
+      '__BUILD_HASH__': JSON.stringify(buildHash)
+    }
   });
 
   await build.write({
     file: path.join(projectRoot, options.output),
     format: 'es',
     sourcemap: options.sourceMaps,
-    minify: options.minify
+    minify: options.minify,
+    exports: 'auto'
   });
 
   await build.close();
@@ -396,9 +461,15 @@ export async function build(options: BuildOptions): Promise<void> {
   // Generate build hash for cache-busting
   const buildHash = generateBuildHash();
   logger.info(`Build hash: ${buildHash}`);
+  
+  // Clean old build artifacts before starting new build
+  cleanOldBuildArtifacts(distDir);
 
   // Collect all styles
   let allStyles = '';
+  
+  // Track built files for manifest
+  const builtFiles = new Map<string, string>();
 
   try {
     // Scan and generate routes if file-based routing is enabled
@@ -441,7 +512,40 @@ export async function build(options: BuildOptions): Promise<void> {
     // Always build main entry point
     await buildMainEntry(projectRoot, options, allStyles, buildHash);
     
-    // Update index.html with cache-busting if it exists
+    // Hash the main bundle IMMEDIATELY after building
+    const mainBundlePath = path.join(distDir, 'bundel.js');
+    let hashedBundleName = 'bundel.js';
+    
+    if (fs.existsSync(mainBundlePath)) {
+      const mainHash = generateFileHash(mainBundlePath);
+      hashedBundleName = `bundel.${mainHash}.js`;
+      const hashedBundlePath = path.join(distDir, hashedBundleName);
+      
+      // Clean old main bundles
+      cleanOldBundles(distDir, 'bundel', mainHash);
+      
+      // Rename main bundle
+      fs.renameSync(mainBundlePath, hashedBundlePath);
+      
+      // Rename source map if exists
+      const mainMapPath = `${mainBundlePath}.map`;
+      if (fs.existsSync(mainMapPath)) {
+        fs.renameSync(mainMapPath, `${hashedBundlePath}.map`);
+      }
+      
+      builtFiles.set('main', hashedBundleName);
+      logger.success(`Hashed main bundle: ${hashedBundleName}`);
+    }
+    
+    // Copy public files to dist (this will copy index.html)
+    const publicDir = path.join(projectRoot, 'public');
+    if (fs.existsSync(publicDir)) {
+      logger.debug(`Copying public files from ${publicDir} to ${distDir}`);
+      copyPublicFiles(publicDir, distDir);
+      logger.success('Public files copied to dist');
+    }
+    
+    // NOW update index.html with the hashed bundle reference
     const indexHtmlPath = path.join(distDir, 'index.html');
     if (fs.existsSync(indexHtmlPath)) {
       let indexHtml = fs.readFileSync(indexHtmlPath, 'utf8');
@@ -450,30 +554,62 @@ export async function build(options: BuildOptions): Promise<void> {
       if (!indexHtml.includes('Cache-Control')) {
         indexHtml = indexHtml.replace(
           '<head>',
-          `<head>\n  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">\n  <meta http-equiv="Pragma" content="no-cache">\n  <meta http-equiv="Expires" content="0">\n  <meta name="build-version" content="${buildHash}">`
+          `<head>\n  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">\n  <meta http-equiv="Pragma" content="no-cache">\n  <meta http-equiv="Expires" content="0">\n  <meta name="build-version" content="${buildHash}"`
         );
       }
       
-      // Add version query params to JS and CSS files
+      // Update HTML to reference hashed bundle
+      // Handle both bundel.js and bundel.[oldhash].js patterns
       indexHtml = indexHtml.replace(
-        /(src|href)="([^"]+\.(js|css|mjs))"/g,
-        (match, attr, file) => {
-          if (file.includes('?v=')) return match;
-          return `${attr}="${file}?v=${buildHash}"`;
-        }
+        /src="bundel(?:\.[a-f0-9]{8})?\.js"/g,
+        `src="${hashedBundleName}"`
+      );
+      
+      // Also handle without quotes (rare but possible)
+      indexHtml = indexHtml.replace(
+        /src=bundel(?:\.[a-f0-9]{8})?\.js/g,
+        `src=${hashedBundleName}`
       );
       
       fs.writeFileSync(indexHtmlPath, indexHtml, 'utf8');
-      logger.success(`Updated index.html with cache-busting (v=${buildHash})`);
+      logger.success(`Updated index.html with hashed bundles (build: ${buildHash})`);
     }
 
-    // Copy public files to dist
-    const publicDir = path.join(projectRoot, 'public');
-    if (fs.existsSync(publicDir)) {
-      logger.debug(`Copying public files from ${publicDir} to ${distDir}`);
-      copyPublicFiles(publicDir, distDir);
-      logger.success('Public files copied to dist');
+    // Validate HTML files
+    logger.info('\n📋 Validating HTML files...');
+    const validationResults = validateHTMLDirectory(distDir, false);
+    
+    if (validationResults.size > 0) {
+      printValidationResults(validationResults);
+      
+      // Check if there are auto-fixable issues
+      const hasFixableIssues = Array.from(validationResults.values()).some(
+        result => result.issues.some(issue => issue.autoFixable)
+      );
+      
+      if (hasFixableIssues) {
+        let shouldAutoFix = options.minify; // Auto-fix in production
+        
+        // In development mode, ask user
+        if (!shouldAutoFix) {
+          logger.info('');
+          shouldAutoFix = await confirm('Would you like to auto-fix these HTML issues?', true);
+        }
+        
+        if (shouldAutoFix) {
+          logger.info('🔧 Auto-fixing HTML issues...');
+          const fixedResults = validateHTMLDirectory(distDir, true);
+          logger.info('');
+          printValidationResults(fixedResults);
+        } else {
+          logger.info('⏭️  Skipping auto-fix. You can fix these manually.');
+        }
+      }
     }
+    
+    // Create build manifest
+    createBuildManifest(distDir, buildHash, builtFiles);
+    logger.success(`Build manifest created with hash: ${buildHash}`);
 
   } catch (error) {
     logger.error('Build failed', error as Error);

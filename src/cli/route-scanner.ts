@@ -263,7 +263,7 @@ export function watchRoutes(
   const chokidar = require('chokidar');
   
   const watcher = chokidar.watch(pagesDir, {
-    ignored: /(^|[\/\\])\../,
+    ignored: /(^|[/\\])\../,
     persistent: true
   });
 

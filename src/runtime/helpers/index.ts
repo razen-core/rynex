@@ -249,3 +249,12 @@ export {
   profile,
   LogLevel
 } from './devtools.js';
+
+// Asset Loading & Cache Busting
+export {
+  loadComponent,
+  preloadAsset,
+  getBuildVersion,
+  checkForUpdates,
+  reloadIfUpdated
+} from './asset-loader.js';
