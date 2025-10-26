@@ -1,10 +1,10 @@
 /**
  * Rynex Builder - Extended
- * Handles compilation and bundling with TypeScript support
+ * Handles compilation and bundling with TypeScript support using Rolldown
  * Supports both simple and advanced project structures
  */
 
-import * as esbuild from 'esbuild';
+import { rolldown, Plugin as RolldownPlugin } from 'rolldown';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
@@ -14,28 +14,12 @@ import { logger } from './logger.js';
 import { scanRoutes, generateRouteManifest, generateRouterConfig } from './route-scanner.js';
 
 /**
- * Load Tailwind CSS plugin if configured
+ * Check if Tailwind CSS is configured
+ * Note: Tailwind CSS support with Rolldown will need a custom plugin or PostCSS integration
  */
-async function loadTailwindPlugin(projectRoot: string): Promise<esbuild.Plugin | null> {
-  // Check if Tailwind is configured
+function hasTailwindConfig(projectRoot: string): boolean {
   const configFiles = ['tailwind.config.js', 'tailwind.config.cjs', 'tailwind.config.mjs', 'tailwind.config.ts'];
-  const hasTailwindConfig = configFiles.some(file => fs.existsSync(path.join(projectRoot, file)));
-  
-  if (!hasTailwindConfig) {
-    return null;
-  }
-  
-  try {
-    // Dynamic import of esbuild-plugin-tailwindcss
-    const tailwindPluginModule = await import('esbuild-plugin-tailwindcss');
-    const tailwindPlugin = tailwindPluginModule.default || tailwindPluginModule;
-    
-    logger.info('Tailwind CSS enabled');
-    return tailwindPlugin();
-  } catch (error) {
-    logger.warning('Tailwind config found but esbuild-plugin-tailwindcss not available');
-    return null;
-  }
+  return configFiles.some(file => fs.existsSync(path.join(projectRoot, file)));
 }
 
 export interface BuildOptions {
@@ -114,20 +98,20 @@ async function buildComponents(
     logger.debug(`Building component: ${componentName}`);
 
     try {
-      await esbuild.build({
-        entryPoints: [componentPath],
-        bundle: true,
-        outfile: outputPath,
-        format: 'esm',
-        platform: 'browser',
-        target: 'es2020',
-        minify,
-        sourcemap: sourceMaps,
-        external: [],
-        write: true,
-        absWorkingDir: projectRoot
+      const build = await rolldown({
+        input: componentPath,
+        cwd: projectRoot,
+        external: []
       });
 
+      await build.write({
+        file: outputPath,
+        format: 'es',
+        sourcemap: sourceMaps,
+        minify
+      });
+
+      await build.close();
       logger.success(`Built component: ${componentName}.bundel.js`);
     } catch (error) {
       logger.error(`Failed to build component ${componentName}`, error as Error);
@@ -239,19 +223,20 @@ async function buildPages(
     logger.debug(`Building page: ${pageDir}`);
 
     try {
-      await esbuild.build({
-        entryPoints: [pageFile],
-        bundle: true,
-        outfile: outputPath,
-        format: 'esm',
-        platform: 'browser',
-        target: 'es2020',
-        minify,
-        sourcemap: sourceMaps,
-        external: [],
-        write: true,
-        absWorkingDir: projectRoot
+      const build = await rolldown({
+        input: pageFile,
+        cwd: projectRoot,
+        external: []
       });
+
+      await build.write({
+        file: outputPath,
+        format: 'es',
+        sourcemap: sourceMaps,
+        minify
+      });
+
+      await build.close();
 
       // Generate page.html with cache-busting
       generatePageHTML(pageDir, distPageDir, buildHash);
@@ -278,79 +263,79 @@ async function buildMainEntry(
   const isDebug = process.argv.includes('--debug');
   const distDir = path.join(projectRoot, path.dirname(options.output));
 
-  // Create esbuild plugin for Rynex transformation
-  const rynexPlugin: esbuild.Plugin = {
+  // Create Rolldown plugin for Rynex transformation
+  const rynexPlugin: RolldownPlugin = {
     name: 'rynex-transform',
-    setup(build) {
-      build.onLoad({ filter: /\.(ts|js|tsx|jsx)$/ }, async (args) => {
-        logger.debug(`Processing file: ${args.path}`);
-        const source = await fs.promises.readFile(args.path, 'utf8');
+    async transform(code, id) {
+      // Only process TypeScript and JavaScript files
+      if (!/\.(ts|js|tsx|jsx)$/.test(id)) {
+        return null;
+      }
+
+      logger.debug(`Processing file: ${id}`);
+      
+      // Check if file contains view or style keywords
+      if (code.includes('view {') || code.includes('style {')) {
+        logger.debug(`Found view/style keywords in: ${id}`);
+        const parsed = parseRynexFile(code);
         
-        // Check if file contains view or style keywords
-        if (source.includes('view {') || source.includes('style {')) {
-          logger.debug(`Found view/style keywords in: ${args.path}`);
-          const parsed = parseRynexFile(source);
-          
-          if (parsed.styles) {
-            logger.debug(`Extracted ${parsed.styles.length} chars of styles from: ${args.path}`);
-            allStyles += parsed.styles;
-          }
-          
-          let transformedCode = parsed.code;
-          transformedCode = transformImports(transformedCode);
-          
-          logger.debug(`Transformed file: ${args.path}`);
-
-          return {
-            contents: transformedCode,
-            loader: args.path.endsWith('.ts') || args.path.endsWith('.tsx') ? 'ts' : 'js'
-          };
+        if (parsed.styles) {
+          logger.debug(`Extracted ${parsed.styles.length} chars of styles from: ${id}`);
+          allStyles += parsed.styles;
         }
+        
+        let transformedCode = parsed.code;
+        transformedCode = transformImports(transformedCode);
+        
+        logger.debug(`Transformed file: ${id}`);
 
-        // Transform imports even if no view/style
-        logger.debug(`No view/style keywords in: ${args.path}`);
-        const transformedCode = transformImports(source);
         return {
-          contents: transformedCode,
-          loader: args.path.endsWith('.ts') || args.path.endsWith('.tsx') ? 'ts' : 'js'
+          code: transformedCode,
+          map: null
         };
-      });
+      }
+
+      // Transform imports even if no view/style
+      logger.debug(`No view/style keywords in: ${id}`);
+      const transformedCode = transformImports(code);
+      return {
+        code: transformedCode,
+        map: null
+      };
     }
   };
 
   logger.debug(`Building main entry: ${options.entry}`);
   
   // Setup plugins array
-  const plugins: esbuild.Plugin[] = [];
+  const plugins: RolldownPlugin[] = [];
   
-  // Add Tailwind CSS plugin if configured
-  const tailwindPlugin = await loadTailwindPlugin(projectRoot);
-  if (tailwindPlugin) {
-    plugins.push(tailwindPlugin);
+  // Check for Tailwind CSS
+  if (hasTailwindConfig(projectRoot)) {
+    logger.info('Tailwind CSS config detected (manual PostCSS integration recommended)');
   }
   
   // Add Rynex plugin
   plugins.push(rynexPlugin);
   
-  // Build with esbuild
-  const result = await esbuild.build({
-    entryPoints: [path.join(projectRoot, options.entry)],
-    bundle: true,
-    outfile: path.join(projectRoot, options.output),
-    format: 'esm',
-    platform: 'browser',
-    target: 'es2020',
-    minify: options.minify,
-    sourcemap: options.sourceMaps,
+  // Build with Rolldown
+  const build = await rolldown({
+    input: path.join(projectRoot, options.entry),
+    cwd: projectRoot,
     plugins: plugins,
-    external: [],
-    write: true,
-    logLevel: isDebug ? 'debug' : 'warning',
-    absWorkingDir: projectRoot
+    external: []
   });
 
-  logger.debug(`esbuild completed successfully`);
-  logger.debug(`Output files: ${result.outputFiles?.length || 'written to disk'}`);
+  await build.write({
+    file: path.join(projectRoot, options.output),
+    format: 'es',
+    sourcemap: options.sourceMaps,
+    minify: options.minify
+  });
+
+  await build.close();
+
+  logger.debug(`Rolldown build completed successfully`);
 
   // Handle styles.css
   const publicStylesPath = path.join(projectRoot, 'public', 'styles.css');
@@ -380,26 +365,6 @@ body {
   }
 
   logger.success(`Build complete: ${options.output}`);
-  
-  if (result.warnings.length > 0) {
-    logger.warning(`Build warnings: ${result.warnings.length} warning(s)`);
-    result.warnings.forEach(w => {
-      logger.debug(`Warning: ${w.text}`);
-      if (w.location) {
-        logger.debug(`  at ${w.location.file}:${w.location.line}:${w.location.column}`);
-      }
-    });
-  }
-  
-  if (result.errors.length > 0) {
-    logger.error(`Build errors: ${result.errors.length} error(s)`);
-    result.errors.forEach(e => {
-      logger.error(`Error: ${e.text}`);
-      if (e.location) {
-        logger.error(`  at ${e.location.file}:${e.location.line}:${e.location.column}`);
-      }
-    });
-  }
 }
 
 /**
@@ -526,56 +491,59 @@ export async function watch(options: BuildOptions): Promise<void> {
   // Use esbuild's watch mode
   const projectRoot = process.cwd();
   
-  const rynexPlugin: esbuild.Plugin = {
+  const rynexPlugin: RolldownPlugin = {
     name: 'rynex-transform',
-    setup(build) {
-      build.onLoad({ filter: /\.(ts|js|tsx|jsx)$/ }, async (args) => {
-        const source = await fs.promises.readFile(args.path, 'utf8');
-        
-        if (source.includes('view {') || source.includes('style {')) {
-          const parsed = parseRynexFile(source);
-          let transformedCode = parsed.code;
-          transformedCode = transformImports(transformedCode);
+    async transform(code, id) {
+      if (!/\.(ts|js|tsx|jsx)$/.test(id)) {
+        return null;
+      }
 
-          return {
-            contents: transformedCode,
-            loader: args.path.endsWith('.ts') || args.path.endsWith('.tsx') ? 'ts' : 'js'
-          };
-        }
+      if (code.includes('view {') || code.includes('style {')) {
+        const parsed = parseRynexFile(code);
+        let transformedCode = parsed.code;
+        transformedCode = transformImports(transformedCode);
 
-        const transformedCode = transformImports(source);
         return {
-          contents: transformedCode,
-          loader: args.path.endsWith('.ts') || args.path.endsWith('.tsx') ? 'ts' : 'js'
+          code: transformedCode,
+          map: null
         };
-      });
+      }
+
+      const transformedCode = transformImports(code);
+      return {
+        code: transformedCode,
+        map: null
+      };
     }
   };
 
   // Setup plugins for watch mode
-  const watchPlugins: esbuild.Plugin[] = [];
+  const watchPlugins: RolldownPlugin[] = [];
   
-  // Add Tailwind CSS plugin if configured
-  const tailwindPlugin = await loadTailwindPlugin(projectRoot);
-  if (tailwindPlugin) {
-    watchPlugins.push(tailwindPlugin);
+  // Check for Tailwind CSS
+  if (hasTailwindConfig(projectRoot)) {
+    logger.info('Tailwind CSS config detected (manual PostCSS integration recommended)');
   }
   
   // Add Rynex plugin
   watchPlugins.push(rynexPlugin);
 
-  const ctx = await esbuild.context({
-    entryPoints: [path.join(projectRoot, options.entry)],
-    bundle: true,
-    outfile: path.join(projectRoot, options.output),
-    format: 'esm',
-    platform: 'browser',
-    target: 'es2020',
-    minify: false,
-    sourcemap: true,
-    plugins: watchPlugins
+  const build = await rolldown({
+    input: path.join(projectRoot, options.entry),
+    cwd: projectRoot,
+    plugins: watchPlugins,
+    external: [],
+    watch: {
+      skipWrite: false
+    }
   });
 
-  await ctx.watch();
-  logger.success('Watch mode enabled');
+  await build.write({
+    file: path.join(projectRoot, options.output),
+    format: 'es',
+    sourcemap: true,
+    minify: false
+  });
+
+  logger.success('Watch mode enabled (Note: Rolldown watch support may require manual rebuild)');
 }

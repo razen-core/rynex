@@ -1,17 +1,13 @@
 /**
  * Rynex Browser Compatibility Module
  * Ensures consistent behavior across all major browsers (Chrome, Firefox, Safari, Edge)
- * Includes polyfills, fixes, and runtime enhancements for cross-browser support
+ * Modern browser support with native APIs only - no external dependencies
  */
 
-import Bowser from 'bowser';
-import Lenis from 'lenis';
 import { debugLog, debugWarn } from './debug.js';
 
 // Browser detection result
-let browserInfo: Bowser.Parser.ParsedResult | null = null;
 let isInitialized = false;
-let lenisInstance: Lenis | null = null;
 
 /**
  * Browser detection and feature support
@@ -35,28 +31,64 @@ export interface BrowserCapabilities {
 }
 
 /**
+ * Native browser detection using userAgent
+ */
+function detectBrowserFromUA(): { name: string; version: string; engine: string } {
+  const ua = navigator.userAgent;
+  let name = 'Unknown';
+  let version = '0';
+  let engine = 'Unknown';
+
+  // Detect browser
+  if (ua.includes('Firefox/')) {
+    name = 'Firefox';
+    version = ua.match(/Firefox\/(\d+\.\d+)/)?.[1] || '0';
+    engine = 'Gecko';
+  } else if (ua.includes('Edg/')) {
+    name = 'Microsoft Edge';
+    version = ua.match(/Edg\/(\d+\.\d+)/)?.[1] || '0';
+    engine = 'Blink';
+  } else if (ua.includes('Chrome/')) {
+    name = 'Chrome';
+    version = ua.match(/Chrome\/(\d+\.\d+)/)?.[1] || '0';
+    engine = 'Blink';
+  } else if (ua.includes('Safari/') && !ua.includes('Chrome')) {
+    name = 'Safari';
+    version = ua.match(/Version\/(\d+\.\d+)/)?.[1] || '0';
+    engine = 'WebKit';
+  }
+
+  return { name, version, engine };
+}
+
+/**
+ * Detect platform type
+ */
+function detectPlatform(): string {
+  const ua = navigator.userAgent;
+  if (/Mobile|Android|iPhone|iPad|iPod/.test(ua)) {
+    return /iPad|Tablet/.test(ua) ? 'tablet' : 'mobile';
+  }
+  return 'desktop';
+}
+
+/**
  * Detect browser and capabilities
  */
 export function detectBrowser(): BrowserCapabilities {
-  if (!browserInfo) {
-    const parser = Bowser.getParser(window.navigator.userAgent);
-    browserInfo = parser.getResult();
-  }
-
-  const browser = browserInfo.browser;
-  const platform = browserInfo.platform;
-  const engine = browserInfo.engine;
+  const browserInfo = detectBrowserFromUA();
+  const platform = detectPlatform();
 
   return {
-    name: browser.name || 'Unknown',
-    version: browser.version || '0',
-    platform: platform.type || 'desktop',
-    engine: engine.name || 'Unknown',
-    isChrome: browser.name === 'Chrome' || browser.name === 'Chromium',
-    isFirefox: browser.name === 'Firefox',
-    isSafari: browser.name === 'Safari',
-    isEdge: browser.name === 'Microsoft Edge',
-    isMobile: platform.type === 'mobile' || platform.type === 'tablet',
+    name: browserInfo.name,
+    version: browserInfo.version,
+    platform: platform,
+    engine: browserInfo.engine,
+    isChrome: browserInfo.name === 'Chrome',
+    isFirefox: browserInfo.name === 'Firefox',
+    isSafari: browserInfo.name === 'Safari',
+    isEdge: browserInfo.name === 'Microsoft Edge',
+    isMobile: platform === 'mobile' || platform === 'tablet',
     supportsProxy: typeof Proxy !== 'undefined',
     supportsIntersectionObserver: 'IntersectionObserver' in window,
     supportsResizeObserver: 'ResizeObserver' in window,
@@ -67,13 +99,11 @@ export function detectBrowser(): BrowserCapabilities {
 }
 
 /**
- * Initialize all polyfills and browser fixes
+ * Initialize browser fixes and optimizations
  * Should be called once at application startup
  */
 export function initializeBrowserSupport(options: {
   enableSmoothScroll?: boolean;
-  enableLenis?: boolean;
-  lenisOptions?: any;
   verbose?: boolean;
 } = {}): BrowserCapabilities {
   if (isInitialized) {
@@ -83,8 +113,6 @@ export function initializeBrowserSupport(options: {
 
   const {
     enableSmoothScroll = true,
-    enableLenis = false,
-    lenisOptions = {},
     verbose = false
   } = options;
 
@@ -101,94 +129,7 @@ export function initializeBrowserSupport(options: {
     });
   }
 
-  // 1. Core-js polyfills (imported automatically via package)
-  // Provides ES6+ features for older browsers
-  try {
-    // Core-js is imported via dependencies and bundled automatically
-    debugLog('Browser', '✓ Core-js polyfills loaded');
-  } catch (error) {
-    debugWarn('Browser', 'Core-js polyfills not available');
-  }
-
-  // 2. Fetch API polyfill
-  if (!capabilities.supportsFetch) {
-    try {
-      require('whatwg-fetch');
-      debugLog('Browser', '✓ Fetch API polyfill loaded');
-    } catch (error) {
-      debugWarn('Browser', 'Fetch polyfill not available');
-    }
-  }
-
-  // 3. IntersectionObserver polyfill
-  if (!capabilities.supportsIntersectionObserver) {
-    try {
-      require('intersection-observer');
-      debugLog('Browser', '✓ IntersectionObserver polyfill loaded');
-    } catch (error) {
-      debugWarn('Browser', 'IntersectionObserver polyfill not available');
-    }
-  }
-
-  // 4. ResizeObserver polyfill
-  if (!capabilities.supportsResizeObserver) {
-    try {
-      const { ResizeObserver: ResizeObserverPolyfill } = require('resize-observer-polyfill');
-      (window as any).ResizeObserver = ResizeObserverPolyfill;
-      debugLog('Browser', '✓ ResizeObserver polyfill loaded');
-    } catch (error) {
-      debugWarn('Browser', 'ResizeObserver polyfill not available');
-    }
-  }
-
-  // 5. Smooth scroll polyfill
-  if (enableSmoothScroll && !capabilities.supportsSmoothScroll) {
-    try {
-      const smoothscroll = require('smoothscroll-polyfill');
-      smoothscroll.polyfill();
-      debugLog('Browser', '✓ Smooth scroll polyfill loaded');
-    } catch (error) {
-      debugWarn('Browser', 'Smooth scroll polyfill not available');
-    }
-  }
-
-  // 6. Focus-visible polyfill for accessibility
-  try {
-    require('focus-visible');
-    debugLog('Browser', '✓ Focus-visible polyfill loaded');
-  } catch (error) {
-    debugWarn('Browser', 'Focus-visible polyfill not available');
-  }
-
-  // 7. Lenis smooth scrolling (optional, advanced)
-  if (enableLenis) {
-    try {
-      lenisInstance = new Lenis({
-        duration: 1.2,
-        easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        orientation: 'vertical',
-        gestureOrientation: 'vertical',
-        smoothWheel: true,
-        wheelMultiplier: 1,
-        smoothTouch: false,
-        touchMultiplier: 2,
-        infinite: false,
-        ...lenisOptions
-      });
-
-      function raf(time: number) {
-        lenisInstance?.raf(time);
-        requestAnimationFrame(raf);
-      }
-      requestAnimationFrame(raf);
-
-      debugLog('Browser', '✓ Lenis smooth scrolling initialized');
-    } catch (error) {
-      debugWarn('Browser', 'Lenis initialization failed');
-    }
-  }
-
-  // 8. Apply browser-specific fixes
+  // Apply browser-specific fixes
   applyBrowserFixes(capabilities);
 
   isInitialized = true;
@@ -562,34 +503,23 @@ export const browserDOM = {
    * Cross-browser smooth scroll to element
    */
   scrollToElement(element: HTMLElement, options: ScrollIntoViewOptions = {}): void {
-    if (lenisInstance) {
-      lenisInstance.scrollTo(element, {
-        duration: options.behavior === 'smooth' ? 1.2 : 0,
-        ...options
-      });
-    } else {
-      element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-        inline: 'nearest',
-        ...options
-      });
-    }
+    element.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+      inline: 'nearest',
+      ...options
+    });
   },
 
   /**
    * Cross-browser smooth scroll to position
    */
   scrollTo(x: number, y: number, smooth: boolean = true): void {
-    if (lenisInstance) {
-      lenisInstance.scrollTo(y, { duration: smooth ? 1.2 : 0 });
-    } else {
-      window.scrollTo({
-        top: y,
-        left: x,
-        behavior: smooth ? 'smooth' : 'auto'
-      });
-    }
+    window.scrollTo({
+      top: y,
+      left: x,
+      behavior: smooth ? 'smooth' : 'auto'
+    });
   },
 
   /**
@@ -659,24 +589,6 @@ export const browserState = {
 };
 
 /**
- * Get Lenis instance if initialized
- */
-export function getLenisInstance(): Lenis | null {
-  return lenisInstance;
-}
-
-/**
- * Destroy Lenis instance
- */
-export function destroyLenis(): void {
-  if (lenisInstance) {
-    lenisInstance.destroy();
-    lenisInstance = null;
-    debugLog('Browser', 'Lenis instance destroyed');
-  }
-}
-
-/**
  * Check if browser support is initialized
  */
 export function isBrowserSupportInitialized(): boolean {
@@ -701,7 +613,3 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     }
   }
 }
-
-// Export types and utilities
-export type { Lenis };
-export { Bowser };

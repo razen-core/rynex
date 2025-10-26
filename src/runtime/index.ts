@@ -88,9 +88,6 @@ export {
   initializeBrowserSupport,
   browserDOM,
   browserState,
-  getLenisInstance,
-  destroyLenis,
-  isBrowserSupportInitialized,
-  Bowser
+  isBrowserSupportInitialized
 } from './browsers.js';
-export type { BrowserCapabilities, Lenis } from './browsers.js';
+export type { BrowserCapabilities } from './browsers.js';

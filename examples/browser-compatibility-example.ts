@@ -9,8 +9,7 @@ import {
   state,
   initializeBrowserSupport,
   detectBrowser,
-  browserDOM,
-  getLenisInstance
+  browserDOM
 } from 'rynex';
 
 /**
@@ -218,41 +217,27 @@ function BrowserSpecificExample() {
 }
 
 /**
- * Example 6: Advanced Lenis Smooth Scrolling
+ * Example 6: Native Smooth Scrolling
  */
-function LenisExample() {
-  // Initialize with Lenis enabled
-  initializeBrowserSupport({
-    enableLenis: true,
-    lenisOptions: {
-      duration: 1.5,
-      smoothWheel: true
-    }
-  });
-  
-  const lenis = getLenisInstance();
+function NativeSmoothScrollExample() {
   const appState = state({
-    scrollPosition: 0,
-    scrollVelocity: 0
+    scrollPosition: 0
   });
   
-  if (lenis) {
-    lenis.on('scroll', (e: any) => {
-      appState.scrollPosition = Math.round(e.scroll);
-      appState.scrollVelocity = Math.round(e.velocity * 100) / 100;
+  // Track scroll position
+  if (typeof window !== 'undefined') {
+    window.addEventListener('scroll', () => {
+      appState.scrollPosition = Math.round(window.scrollY);
     });
   }
   
   return createElement('div', { class: 'p-8 bg-white rounded-lg shadow-lg max-w-2xl mx-auto my-8' },
-    createElement('h2', { class: 'text-2xl font-bold mb-4' }, '🚀 Lenis Smooth Scrolling'),
+    createElement('h2', { class: 'text-2xl font-bold mb-4' }, '🚀 Native Smooth Scrolling'),
     createElement('div', { class: 'p-4 bg-purple-100 rounded mb-4' },
-      createElement('p', {}, `Scroll Position: ${appState.scrollPosition}px`),
-      createElement('p', {}, `Scroll Velocity: ${appState.scrollVelocity}`)
+      createElement('p', {}, `Scroll Position: ${appState.scrollPosition}px`)
     ),
     createElement('p', { class: 'text-gray-600' }, 
-      lenis 
-        ? '✅ Lenis is active - enjoy buttery smooth scrolling!' 
-        : '❌ Lenis not initialized'
+      '✅ Using native browser smooth scrolling - no external dependencies!'
     )
   );
 }
@@ -286,8 +271,7 @@ function App() {
       SmoothScrollExample(),
       ViewportDetectionExample(),
       MobileResponsiveExample(),
-      // Uncomment to test Lenis:
-      // LenisExample()
+      NativeSmoothScrollExample()
     )
   );
 }
