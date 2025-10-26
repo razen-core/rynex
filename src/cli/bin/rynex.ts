@@ -5,7 +5,7 @@
  * Command-line interface for Rynex framework
  */
 
-import { initProject } from "../init-new.js";
+import { initProject } from "../init-new.js";  // Modern project initialization
 import { build, watch } from "../builder.js";
 import { startDevServer } from "../dev-server.js";
 import { startProductionServer } from "../prod-server.js";

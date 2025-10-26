@@ -91,7 +91,8 @@ export async function startDevServer(options: DevServerOptions): Promise<void> {
         'Cache-Control': 'no-cache, no-store, must-revalidate'
       });
       res.end(JSON.stringify({
-        buildHash: manifest?.buildHash || 'dev',
+        buildHash: manifest?.hash || manifest?.buildHash || 'dev',  // Support both formats
+        hash: manifest?.hash || manifest?.buildHash || 'dev',
         timestamp: manifest?.timestamp || Date.now()
       }));
       return;
@@ -204,7 +205,7 @@ export async function startDevServer(options: DevServerOptions): Promise<void> {
         
         // Read build manifest to get current build hash
         const manifest = readBuildManifest(root);
-        const buildHash = manifest?.buildHash || 'dev';
+        const buildHash = manifest?.hash || manifest?.buildHash || 'dev';
         
         const hmrScript = `
           <script>

@@ -188,12 +188,14 @@ ${config.name}/
 │   ├── index.ts           # Entry point
 │   ├── App.ts             # Root component${config.template === 'routed' ? `
 │   ├── components/        # Reusable components
-│   └── pages/            # Route pages` : ''}
-├── public/
-│   ├── index.html        # HTML shell
-│   └── styles.css        # Global styles
-└── rynex.config.js      # Configuration
+│   ├── pages/             # Route pages` : ''}
+│   ├── assets/            # Images, fonts, etc.
+│   └── styles/            # Global styles
+├── dist/                  # Build output (auto-generated)
+└── rynex.config.js        # Configuration
 \`\`\`
+
+**Note:** HTML is auto-generated during build. No need for public/ directory!
 
 ## Learn More
 

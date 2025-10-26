@@ -1,6 +1,6 @@
 # Rynex Framework - Complete Functions Reference
 
-> **Version:** 0.1.61  
+> **Version:** 0.1.0-alpha.65  
 > **Last Updated:** October 21, 2025  
 > **Status:** Production Ready (100% Complete)
 

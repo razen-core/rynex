@@ -44,6 +44,14 @@ export interface RynexConfig {
     publicPath?: string;
     analyze?: boolean;
   };
+  html?: {
+    title?: string;
+    description?: string;
+    lang?: string;
+    meta?: Record<string, string>;
+    favicon?: string;
+    inlineStyles?: boolean;
+  };
 }
 
 const defaultConfig: RynexConfig = {

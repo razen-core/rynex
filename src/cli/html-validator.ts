@@ -175,15 +175,20 @@ export function validateHTML(filePath: string, autoFix: boolean = false): HTMLVa
       const scriptPath = path.join(distDir, src);
       
       // Check if file exists OR if it's a valid bundle pattern
-      const isBundelPattern = src === 'bundel.js' || src.match(/^bundel\.[a-f0-9]{8}\.js$/);
+      const isBundlePattern = src === 'bundle.js' || 
+                             src === 'bundel.js' ||  // Legacy support
+                             src.match(/^entry\.[a-f0-9]{8}\.js$/) ||  // New production format
+                             src.match(/^bundel\.[a-f0-9]{8}\.js$/);   // Legacy production format
       
-      if (isBundelPattern) {
-        // Check if either bundel.js (dev) or bundel.[hash].js (prod) exists
+      if (isBundlePattern) {
+        // Check if any valid bundle exists
         const files = fs.readdirSync(distDir);
-        const hasBundel = files.includes('bundel.js');
-        const hasHashedBundel = files.some(f => f.match(/^bundel\.[a-f0-9]{8}\.js$/));
+        const hasBundle = files.includes('bundle.js');
+        const hasBundel = files.includes('bundel.js');  // Legacy
+        const hasHashedEntry = files.some(f => f.match(/^entry\.[a-f0-9]{8}\.js$/));
+        const hasHashedBundel = files.some(f => f.match(/^bundel\.[a-f0-9]{8}\.js$/));  // Legacy
         
-        if (!hasBundel && !hasHashedBundel) {
+        if (!hasBundle && !hasBundel && !hasHashedEntry && !hasHashedBundel) {
           issues.push({
             type: 'error',
             message: `Broken script reference: ${src} (no bundle file found)`,

@@ -81,12 +81,27 @@ function escapeRegex(str: string): string {
 }
 
 /**
- * Build manifest interface
+ * Build manifest interface (Rynex 2.0 format)
  */
 export interface BuildManifest {
-  buildHash: string;
-  timestamp: number;
-  files: {
+  version: string;
+  hash: string;
+  timestamp: string;
+  chunks: {
+    main?: string;
+    pages?: {
+      [route: string]: string;
+    };
+    components?: {
+      [name: string]: string;
+    };
+  };
+  assets?: {
+    [name: string]: string;
+  };
+  // Legacy support
+  buildHash?: string;
+  files?: {
     [key: string]: {
       hash: string;
       path: string;
@@ -96,7 +111,7 @@ export interface BuildManifest {
 }
 
 /**
- * Create or update build manifest
+ * Create or update build manifest (Rynex 2.0 format)
  */
 export function createBuildManifest(
   distDir: string,
@@ -104,17 +119,39 @@ export function createBuildManifest(
   files: Map<string, string>
 ): void {
   const manifest: BuildManifest = {
+    version: '2.0.0',
+    hash: buildHash,
+    timestamp: new Date().toISOString(),
+    chunks: {
+      pages: {},
+      components: {}
+    },
+    assets: {},
+    // Legacy support
     buildHash,
-    timestamp: Date.now(),
     files: {}
   };
 
+  // Process files and organize into chunks
   for (const [key, filePath] of files.entries()) {
     const fullPath = path.join(distDir, filePath);
     if (fs.existsSync(fullPath)) {
       const stats = fs.statSync(fullPath);
       const hash = generateFileHash(fullPath);
-      manifest.files[key] = {
+      
+      // Add to new format
+      if (key === 'main') {
+        manifest.chunks.main = filePath;
+      } else if (key.startsWith('page:')) {
+        const route = key.replace('page:', '');
+        manifest.chunks.pages![route] = filePath;
+      } else if (key.startsWith('component:')) {
+        const name = key.replace('component:', '');
+        manifest.chunks.components![name] = filePath;
+      }
+      
+      // Legacy format support
+      manifest.files![key] = {
         hash,
         path: filePath,
         size: stats.size
@@ -122,25 +159,39 @@ export function createBuildManifest(
     }
   }
 
-  const manifestPath = path.join(distDir, 'build-manifest.json');
-  fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf8');
+  // Write only to manifest.json (Rynex 2.0 format)
+  const manifestPath = path.join(distDir, 'manifest.json');
+  const manifestContent = JSON.stringify(manifest, null, 2);
+  fs.writeFileSync(manifestPath, manifestContent, 'utf8');
 }
 
 /**
- * Read build manifest
+ * Read build manifest (Rynex 2.0 format with legacy support)
  */
 export function readBuildManifest(distDir: string): BuildManifest | null {
-  const manifestPath = path.join(distDir, 'build-manifest.json');
-  if (!fs.existsSync(manifestPath)) {
-    return null;
+  // Try Rynex 2.0 format (manifest.json)
+  const manifestPath = path.join(distDir, 'manifest.json');
+  if (fs.existsSync(manifestPath)) {
+    try {
+      const content = fs.readFileSync(manifestPath, 'utf8');
+      return JSON.parse(content);
+    } catch (error) {
+      // Fall through to legacy
+    }
   }
-
-  try {
-    const content = fs.readFileSync(manifestPath, 'utf8');
-    return JSON.parse(content);
-  } catch (error) {
-    return null;
+  
+  // Fall back to legacy format (build-manifest.json) for backward compatibility
+  const legacyPath = path.join(distDir, 'build-manifest.json');
+  if (fs.existsSync(legacyPath)) {
+    try {
+      const content = fs.readFileSync(legacyPath, 'utf8');
+      return JSON.parse(content);
+    } catch (error) {
+      return null;
+    }
   }
+  
+  return null;
 }
 
 /**
@@ -162,7 +213,7 @@ export function cleanOldBuildArtifacts(distDir: string): void {
         const fileHash = generateFileHash(filePath);
         
         // Check if this file is in the current manifest
-        const isInManifest = Object.values(manifest.files).some(
+        const isInManifest = manifest.files && Object.values(manifest.files).some(
           f => f.hash === fileHash
         );
         
@@ -190,11 +241,11 @@ export function cleanOldBuildArtifacts(distDir: string): void {
       const files = fs.readdirSync(pagePath);
       
       for (const file of files) {
-        if (file.match(/^bundel\.[a-f0-9]{8}\.js$/)) {
+        if (file.match(/^(bundle|bundel|entry)\.[a-f0-9]{8}\.js$/)) {
           const filePath = path.join(pagePath, file);
           const fileHash = generateFileHash(filePath);
           
-          const isInManifest = Object.values(manifest.files).some(
+          const isInManifest = manifest.files && Object.values(manifest.files).some(
             f => f.hash === fileHash
           );
           

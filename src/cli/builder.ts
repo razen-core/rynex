@@ -20,6 +20,7 @@ import {
 } from './hash-utils.js';
 import { validateHTMLDirectory, printValidationResults } from './html-validator.js';
 import { confirm } from './prompts.js';
+import { generateHTMLWithConfig } from './html-generator.js';
 
 /**
  * Check if Tailwind CSS is configured
@@ -512,32 +513,50 @@ export async function build(options: BuildOptions): Promise<void> {
     // Always build main entry point
     await buildMainEntry(projectRoot, options, allStyles, buildHash);
     
-    // Hash the main bundle IMMEDIATELY after building
-    const mainBundlePath = path.join(distDir, 'bundel.js');
-    let hashedBundleName = 'bundel.js';
+    // Hash the main bundle ONLY in production (when minify is true)
+    const mainBundlePath = path.join(distDir, 'bundle.js');
+    let hashedBundleName = 'bundle.js';
     
     if (fs.existsSync(mainBundlePath)) {
-      const mainHash = generateFileHash(mainBundlePath);
-      hashedBundleName = `bundel.${mainHash}.js`;
-      const hashedBundlePath = path.join(distDir, hashedBundleName);
-      
-      // Clean old main bundles
-      cleanOldBundles(distDir, 'bundel', mainHash);
-      
-      // Rename main bundle
-      fs.renameSync(mainBundlePath, hashedBundlePath);
-      
-      // Rename source map if exists
-      const mainMapPath = `${mainBundlePath}.map`;
-      if (fs.existsSync(mainMapPath)) {
-        fs.renameSync(mainMapPath, `${hashedBundlePath}.map`);
+      if (options.minify) {
+        const mainHash = generateFileHash(mainBundlePath);
+        hashedBundleName = `entry.${mainHash}.js`;
+        const hashedBundlePath = path.join(distDir, hashedBundleName);
+        
+        // Clean old main bundles
+        cleanOldBundles(distDir, 'bundle', mainHash);
+        cleanOldBundles(distDir, 'entry', mainHash);
+        
+        // Rename main bundle
+        fs.renameSync(mainBundlePath, hashedBundlePath);
+        
+        // Rename source map if exists
+        const mainMapPath = `${mainBundlePath}.map`;
+        if (fs.existsSync(mainMapPath)) {
+          fs.renameSync(mainMapPath, `${hashedBundlePath}.map`);
+        }
+        
+        builtFiles.set('main', hashedBundleName);
+        logger.success(`Hashed main bundle: ${hashedBundleName}`);
+      } else {
+        builtFiles.set('main', 'bundle.js');
+        logger.info('Development mode: Using bundle.js (no hashing)');
       }
-      
-      builtFiles.set('main', hashedBundleName);
-      logger.success(`Hashed main bundle: ${hashedBundleName}`);
     }
     
-    // Copy public files to dist (this will copy index.html)
+    // Copy assets from src/assets to dist/assets (if exists)
+    const assetsDir = path.join(projectRoot, 'src', 'assets');
+    if (fs.existsSync(assetsDir)) {
+      const distAssetsDir = path.join(distDir, 'assets');
+      if (!fs.existsSync(distAssetsDir)) {
+        fs.mkdirSync(distAssetsDir, { recursive: true });
+      }
+      logger.debug(`Copying assets from ${assetsDir} to ${distAssetsDir}`);
+      copyPublicFiles(assetsDir, distAssetsDir);
+      logger.success('Assets copied to dist/assets');
+    }
+    
+    // Copy public files if they exist (for backward compatibility)
     const publicDir = path.join(projectRoot, 'public');
     if (fs.existsSync(publicDir)) {
       logger.debug(`Copying public files from ${publicDir} to ${distDir}`);
@@ -545,35 +564,17 @@ export async function build(options: BuildOptions): Promise<void> {
       logger.success('Public files copied to dist');
     }
     
-    // NOW update index.html with the hashed bundle reference
+    // Generate index.html automatically
     const indexHtmlPath = path.join(distDir, 'index.html');
-    if (fs.existsSync(indexHtmlPath)) {
-      let indexHtml = fs.readFileSync(indexHtmlPath, 'utf8');
-      
-      // Add cache-busting meta tags if not present
-      if (!indexHtml.includes('Cache-Control')) {
-        indexHtml = indexHtml.replace(
-          '<head>',
-          `<head>\n  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">\n  <meta http-equiv="Pragma" content="no-cache">\n  <meta http-equiv="Expires" content="0">\n  <meta name="build-version" content="${buildHash}"`
-        );
-      }
-      
-      // Update HTML to reference hashed bundle
-      // Handle both bundel.js and bundel.[oldhash].js patterns
-      indexHtml = indexHtml.replace(
-        /src="bundel(?:\.[a-f0-9]{8})?\.js"/g,
-        `src="${hashedBundleName}"`
-      );
-      
-      // Also handle without quotes (rare but possible)
-      indexHtml = indexHtml.replace(
-        /src=bundel(?:\.[a-f0-9]{8})?\.js/g,
-        `src=${hashedBundleName}`
-      );
-      
-      fs.writeFileSync(indexHtmlPath, indexHtml, 'utf8');
-      logger.success(`Updated index.html with hashed bundles (build: ${buildHash})`);
-    }
+    const htmlConfig = options.config?.html || {};
+    const generatedHTML = generateHTMLWithConfig(
+      hashedBundleName,
+      htmlConfig,
+      buildHash
+    );
+    
+    fs.writeFileSync(indexHtmlPath, generatedHTML, 'utf8');
+    logger.success(`Generated index.html with bundle: ${hashedBundleName}`);
 
     // Validate HTML files
     logger.info('\n📋 Validating HTML files...');
