@@ -4,7 +4,7 @@
  */
 
 import { createElement, DOMProps, DOMChildren } from '../dom.js';
-import { vbox, hbox } from './layout.js';
+import { vboxLegacy as vbox, hboxLegacy as hbox } from './layout.js';
 import { text } from './basic_elements.js';
 import { svg } from './media.js';
 

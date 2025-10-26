@@ -1,0 +1,14 @@
+{
+  "name": "rynex-builder-api-demo",
+  "version": "1.0.0",
+  "description": "Rynex Builder API demonstration with full reactivity",
+  "type": "module",
+  "scripts": {
+    "dev": "node ../../dist/cli/bin/rynex.js dev",
+    "start": "node ../../dist/cli/bin/rynex.js start",
+    "build": "node ../../dist/cli/bin/rynex.js build"
+  },
+  "dependencies": {
+    "rynex": "file:../.."
+  }
+}

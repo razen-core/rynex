@@ -1,5 +1,7 @@
 # Rynex Framework
 
+> **ALPHA RELEASE** - New Builder API in development. See [ALPHA-RELEASE-NOTICE.md](./ALPHA-RELEASE-NOTICE.md) for details.
+
 A minimalist TypeScript framework for building reactive web applications with no Virtual DOM.
 
 ## Features

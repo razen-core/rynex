@@ -136,60 +136,28 @@ const RYNEX_VALIDATION_RULES: Record<string, FunctionRule> = {
     ]
   },
   vbox: {
-    minArgs: 1,
+    minArgs: 0,
     category: 'Layout',
-    description: 'Vertical flex layout container',
-    rules: [
-      {
-        argIndex: 0,
-        type: 'object',
-        optionalProps: ['style', 'class', 'gap', 'onClick', 'onHover', 'onChange', 'onInput'],
-        message: 'vbox() expects props object',
-        severity: 'warning'
-      }
-    ]
+    description: 'Vertical flex layout container (Builder API)',
+    rules: []
   },
   hbox: {
-    minArgs: 1,
+    minArgs: 0,
     category: 'Layout',
-    description: 'Horizontal flex layout container',
-    rules: [
-      {
-        argIndex: 0,
-        type: 'object',
-        optionalProps: ['style', 'class', 'gap', 'onClick', 'onHover', 'onChange', 'onInput'],
-        message: 'hbox() expects props object',
-        severity: 'warning'
-      }
-    ]
+    description: 'Horizontal flex layout container (Builder API)',
+    rules: []
   },
   grid: {
-    minArgs: 1,
+    minArgs: 0,
     category: 'Layout',
-    description: 'Grid layout container',
-    rules: [
-      {
-        argIndex: 0,
-        type: 'object',
-        optionalProps: ['columns', 'gap', 'style', 'class', 'onClick', 'onHover'],
-        message: 'grid() expects props object',
-        severity: 'warning'
-      }
-    ]
+    description: 'Grid layout container (Builder API)',
+    rules: []
   },
   div: {
-    minArgs: 1,
+    minArgs: 0,
     category: 'Elements',
-    description: 'Div element',
-    rules: [
-      {
-        argIndex: 0,
-        type: 'object',
-        optionalProps: ['class', 'id', 'style', 'onClick', 'onHover', 'onChange', 'onInput'],
-        message: 'div() expects props object',
-        severity: 'warning'
-      }
-    ]
+    description: 'Div element (Builder API)',
+    rules: []
   },
   card: {
     minArgs: 1,
@@ -206,18 +174,10 @@ const RYNEX_VALIDATION_RULES: Record<string, FunctionRule> = {
     ]
   },
   button: {
-    minArgs: 1,
+    minArgs: 0,
     category: 'Elements',
-    description: 'Button element',
-    rules: [
-      {
-        argIndex: 0,
-        type: 'object',
-        optionalProps: ['onClick', 'disabled', 'type', 'class', 'style', 'onHover'],
-        message: 'button() expects props object',
-        severity: 'warning'
-      }
-    ]
+    description: 'Button element (Builder API)',
+    rules: []
   },
   modal: {
     minArgs: 1,

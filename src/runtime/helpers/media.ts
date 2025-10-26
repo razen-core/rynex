@@ -1,28 +1,119 @@
 /**
  * Rynex Media Elements
- * Media and embedded content elements
+ * Media and embedded content elements with Rust-style Builder API
  */
 
 import { createElement, DOMProps, DOMChildren } from '../dom.js';
+import { ElementBuilder } from './builder.js';
 
 /**
- * Video player
+ * Video player - Builder API
  */
-export function video(props: DOMProps & { src?: string; controls?: boolean }, ...children: DOMChildren[]): HTMLVideoElement {
+export class VideoBuilder extends ElementBuilder<HTMLVideoElement> {
+  constructor() {
+    super('video');
+  }
+
+  src(value: string): this {
+    this.element.src = value;
+    return this;
+  }
+
+  controls(value: boolean = true): this {
+    this.element.controls = value;
+    return this;
+  }
+
+  autoplay(value: boolean = true): this {
+    this.element.autoplay = value;
+    return this;
+  }
+
+  loop(value: boolean = true): this {
+    this.element.loop = value;
+    return this;
+  }
+
+  muted(value: boolean = true): this {
+    this.element.muted = value;
+    return this;
+  }
+
+  poster(value: string): this {
+    this.element.poster = value;
+    return this;
+  }
+}
+
+export function video(): VideoBuilder {
+  return new VideoBuilder();
+}
+
+/**
+ * Audio player - Builder API
+ */
+export class AudioBuilder extends ElementBuilder<HTMLAudioElement> {
+  constructor() {
+    super('audio');
+  }
+
+  src(value: string): this {
+    this.element.src = value;
+    return this;
+  }
+
+  controls(value: boolean = true): this {
+    this.element.controls = value;
+    return this;
+  }
+
+  autoplay(value: boolean = true): this {
+    this.element.autoplay = value;
+    return this;
+  }
+
+  loop(value: boolean = true): this {
+    this.element.loop = value;
+    return this;
+  }
+
+  muted(value: boolean = true): this {
+    this.element.muted = value;
+    return this;
+  }
+}
+
+export function audio(): AudioBuilder {
+  return new AudioBuilder();
+}
+
+/**
+ * Canvas element - Builder API
+ */
+export class CanvasBuilder extends ElementBuilder<HTMLCanvasElement> {
+  constructor() {
+    super('canvas');
+  }
+
+  getContext(contextId: '2d' | 'webgl' | 'webgl2'): CanvasRenderingContext2D | WebGLRenderingContext | WebGL2RenderingContext | null {
+    return this.element.getContext(contextId) as any;
+  }
+}
+
+export function canvas(): CanvasBuilder {
+  return new CanvasBuilder();
+}
+
+// Legacy support
+export function videoLegacy(props: DOMProps & { src?: string; controls?: boolean }, ...children: DOMChildren[]): HTMLVideoElement {
   return createElement('video', props, ...children) as HTMLVideoElement;
 }
 
-/**
- * Audio player
- */
-export function audio(props: DOMProps & { src?: string; controls?: boolean }, ...children: DOMChildren[]): HTMLAudioElement {
+export function audioLegacy(props: DOMProps & { src?: string; controls?: boolean }, ...children: DOMChildren[]): HTMLAudioElement {
   return createElement('audio', props, ...children) as HTMLAudioElement;
 }
 
-/**
- * Canvas element
- */
-export function canvas(props: DOMProps & { width?: number; height?: number }): HTMLCanvasElement {
+export function canvasLegacy(props: DOMProps & { width?: number; height?: number }): HTMLCanvasElement {
   return createElement('canvas', props) as HTMLCanvasElement;
 }
 
@@ -77,29 +168,114 @@ export function svgPath(d: string, props?: DOMProps): SVGPathElement {
 }
 
 /**
- * Iframe element
+ * Iframe element - Builder API
  */
-export function iframe(props: DOMProps & { src: string }): HTMLIFrameElement {
+export class IframeBuilder extends ElementBuilder<HTMLIFrameElement> {
+  constructor() {
+    super('iframe');
+  }
+
+  src(value: string): this {
+    this.element.src = value;
+    return this;
+  }
+
+  sandbox(value: string): this {
+    this.element.sandbox.value = value;
+    return this;
+  }
+
+  allow(value: string): this {
+    this.element.allow = value;
+    return this;
+  }
+}
+
+export function iframe(): IframeBuilder {
+  return new IframeBuilder();
+}
+
+/**
+ * Picture element - Builder API
+ */
+export function picture(): ElementBuilder<HTMLPictureElement> {
+  return new ElementBuilder<HTMLPictureElement>('picture');
+}
+
+/**
+ * Media source - Builder API
+ */
+export class SourceBuilder extends ElementBuilder<HTMLSourceElement> {
+  constructor() {
+    super('source');
+  }
+
+  src(value: string): this {
+    this.element.src = value;
+    return this;
+  }
+
+  type(value: string): this {
+    this.element.type = value;
+    return this;
+  }
+
+  media(value: string): this {
+    this.element.media = value;
+    return this;
+  }
+}
+
+export function source(): SourceBuilder {
+  return new SourceBuilder();
+}
+
+/**
+ * Media track - Builder API
+ */
+export class TrackBuilder extends ElementBuilder<HTMLTrackElement> {
+  constructor() {
+    super('track');
+  }
+
+  src(value: string): this {
+    this.element.src = value;
+    return this;
+  }
+
+  kind(value: 'subtitles' | 'captions' | 'descriptions' | 'chapters' | 'metadata'): this {
+    this.element.kind = value;
+    return this;
+  }
+
+  srclang(value: string): this {
+    this.element.srclang = value;
+    return this;
+  }
+
+  label(value: string): this {
+    this.element.label = value;
+    return this;
+  }
+}
+
+export function track(): TrackBuilder {
+  return new TrackBuilder();
+}
+
+// Legacy support
+export function iframeLegacy(props: DOMProps & { src: string }): HTMLIFrameElement {
   return createElement('iframe', props) as HTMLIFrameElement;
 }
 
-/**
- * Picture element
- */
-export function picture(props: DOMProps, ...children: DOMChildren[]): HTMLPictureElement {
+export function pictureLegacy(props: DOMProps, ...children: DOMChildren[]): HTMLPictureElement {
   return createElement('picture', props, ...children) as HTMLPictureElement;
 }
 
-/**
- * Media source
- */
-export function source(props: DOMProps & { src: string; type?: string }): HTMLSourceElement {
+export function sourceLegacy(props: DOMProps & { src: string; type?: string }): HTMLSourceElement {
   return createElement('source', props) as HTMLSourceElement;
 }
 
-/**
- * Media track
- */
-export function track(props: DOMProps & { src: string; kind?: string; srclang?: string }): HTMLTrackElement {
+export function trackLegacy(props: DOMProps & { src: string; kind?: string; srclang?: string }): HTMLTrackElement {
   return createElement('track', props) as HTMLTrackElement;
 }
