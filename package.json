@@ -32,7 +32,7 @@
     }
   },
   "bin": {
-    "rynex": "./dist/cli/bin/rynex.js"
+    "rynex": "dist/cli/bin/rynex.js"
   },
   "files": [
     "dist",

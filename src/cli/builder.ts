@@ -21,6 +21,10 @@ import {
 import { validateHTMLDirectory, printValidationResults } from './html-validator.js';
 import { confirm } from './prompts.js';
 import { generateHTMLWithConfig } from './html-generator.js';
+import { createAliasPlugin } from './path-resolver.js';
+import { buildProgress } from './progress.js';
+import { compressDirectory, printCompressionSummary } from './compression.js';
+import { handleError, parseBuildError } from './error-handler.js';
 
 /**
  * Check if Tailwind CSS is configured
@@ -113,6 +117,7 @@ async function buildComponents(
       const build = await rolldown({
         input: componentPath,
         cwd: projectRoot,
+        plugins: [createAliasPlugin(projectRoot)],
         platform: 'browser',
         treeshake: minify,
         external: [],
@@ -148,7 +153,11 @@ async function buildComponents(
       
       logger.success(`Built component: ${componentName}.${fileHash}.js`);
     } catch (error) {
-      logger.error(`Failed to build component ${componentName}`, error as Error);
+      const buildError = error as any;
+      const errorContext = parseBuildError(buildError);
+      errorContext.file = errorContext.file || componentPath;
+      handleError(buildError, errorContext);
+      logger.error(`Failed to build component ${componentName}`);
     }
   }
 }
@@ -254,6 +263,7 @@ async function buildPages(
       const build = await rolldown({
         input: pageFile,
         cwd: projectRoot,
+        plugins: [createAliasPlugin(projectRoot)],
         platform: 'browser',
         treeshake: minify,
         external: [],
@@ -296,7 +306,11 @@ async function buildPages(
 
       logger.success(`Built page: ${pageDir} -> ${bundleFileName}`);
     } catch (error) {
-      logger.error(`Failed to build page ${pageDir}`, error as Error);
+      const buildError = error as any;
+      const errorContext = parseBuildError(buildError);
+      errorContext.file = errorContext.file || pageFile;
+      handleError(buildError, errorContext);
+      logger.error(`Failed to build page ${pageDir}`);
     }
   }
 }
@@ -359,6 +373,9 @@ async function buildMainEntry(
   
   // Setup plugins array
   const plugins: RolldownPlugin[] = [];
+  
+  // Add path alias resolution plugin
+  plugins.push(createAliasPlugin(projectRoot));
   
   // Check for Tailwind CSS
   if (hasTailwindConfig(projectRoot)) {
@@ -443,6 +460,9 @@ export async function build(options: BuildOptions): Promise<void> {
     logger.setDebug(true);
   }
 
+  // Start progress tracking
+  buildProgress.start();
+  
   logger.info('Building Rynex project');
   logger.debug(`Build options: ${JSON.stringify(options)}`);
 
@@ -460,6 +480,7 @@ export async function build(options: BuildOptions): Promise<void> {
   }
 
   // Generate build hash for cache-busting
+  buildProgress.step('Initializing build');
   const buildHash = generateBuildHash();
   logger.info(`Build hash: ${buildHash}`);
   
@@ -474,6 +495,7 @@ export async function build(options: BuildOptions): Promise<void> {
 
   try {
     // Scan and generate routes if file-based routing is enabled
+    buildProgress.step('Scanning routes');
     if (options.config?.routing?.fileBasedRouting) {
       const pagesDir = path.join(projectRoot, options.config.routing.pagesDir || 'src/pages');
       if (fs.existsSync(pagesDir)) {
@@ -501,16 +523,19 @@ export async function build(options: BuildOptions): Promise<void> {
       
       // Build components
       if (hasComponents) {
+        buildProgress.step('Building components');
         await buildComponents(projectRoot, distDir, options.minify, options.sourceMaps);
       }
       
       // Build pages
       if (hasPages) {
+        buildProgress.step('Building pages');
         await buildPages(projectRoot, distDir, options.minify, options.sourceMaps, buildHash);
       }
     }
     
     // Always build main entry point
+    buildProgress.step('Building main entry');
     await buildMainEntry(projectRoot, options, allStyles, buildHash);
     
     // Hash the main bundle ONLY in production (when minify is true)
@@ -545,6 +570,7 @@ export async function build(options: BuildOptions): Promise<void> {
     }
     
     // Copy assets from src/assets to dist/assets (if exists)
+    buildProgress.step('Copying assets');
     const assetsDir = path.join(projectRoot, 'src', 'assets');
     if (fs.existsSync(assetsDir)) {
       const distAssetsDir = path.join(distDir, 'assets');
@@ -565,6 +591,7 @@ export async function build(options: BuildOptions): Promise<void> {
     }
     
     // Generate index.html automatically
+    buildProgress.step('Generating HTML');
     const indexHtmlPath = path.join(distDir, 'index.html');
     const htmlConfig = options.config?.html || {};
     const generatedHTML = generateHTMLWithConfig(
@@ -577,7 +604,8 @@ export async function build(options: BuildOptions): Promise<void> {
     logger.success(`Generated index.html with bundle: ${hashedBundleName}`);
 
     // Validate HTML files
-    logger.info('\n📋 Validating HTML files...');
+    buildProgress.step('Validating HTML');
+    logger.info('\nValidating HTML files...');
     const validationResults = validateHTMLDirectory(distDir, false);
     
     if (validationResults.size > 0) {
@@ -598,24 +626,54 @@ export async function build(options: BuildOptions): Promise<void> {
         }
         
         if (shouldAutoFix) {
-          logger.info('🔧 Auto-fixing HTML issues...');
+          logger.info('Auto-fixing HTML issues...');
           const fixedResults = validateHTMLDirectory(distDir, true);
           logger.info('');
           printValidationResults(fixedResults);
         } else {
-          logger.info('⏭️  Skipping auto-fix. You can fix these manually.');
+          logger.info('Skipping auto-fix. You can fix these manually.');
         }
       }
     }
     
     // Create build manifest
+    buildProgress.step('Creating manifest');
     createBuildManifest(distDir, buildHash, builtFiles);
     logger.success(`Build manifest created with hash: ${buildHash}`);
+    
+    // Compress files in production
+    if (options.minify) {
+      const compressionConfig = options.config?.build?.compression;
+      const shouldCompress = compressionConfig !== undefined 
+        ? (compressionConfig.gzip !== false || compressionConfig.brotli !== false)
+        : true; // Default to enabled
+      
+      if (shouldCompress) {
+        buildProgress.step('Compressing assets');
+        const compressionResults = await compressDirectory(distDir, {
+          gzip: compressionConfig?.gzip !== false,
+          brotli: compressionConfig?.brotli !== false,
+          threshold: compressionConfig?.threshold || 1024
+        });
+        printCompressionSummary(compressionResults);
+      }
+    }
+    
+    // Complete build and show summary
+    buildProgress.complete();
 
   } catch (error) {
-    logger.error('Build failed', error as Error);
-    logger.debug(`Error details: ${JSON.stringify(error, null, 2)}`);
-    throw error;
+    const buildError = error as any;
+    const errorContext = parseBuildError(buildError);
+    
+    if (errorContext.file || errorContext.line) {
+      handleError(buildError, errorContext);
+    } else {
+      logger.error('Build failed', buildError);
+    }
+    
+    logger.debug(`Error details: ${JSON.stringify(buildError, null, 2)}`);
+    process.exit(1);
   }
 }
 

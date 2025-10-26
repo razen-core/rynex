@@ -43,6 +43,11 @@ export interface RynexConfig {
     chunkSize?: number;
     publicPath?: string;
     analyze?: boolean;
+    compression?: {
+      gzip?: boolean;
+      brotli?: boolean;
+      threshold?: number;
+    };
   };
   html?: {
     title?: string;
@@ -51,6 +56,9 @@ export interface RynexConfig {
     meta?: Record<string, string>;
     favicon?: string;
     inlineStyles?: boolean;
+  };
+  resolve?: {
+    alias?: Record<string, string>;
   };
 }
 
