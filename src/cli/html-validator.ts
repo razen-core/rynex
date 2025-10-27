@@ -175,23 +175,33 @@ export function validateHTML(filePath: string, autoFix: boolean = false): HTMLVa
       const scriptPath = path.join(distDir, src);
       
       // Check if file exists OR if it's a valid bundle pattern
-      const isBundlePattern = src === 'bundle.js' || 
-                             src === 'bundel.js' ||  // Legacy support
-                             src.match(/^entry\.[a-f0-9]{8}\.js$/) ||  // New production format
-                             src.match(/^bundel\.[a-f0-9]{8}\.js$/);   // Legacy production format
+      // Match any filename with hash pattern: name.[hash].js
+      const isHashedBundle = src.match(/^[a-zA-Z0-9_-]+\.[a-f0-9]{8}\.js$/);
+      const isSimpleBundle = src.match(/^[a-zA-Z0-9_-]+\.js$/);
       
-      if (isBundlePattern) {
-        // Check if any valid bundle exists
-        const files = fs.readdirSync(distDir);
-        const hasBundle = files.includes('bundle.js');
-        const hasBundel = files.includes('bundel.js');  // Legacy
-        const hasHashedEntry = files.some(f => f.match(/^entry\.[a-f0-9]{8}\.js$/));
-        const hasHashedBundel = files.some(f => f.match(/^bundel\.[a-f0-9]{8}\.js$/));  // Legacy
-        
-        if (!hasBundle && !hasBundel && !hasHashedEntry && !hasHashedBundel) {
+      if (isHashedBundle || isSimpleBundle) {
+        // For hashed bundles, check if the referenced file exists
+        if (isHashedBundle && !fs.existsSync(scriptPath)) {
+          // Check if any bundle with the same base name exists
+          const baseName = src.replace(/\.[a-f0-9]{8}\.js$/, '');
+          const files = fs.readdirSync(distDir);
+          const hasAnyBundle = files.some(f => 
+            f === `${baseName}.js` || 
+            f.match(new RegExp(`^${baseName}\\.[a-f0-9]{8}\\.js$`))
+          );
+          
+          if (!hasAnyBundle) {
+            issues.push({
+              type: 'error',
+              message: `Broken script reference: ${src} (no bundle file found)`,
+              autoFixable: false
+            });
+          }
+        } else if (isSimpleBundle && !fs.existsSync(scriptPath)) {
+          // For simple bundles, check if file exists
           issues.push({
             type: 'error',
-            message: `Broken script reference: ${src} (no bundle file found)`,
+            message: `Broken script reference: ${src} (file not found)`,
             autoFixable: false
           });
         }

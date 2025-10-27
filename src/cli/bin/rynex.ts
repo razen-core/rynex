@@ -15,6 +15,7 @@ import { handleAddCommand } from "../add-command.js";
 import { runTypeCheck } from "../type-checker.js";
 import { runRynexValidation } from "../rynex-validator.js";
 import { initCSS } from "../init-css-command.js";
+import { cleanCommand } from "../clean-command.js";
 import * as path from "path";
 
 const args = process.argv.slice(2);
@@ -150,10 +151,9 @@ async function main() {
     }
 
     case "clean": {
-      const { execSync } = await import("child_process");
-      logger.info("Cleaning build artifacts");
-      execSync("rm -rf dist", { stdio: "inherit" });
-      logger.success("Clean complete");
+      const force = args.includes("--force") || args.includes("-f");
+      const verbose = args.includes("--verbose") || args.includes("-v");
+      await cleanCommand({ force, verbose });
       break;
     }
 
@@ -168,20 +168,27 @@ Usage:
   rynex <command> [options]
 
 Commands:
-  init [name]    Create a new Rynex project
-  init:css       Initialize Tailwind CSS v4 setup
-  build          Build project for production
-  dev            Start development server with hot reload
-  start          Start production server (Express or native HTTP)
-  add <name>     Add integrations (e.g., tailwind)
-  clean          Remove build artifacts
-  help           Show this help message
+  init [name]       Create a new Rynex project
+  init:css          Initialize Tailwind CSS v4 setup
+  build             Build project for production
+  dev               Start development server with hot reload
+  start             Start production server (Express or native HTTP)
+  add <name>        Add integrations (e.g., tailwind)
+  clean [options]   Remove build artifacts (dist directory)
+  help              Show this help message
+
+Clean Options:
+  -f, --force       Skip confirmation prompt
+  -v, --verbose     Show detailed output
 
 Examples:
   rynex init my-app
   rynex init:css
   rynex dev
   rynex build
+  rynex clean
+  rynex clean --force
+  rynex clean --verbose
   rynex add tailwind
   rynex start
 

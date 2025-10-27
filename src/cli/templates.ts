@@ -35,7 +35,7 @@ export const packageJson = (config: TemplateConfig) => `{
  */
 export const rynexConfig = (config: TemplateConfig) => `export default {
   entry: 'src/index.${ext(config)}',
-  output: 'public/bundle.js',
+  output: 'dist/bundle.js',
   minify: false,
   sourceMaps: true,
   port: 3000,

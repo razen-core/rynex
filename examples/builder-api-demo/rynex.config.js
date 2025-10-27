@@ -1,7 +1,7 @@
 export default {
   entry: "src/index.ts",
-  output: "dist/bundel.js",
-  minify: true, // Development mode
+  output: "dist/bundle.js",
+  minify: true, // Production mode with hashing
   sourceMaps: true,
   port: 3000,
   hotReload: true,

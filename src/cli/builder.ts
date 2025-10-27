@@ -16,7 +16,7 @@ import {
   generateFileHash, 
   cleanOldBundles, 
   createBuildManifest,
-  cleanOldBuildArtifacts 
+  cleanDistDirectory 
 } from './hash-utils.js';
 import { validateHTMLDirectory, printValidationResults } from './html-validator.js';
 import { confirm } from './prompts.js';
@@ -262,7 +262,7 @@ async function buildPages(
     }
 
     // Build page TypeScript to temporary file first
-    const tempOutputPath = path.join(distPageDir, 'bundel.temp.js');
+    const tempOutputPath = path.join(distPageDir, 'bundle.temp.js');
     logger.debug(`Building page: ${pageDir}`);
 
     try {
@@ -288,11 +288,11 @@ async function buildPages(
       
       // Generate hash from built file content
       const fileHash = generateFileHash(tempOutputPath);
-      const finalOutputPath = path.join(distPageDir, `bundel.${fileHash}.js`);
-      const bundleFileName = `bundel.${fileHash}.js`;
+      const finalOutputPath = path.join(distPageDir, `bundle.${fileHash}.js`);
+      const bundleFileName = `bundle.${fileHash}.js`;
       
       // Clean old bundles with different hashes
-      cleanOldBundles(distPageDir, 'bundel', fileHash);
+      cleanOldBundles(distPageDir, 'bundle', fileHash);
       
       // Rename temp file to final hashed name
       fs.renameSync(tempOutputPath, finalOutputPath);
@@ -480,18 +480,23 @@ export async function build(options: BuildOptions): Promise<void> {
   logger.debug(`Source directory: ${srcDir}`);
   logger.debug(`Output directory: ${distDir}`);
 
-  // Ensure dist directory exists
+  // Start initialization
+  buildProgress.step('Initializing build');
+  
+  // Clean dist directory before starting new build
+  const cleanedCount = cleanDistDirectory(distDir);
+  if (cleanedCount > 0) {
+    logger.success(`Cleaned ${cleanedCount} old file(s) from dist directory`);
+  }
+
+  // Ensure dist directory exists (after cleaning)
   if (!fs.existsSync(distDir)) {
     fs.mkdirSync(distDir, { recursive: true });
   }
 
-  // Generate build hash for cache-busting
-  buildProgress.step('Initializing build');
+  // Generate build hash for cache-busting (after cleaning)
   const buildHash = generateBuildHash();
   logger.info(`Build hash: ${buildHash}`);
-  
-  // Clean old build artifacts before starting new build
-  cleanOldBuildArtifacts(distDir);
 
   // Collect all styles
   let allStyles = '';
@@ -580,18 +585,20 @@ export async function build(options: BuildOptions): Promise<void> {
     await buildMainEntry(projectRoot, options, allStyles, buildHash);
     
     // Hash the main bundle ONLY in production (when minify is true)
-    const mainBundlePath = path.join(distDir, 'bundle.js');
-    let hashedBundleName = 'bundle.js';
+    const outputBasename = path.basename(options.output);
+    const mainBundlePath = path.join(distDir, outputBasename);
+    let hashedBundleName = outputBasename;
     
     if (fs.existsSync(mainBundlePath)) {
       if (options.minify) {
         const mainHash = generateFileHash(mainBundlePath);
-        hashedBundleName = `entry.${mainHash}.js`;
+        const outputExt = path.extname(outputBasename);
+        const outputName = path.basename(outputBasename, outputExt);
+        hashedBundleName = `${outputName}.${mainHash}${outputExt}`;
         const hashedBundlePath = path.join(distDir, hashedBundleName);
         
-        // Clean old main bundles
-        cleanOldBundles(distDir, 'bundle', mainHash);
-        cleanOldBundles(distDir, 'entry', mainHash);
+        // Clean old main bundles with different hashes
+        cleanOldBundles(distDir, outputName, mainHash);
         
         // Rename main bundle
         fs.renameSync(mainBundlePath, hashedBundlePath);
@@ -605,8 +612,8 @@ export async function build(options: BuildOptions): Promise<void> {
         builtFiles.set('main', hashedBundleName);
         logger.success(`Hashed main bundle: ${hashedBundleName}`);
       } else {
-        builtFiles.set('main', 'bundle.js');
-        logger.info('Development mode: Using bundle.js (no hashing)');
+        builtFiles.set('main', outputBasename);
+        logger.info(`Development mode: Using ${outputBasename} (no hashing)`);
       }
     }
     

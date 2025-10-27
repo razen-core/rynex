@@ -28,7 +28,7 @@ export default function App() {
     .add([
       // Title
       h2()
-        .add([text('Interactive Counter').build()])
+        .add([text('Interactive Counte 2').build()])
         .color('#1f2937')
         .style('fontSize', '1.5rem')
         .style('fontWeight', 'bold')

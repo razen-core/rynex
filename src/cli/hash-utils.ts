@@ -195,69 +195,37 @@ export function readBuildManifest(distDir: string): BuildManifest | null {
 }
 
 /**
- * Clean all old build artifacts based on manifest
+ * Clean all files in dist directory before build
+ * Removes all old build artifacts to ensure a fresh build
  */
-export function cleanOldBuildArtifacts(distDir: string): void {
-  const manifest = readBuildManifest(distDir);
-  if (!manifest) {
-    return;
+export function cleanDistDirectory(distDir: string): number {
+  if (!fs.existsSync(distDir)) {
+    return 0;
   }
 
-  // Clean old bundles in components directory
-  const componentsDir = path.join(distDir, 'components');
-  if (fs.existsSync(componentsDir)) {
-    const files = fs.readdirSync(componentsDir);
-    for (const file of files) {
-      if (file.match(/\.[a-f0-9]{8}\.js$/)) {
-        const filePath = path.join(componentsDir, file);
-        const fileHash = generateFileHash(filePath);
-        
-        // Check if this file is in the current manifest
-        const isInManifest = manifest.files && Object.values(manifest.files).some(
-          f => f.hash === fileHash
-        );
-        
-        if (!isInManifest) {
-          fs.unlinkSync(filePath);
-          const mapPath = `${filePath}.map`;
-          if (fs.existsSync(mapPath)) {
-            fs.unlinkSync(mapPath);
-          }
-        }
+  const entries = fs.readdirSync(distDir);
+  let cleanedCount = 0;
+
+  for (const entry of entries) {
+    const fullPath = path.join(distDir, entry);
+    
+    try {
+      const stat = fs.statSync(fullPath);
+
+      if (stat.isDirectory()) {
+        // Recursively remove directory and all contents
+        fs.rmSync(fullPath, { recursive: true, force: true });
+        cleanedCount++;
+      } else {
+        // Remove individual file
+        fs.unlinkSync(fullPath);
+        cleanedCount++;
       }
+    } catch (error) {
+      // Skip files that can't be deleted (e.g., in use)
+      console.warn(`Warning: Could not delete ${entry}`);
     }
   }
 
-  // Clean old bundles in pages directories
-  const pagesDir = path.join(distDir, 'pages');
-  if (fs.existsSync(pagesDir)) {
-    const pageDirectories = fs.readdirSync(pagesDir).filter(f => {
-      const fullPath = path.join(pagesDir, f);
-      return fs.statSync(fullPath).isDirectory();
-    });
-
-    for (const pageDir of pageDirectories) {
-      const pagePath = path.join(pagesDir, pageDir);
-      const files = fs.readdirSync(pagePath);
-      
-      for (const file of files) {
-        if (file.match(/^(bundle|bundel|entry)\.[a-f0-9]{8}\.js$/)) {
-          const filePath = path.join(pagePath, file);
-          const fileHash = generateFileHash(filePath);
-          
-          const isInManifest = manifest.files && Object.values(manifest.files).some(
-            f => f.hash === fileHash
-          );
-          
-          if (!isInManifest) {
-            fs.unlinkSync(filePath);
-            const mapPath = `${filePath}.map`;
-            if (fs.existsSync(mapPath)) {
-              fs.unlinkSync(mapPath);
-            }
-          }
-        }
-      }
-    }
-  }
+  return cleanedCount;
 }

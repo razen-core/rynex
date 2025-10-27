@@ -1,5 +1,5 @@
 import { render } from '../../../dist/runtime/index.js';
-import App from './App.js';
+import App from './App';
 
 const root = document.getElementById('app');
 if (root) {

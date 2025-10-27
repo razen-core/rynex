@@ -72,7 +72,7 @@ export interface RynexConfig {
 const defaultConfig: RynexConfig = {
   entry: 'src/index.ts',
   output: 'dist/bundle.js',
-  minify: true,
+  minify: false,
   sourceMaps: true,
   port: 3000,
   hotReload: true,
