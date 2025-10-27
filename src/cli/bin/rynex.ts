@@ -39,7 +39,7 @@ async function main() {
       const rynexValid = runRynexValidation(process.cwd());
 
       if (!rynexValid) {
-        logger.error("\n❌ Build failed: Fix Rynex validation errors above\n");
+        logger.error("\n[ERROR] Build failed: Fix Rynex validation errors above\n");
         process.exit(1);
       }
 
@@ -48,7 +48,7 @@ async function main() {
 
       if (!typeCheckResult.success) {
         logger.error(
-          `\n❌ Build failed: Found ${typeCheckResult.errorCount} type error(s)`,
+          `\n[ERROR] Build failed: Found ${typeCheckResult.errorCount} type error(s)`,
         );
         logger.error("Fix the errors above and try again.\n");
         process.exit(1);

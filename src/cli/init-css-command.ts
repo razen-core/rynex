@@ -15,7 +15,7 @@ import { loadConfig } from './config.js';
 export async function initCSS(): Promise<void> {
   const projectRoot = process.cwd();
   
-  logger.info('🎨 Initializing Tailwind CSS v4 for Rynex\n');
+  logger.info('Initializing Tailwind CSS v4 for Rynex\n');
   
   // Check if dependencies are installed
   const cssSetup = checkCSSSetup(projectRoot);
@@ -29,33 +29,33 @@ export async function initCSS(): Promise<void> {
     process.exit(1);
   }
   
-  logger.success('✓ Dependencies found');
+  logger.success('Dependencies found');
   
   // Generate PostCSS config
-  logger.info('\n📝 Creating PostCSS configuration...');
+  logger.info('\nCreating PostCSS configuration...');
   generatePostCSSConfig(projectRoot);
   
   // Generate CSS entry file
-  logger.info('📝 Creating CSS entry file...');
+  logger.info('Creating CSS entry file...');
   const cssEntry = 'src/styles/main.css';
   generateTailwindEntry(projectRoot, cssEntry);
   
   // Update rynex.config.js
-  logger.info('📝 Updating Rynex configuration...');
+  logger.info('Updating Rynex configuration...');
   await updateRynexConfig(projectRoot);
   
   // Create example component
-  logger.info('📝 Creating example component...');
+  logger.info('Creating example component...');
   createExampleComponent(projectRoot);
   
-  logger.success('\n✨ Tailwind CSS v4 setup complete!\n');
+  logger.success('\nTailwind CSS v4 setup complete!\n');
   logger.info('Next steps:');
   logger.info('  1. Run: rynex dev');
   logger.info('  2. Your CSS will be automatically compiled');
   logger.info('  3. Start using Tailwind classes in your components\n');
   logger.info('Example usage:');
   logger.info('  div({ class: "bg-blue-500 text-white p-4 rounded-lg" })\n');
-  logger.info('📚 Documentation: https://tailwindcss.com/docs\n');
+  logger.info('Documentation: https://tailwindcss.com/docs\n');
 }
 
 /**
@@ -162,7 +162,7 @@ export function TailwindExample() {
         .class('bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full')
         .gap(1.5)
         .add([
-          text('🎨 Tailwind CSS v4')
+          text('Tailwind CSS v4')
             .class('text-3xl font-bold text-gray-800')
             .build(),
           
@@ -177,7 +177,7 @@ export function TailwindExample() {
               vbox()
                 .class('bg-blue-50 border-l-4 border-blue-500 p-4 rounded')
                 .add([
-                  text('✓ Zero configuration')
+                  text('Zero configuration')
                     .class('text-blue-800 font-semibold')
                     .build()
                 ])
@@ -186,7 +186,7 @@ export function TailwindExample() {
               vbox()
                 .class('bg-green-50 border-l-4 border-green-500 p-4 rounded')
                 .add([
-                  text('✓ Automatic content detection')
+                  text('Automatic content detection')
                     .class('text-green-800 font-semibold')
                     .build()
                 ])
@@ -195,7 +195,7 @@ export function TailwindExample() {
               vbox()
                 .class('bg-purple-50 border-l-4 border-purple-500 p-4 rounded')
                 .add([
-                  text('✓ CSS-first configuration')
+                  text('CSS-first configuration')
                     .class('text-purple-800 font-semibold')
                     .build()
                 ])
@@ -206,7 +206,7 @@ export function TailwindExample() {
           button('Get Started')
             .class('mt-6 w-full bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors transform hover:scale-105')
             .click(() => {
-              console.log('🚀 Ready to build amazing things!');
+              console.log('Ready to build amazing things!');
             })
             .build()
         ])

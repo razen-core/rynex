@@ -440,7 +440,7 @@ export function generateTailwindEntry(projectRoot: string, entryPath: string): v
  * Print CSS setup instructions
  */
 export function printCSSSetupInstructions(): void {
-  logger.info('\n📦 To use Tailwind CSS with Rynex, install dependencies:\n');
+  logger.info('\nTo use Tailwind CSS with Rynex, install dependencies:\n');
   logger.info('  pnpm add -D tailwindcss @tailwindcss/postcss postcss postcss-cli autoprefixer');
   logger.info('  # or');
   logger.info('  npm install --save-dev tailwindcss @tailwindcss/postcss postcss postcss-cli autoprefixer\n');

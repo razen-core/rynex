@@ -13,6 +13,7 @@ const colors = {
   
   // Colors
   green: '\x1b[32m',
+  red: '\x1b[31m',
   cyan: '\x1b[36m',
   yellow: '\x1b[33m',
   blue: '\x1b[34m',
@@ -61,7 +62,7 @@ export async function select(
   
   choices.forEach((choice, index) => {
     const isDefault = choice.value === defaultValue;
-    const prefix = isDefault ? `${colors.green}❯${colors.reset}` : ' ';
+    const prefix = isDefault ? `${colors.green}>${colors.reset}` : ' ';
     const label = isDefault ? `${colors.cyan}${choice.label}${colors.reset}` : `${colors.gray}${choice.label}${colors.reset}`;
     const desc = choice.description ? `${colors.dim} - ${choice.description}${colors.reset}` : '';
     
@@ -111,7 +112,7 @@ export async function input(message: string, defaultValue?: string): Promise<str
  * Display success message
  */
 export function success(message: string): void {
-  console.log(`${colors.green}✓${colors.reset} ${message}`);
+  console.log(`${colors.green}[OK]${colors.reset} ${message}`);
 }
 
 /**
@@ -125,14 +126,14 @@ export function info(message: string): void {
  * Display warning message
  */
 export function warn(message: string): void {
-  console.log(`${colors.yellow}⚠${colors.reset} ${message}`);
+  console.log(`${colors.yellow}[WARN]${colors.reset} ${message}`);
 }
 
 /**
  * Display error message
  */
 export function error(message: string): void {
-  console.log(`${colors.bright}✖${colors.reset} ${message}`);
+  console.log(`${colors.red}[ERROR]${colors.reset} ${message}`);
 }
 
 /**

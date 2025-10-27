@@ -368,7 +368,7 @@ export function printValidationResults(results: Map<string, HTMLValidationResult
       for (const issue of result.issues) {
         totalIssues++;
         
-        const icon = issue.type === 'error' ? '❌' : issue.type === 'warning' ? '⚠️' : 'ℹ️';
+        const icon = issue.type === 'error' ? '[ERROR]' : issue.type === 'warning' ? '[WARNING]' : '[INFO]';
         const fixable = issue.autoFixable ? '(auto-fixable)' : '';
         
         logger.info(`  ${icon} ${issue.message} ${fixable}`);
@@ -376,13 +376,13 @@ export function printValidationResults(results: Map<string, HTMLValidationResult
       
       if (result.fixed) {
         totalFixed++;
-        logger.success(`  ✅ Auto-fixed issues in ${file}`);
+        logger.success(`  [FIXED] Auto-fixed issues in ${file}`);
       }
     }
   }
   
   if (totalIssues === 0) {
-    logger.success('✅ All HTML files are valid!');
+    logger.success('All HTML files are valid!');
   } else {
     logger.info(`\nTotal issues found: ${totalIssues}`);
     if (totalFixed > 0) {
