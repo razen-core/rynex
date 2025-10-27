@@ -3,7 +3,7 @@
  * Vanilla JavaScript Proxy-based reactive state (no React hooks)
  */
 
-import { debugLog, debugWarn } from './debug.js';
+import { debugLog, debugWarn } from "./debug.js";
 
 type Listener = () => void;
 type EffectFunction = () => void;
@@ -28,67 +28,70 @@ export function state<T extends object>(initialState: T): T {
           dependencies.set(prop, new Set());
         }
         dependencies.get(prop)!.add(currentEffect);
-        
+
         // Track reverse dependency
         if (!effectDependencies.has(currentEffect)) {
           effectDependencies.set(currentEffect, new Set());
         }
         effectDependencies.get(currentEffect)!.add(target);
-        
-        debugLog('State', `Tracking dependency: ${String(prop)}`);
+
+        debugLog("State", `Tracking dependency: ${String(prop)}`);
       }
-      
+
       return Reflect.get(target, prop, receiver);
     },
 
     set(target, prop, value, receiver) {
       const oldValue = Reflect.get(target, prop, receiver);
-      
+
       // Only update if value changed
       if (Object.is(oldValue, value)) {
         return true;
       }
 
       const result = Reflect.set(target, prop, value, receiver);
-      
+
       if (result) {
-        debugLog('State', `Property ${String(prop)} changed from ${oldValue} to ${value}`);
-        
+        debugLog(
+          "State",
+          `Property ${String(prop)} changed from ${oldValue} to ${value}`,
+        );
+
         // Notify property-specific effects
         const propEffects = dependencies.get(prop);
         if (propEffects) {
-          propEffects.forEach(effect => {
+          propEffects.forEach((effect) => {
             queueMicrotask(() => {
               try {
                 effect();
               } catch (error) {
-                console.error('Error in effect:', error);
+                console.error("Error in effect:", error);
               }
             });
           });
         }
-        
+
         // Notify global listeners
-        listeners.forEach(listener => {
+        listeners.forEach((listener) => {
           queueMicrotask(() => {
             try {
               listener();
             } catch (error) {
-              console.error('Error in listener:', error);
+              console.error("Error in listener:", error);
             }
           });
         });
       }
-      
+
       return result;
-    }
+    },
   };
 
   const proxy = new Proxy(initialState, handler);
-  
+
   // Store listeners reference for manual subscription
   (proxy as any).__listeners = listeners;
-  
+
   return proxy;
 }
 
@@ -105,7 +108,7 @@ export function computed<T>(computeFn: () => T): { value: T } {
     try {
       cachedValue = computeFn();
       isInitialized = true;
-      debugLog('Computed', 'Recomputed value:', cachedValue);
+      debugLog("Computed", "Recomputed value:", cachedValue);
     } finally {
       currentEffect = oldEffect;
     }
@@ -120,7 +123,7 @@ export function computed<T>(computeFn: () => T): { value: T } {
         effectFn();
       }
       return cachedValue;
-    }
+    },
   };
 }
 
@@ -140,7 +143,7 @@ export function effect(effectFn: EffectFunction): () => void {
 
   // Run immediately to establish dependencies
   wrappedEffect();
-  
+
   // Return cleanup function
   return () => {
     const deps = effectDependencies.get(wrappedEffect);
@@ -157,15 +160,15 @@ export function effect(effectFn: EffectFunction): () => void {
 export function subscribe(stateObj: any, listener: Listener): () => void {
   if (stateObj.__listeners) {
     stateObj.__listeners.add(listener);
-    debugLog('State', 'Added listener to state');
-    
+    debugLog("State", "Added listener to state");
+
     return () => {
       stateObj.__listeners.delete(listener);
-      debugLog('State', 'Removed listener from state');
+      debugLog("State", "Removed listener from state");
     };
   }
-  
-  debugWarn('State', 'Object is not a reactive state');
+
+  debugWarn("State", "Object is not a reactive state");
   return () => {};
 }
 
@@ -183,12 +186,12 @@ export function batch(fn: () => void): void {
     batchDepth--;
     if (batchDepth === 0) {
       // Execute all pending effects
-      pendingEffects.forEach(effect => {
+      pendingEffects.forEach((effect) => {
         queueMicrotask(() => {
           try {
             effect();
           } catch (error) {
-            console.error('Error in batched effect:', error);
+            console.error("Error in batched effect:", error);
           }
         });
       });

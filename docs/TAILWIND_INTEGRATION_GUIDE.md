@@ -519,4 +519,4 @@ See the `/examples` directory for complete working examples:
 
 **Last Updated**: 2024
 **Tailwind CSS Version**: v4.0+
-**Rynex Version**: v0.1.0-alpha.67+
+**Rynex Version**: v0.1.0-beta.0+

@@ -3,19 +3,15 @@
  * Generates content-based hashes for proper cache invalidation
  */
 
-import * as crypto from 'crypto';
-import * as fs from 'fs';
-import * as path from 'path';
+import * as crypto from "crypto";
+import * as fs from "fs";
+import * as path from "path";
 
 /**
  * Generate an 8-character hash from content
  */
 export function generateContentHash(content: string | Buffer): string {
-  return crypto
-    .createHash('md5')
-    .update(content)
-    .digest('hex')
-    .substring(0, 8);
+  return crypto.createHash("md5").update(content).digest("hex").substring(0, 8);
 }
 
 /**
@@ -35,9 +31,9 @@ export function generateFileHash(filePath: string): string {
 export function generateBuildHash(): string {
   const timestamp = Date.now().toString();
   return crypto
-    .createHash('md5')
+    .createHash("md5")
     .update(timestamp)
-    .digest('hex')
+    .digest("hex")
     .substring(0, 8);
 }
 
@@ -47,7 +43,7 @@ export function generateBuildHash(): string {
 export function cleanOldBundles(
   directory: string,
   baseName: string,
-  currentHash: string
+  currentHash: string,
 ): void {
   if (!fs.existsSync(directory)) {
     return;
@@ -62,7 +58,7 @@ export function cleanOldBundles(
       if (fileHash && fileHash !== currentHash) {
         const filePath = path.join(directory, file);
         fs.unlinkSync(filePath);
-        
+
         // Also remove source map if exists
         const mapPath = `${filePath}.map`;
         if (fs.existsSync(mapPath)) {
@@ -77,7 +73,7 @@ export function cleanOldBundles(
  * Escape special regex characters
  */
 function escapeRegex(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 /**
@@ -116,20 +112,20 @@ export interface BuildManifest {
 export function createBuildManifest(
   distDir: string,
   buildHash: string,
-  files: Map<string, string>
+  files: Map<string, string>,
 ): void {
   const manifest: BuildManifest = {
-    version: '2.0.0',
+    version: "2.0.0",
     hash: buildHash,
     timestamp: new Date().toISOString(),
     chunks: {
       pages: {},
-      components: {}
+      components: {},
     },
     assets: {},
     // Legacy support
     buildHash,
-    files: {}
+    files: {},
   };
 
   // Process files and organize into chunks
@@ -138,31 +134,31 @@ export function createBuildManifest(
     if (fs.existsSync(fullPath)) {
       const stats = fs.statSync(fullPath);
       const hash = generateFileHash(fullPath);
-      
+
       // Add to new format
-      if (key === 'main') {
+      if (key === "main") {
         manifest.chunks.main = filePath;
-      } else if (key.startsWith('page:')) {
-        const route = key.replace('page:', '');
+      } else if (key.startsWith("page:")) {
+        const route = key.replace("page:", "");
         manifest.chunks.pages![route] = filePath;
-      } else if (key.startsWith('component:')) {
-        const name = key.replace('component:', '');
+      } else if (key.startsWith("component:")) {
+        const name = key.replace("component:", "");
         manifest.chunks.components![name] = filePath;
       }
-      
+
       // Legacy format support
       manifest.files![key] = {
         hash,
         path: filePath,
-        size: stats.size
+        size: stats.size,
       };
     }
   }
 
   // Write only to manifest.json (Rynex 2.0 format)
-  const manifestPath = path.join(distDir, 'manifest.json');
+  const manifestPath = path.join(distDir, "manifest.json");
   const manifestContent = JSON.stringify(manifest, null, 2);
-  fs.writeFileSync(manifestPath, manifestContent, 'utf8');
+  fs.writeFileSync(manifestPath, manifestContent, "utf8");
 }
 
 /**
@@ -170,27 +166,27 @@ export function createBuildManifest(
  */
 export function readBuildManifest(distDir: string): BuildManifest | null {
   // Try Rynex 2.0 format (manifest.json)
-  const manifestPath = path.join(distDir, 'manifest.json');
+  const manifestPath = path.join(distDir, "manifest.json");
   if (fs.existsSync(manifestPath)) {
     try {
-      const content = fs.readFileSync(manifestPath, 'utf8');
+      const content = fs.readFileSync(manifestPath, "utf8");
       return JSON.parse(content);
     } catch (error) {
       // Fall through to legacy
     }
   }
-  
+
   // Fall back to legacy format (build-manifest.json) for backward compatibility
-  const legacyPath = path.join(distDir, 'build-manifest.json');
+  const legacyPath = path.join(distDir, "build-manifest.json");
   if (fs.existsSync(legacyPath)) {
     try {
-      const content = fs.readFileSync(legacyPath, 'utf8');
+      const content = fs.readFileSync(legacyPath, "utf8");
       return JSON.parse(content);
     } catch (error) {
       return null;
     }
   }
-  
+
   return null;
 }
 
@@ -208,7 +204,7 @@ export function cleanDistDirectory(distDir: string): number {
 
   for (const entry of entries) {
     const fullPath = path.join(distDir, entry);
-    
+
     try {
       const stat = fs.statSync(fullPath);
 

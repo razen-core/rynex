@@ -3,15 +3,15 @@
  * Form elements and inputs with Rust-style Builder API
  */
 
-import { createElement, DOMProps, DOMChildren } from '../dom.js';
-import { ElementBuilder, InputBuilder } from './builder.js';
+import { createElement, DOMProps, DOMChildren } from "../dom.js";
+import { ElementBuilder, InputBuilder } from "./builder.js";
 
 /**
  * Form element - Builder API
  */
 export class FormBuilder extends ElementBuilder<HTMLFormElement> {
   constructor() {
-    super('form');
+    super("form");
   }
 
   action(value: string): this {
@@ -19,13 +19,13 @@ export class FormBuilder extends ElementBuilder<HTMLFormElement> {
     return this;
   }
 
-  method(value: 'get' | 'post'): this {
+  method(value: "get" | "post"): this {
     this.element.method = value;
     return this;
   }
 
   submit(handler: (event: Event) => void): this {
-    this.element.addEventListener('submit', handler);
+    this.element.addEventListener("submit", handler);
     return this;
   }
 }
@@ -39,7 +39,7 @@ export function form(): FormBuilder {
  */
 export class TextareaBuilder extends ElementBuilder<HTMLTextAreaElement> {
   constructor() {
-    super('textarea');
+    super("textarea");
   }
 
   placeholder(value: string): this {
@@ -72,7 +72,7 @@ export function textarea(): TextareaBuilder {
  */
 export class SelectBuilder extends ElementBuilder<HTMLSelectElement> {
   constructor() {
-    super('select');
+    super("select");
   }
 
   multiple(value: boolean = true): this {
@@ -95,7 +95,7 @@ export function select(): SelectBuilder {
  */
 export class OptionBuilder extends ElementBuilder<HTMLOptionElement> {
   constructor(value?: string) {
-    super('option');
+    super("option");
     if (value) {
       this.element.value = value;
     }
@@ -117,20 +117,32 @@ export function option(value?: string): OptionBuilder {
 }
 
 // Legacy support
-export function formLegacy(props: DOMProps, ...children: DOMChildren[]): HTMLFormElement {
-  return createElement('form', props, ...children) as HTMLFormElement;
+export function formLegacy(
+  props: DOMProps,
+  ...children: DOMChildren[]
+): HTMLFormElement {
+  return createElement("form", props, ...children) as HTMLFormElement;
 }
 
-export function textareaLegacy(props: DOMProps, content?: string): HTMLTextAreaElement {
-  return createElement('textarea', props, content || '') as HTMLTextAreaElement;
+export function textareaLegacy(
+  props: DOMProps,
+  content?: string,
+): HTMLTextAreaElement {
+  return createElement("textarea", props, content || "") as HTMLTextAreaElement;
 }
 
-export function selectLegacy(props: DOMProps, ...children: DOMChildren[]): HTMLSelectElement {
-  return createElement('select', props, ...children) as HTMLSelectElement;
+export function selectLegacy(
+  props: DOMProps,
+  ...children: DOMChildren[]
+): HTMLSelectElement {
+  return createElement("select", props, ...children) as HTMLSelectElement;
 }
 
-export function optionLegacy(props: DOMProps & { value: string }, ...content: DOMChildren[]): HTMLOptionElement {
-  return createElement('option', props, ...content) as HTMLOptionElement;
+export function optionLegacy(
+  props: DOMProps & { value: string },
+  ...content: DOMChildren[]
+): HTMLOptionElement {
+  return createElement("option", props, ...content) as HTMLOptionElement;
 }
 
 /**
@@ -138,7 +150,7 @@ export function optionLegacy(props: DOMProps & { value: string }, ...content: DO
  */
 export function checkbox(): InputBuilder {
   const builder = new InputBuilder();
-  builder.type('checkbox');
+  builder.type("checkbox");
   return builder;
 }
 
@@ -147,38 +159,48 @@ export function checkbox(): InputBuilder {
  */
 export function radio(): InputBuilder {
   const builder = new InputBuilder();
-  builder.type('radio');
+  builder.type("radio");
   return builder;
 }
 
 // Legacy support
-export function checkboxLegacy(props: DOMProps & { checked?: boolean }): HTMLInputElement {
-  return createElement('input', { ...props, type: 'checkbox' }) as HTMLInputElement;
+export function checkboxLegacy(
+  props: DOMProps & { checked?: boolean },
+): HTMLInputElement {
+  return createElement("input", {
+    ...props,
+    type: "checkbox",
+  }) as HTMLInputElement;
 }
 
-export function radioLegacy(props: DOMProps & { checked?: boolean; name?: string }): HTMLInputElement {
-  return createElement('input', { ...props, type: 'radio' }) as HTMLInputElement;
+export function radioLegacy(
+  props: DOMProps & { checked?: boolean; name?: string },
+): HTMLInputElement {
+  return createElement("input", {
+    ...props,
+    type: "radio",
+  }) as HTMLInputElement;
 }
 
 /**
  * Fieldset element - Builder API
  */
 export function fieldset(): ElementBuilder<HTMLFieldSetElement> {
-  return new ElementBuilder<HTMLFieldSetElement>('fieldset');
+  return new ElementBuilder<HTMLFieldSetElement>("fieldset");
 }
 
 /**
  * Legend element - Builder API
  */
 export function legend(): ElementBuilder<HTMLLegendElement> {
-  return new ElementBuilder<HTMLLegendElement>('legend');
+  return new ElementBuilder<HTMLLegendElement>("legend");
 }
 
 /**
  * Datalist element - Builder API
  */
 export function datalist(): ElementBuilder<HTMLDataListElement> {
-  return new ElementBuilder<HTMLDataListElement>('datalist');
+  return new ElementBuilder<HTMLDataListElement>("datalist");
 }
 
 /**
@@ -186,7 +208,7 @@ export function datalist(): ElementBuilder<HTMLDataListElement> {
  */
 export class MeterBuilder extends ElementBuilder<HTMLMeterElement> {
   constructor() {
-    super('meter');
+    super("meter");
   }
 
   value(val: number): this {
@@ -214,7 +236,7 @@ export function meter(): MeterBuilder {
  */
 export class ProgressBuilder extends ElementBuilder<HTMLProgressElement> {
   constructor() {
-    super('progress');
+    super("progress");
   }
 
   value(val: number): this {
@@ -237,7 +259,7 @@ export function progress(): ProgressBuilder {
  */
 export class OutputBuilder extends ElementBuilder<HTMLOutputElement> {
   constructor() {
-    super('output');
+    super("output");
   }
 
   htmlFor(value: string): this {
@@ -251,26 +273,42 @@ export function output(): OutputBuilder {
 }
 
 // Legacy support
-export function fieldsetLegacy(props: DOMProps, ...children: DOMChildren[]): HTMLFieldSetElement {
-  return createElement('fieldset', props, ...children) as HTMLFieldSetElement;
+export function fieldsetLegacy(
+  props: DOMProps,
+  ...children: DOMChildren[]
+): HTMLFieldSetElement {
+  return createElement("fieldset", props, ...children) as HTMLFieldSetElement;
 }
 
-export function legendLegacy(props: DOMProps, ...content: DOMChildren[]): HTMLLegendElement {
-  return createElement('legend', props, ...content) as HTMLLegendElement;
+export function legendLegacy(
+  props: DOMProps,
+  ...content: DOMChildren[]
+): HTMLLegendElement {
+  return createElement("legend", props, ...content) as HTMLLegendElement;
 }
 
-export function datalistLegacy(props: DOMProps & { id: string }, ...children: DOMChildren[]): HTMLDataListElement {
-  return createElement('datalist', props, ...children) as HTMLDataListElement;
+export function datalistLegacy(
+  props: DOMProps & { id: string },
+  ...children: DOMChildren[]
+): HTMLDataListElement {
+  return createElement("datalist", props, ...children) as HTMLDataListElement;
 }
 
-export function meterLegacy(props: DOMProps & { value: number; min?: number; max?: number }): HTMLMeterElement {
-  return createElement('meter', props) as HTMLMeterElement;
+export function meterLegacy(
+  props: DOMProps & { value: number; min?: number; max?: number },
+): HTMLMeterElement {
+  return createElement("meter", props) as HTMLMeterElement;
 }
 
-export function progressLegacy(props: DOMProps & { value?: number; max?: number }): HTMLProgressElement {
-  return createElement('progress', props) as HTMLProgressElement;
+export function progressLegacy(
+  props: DOMProps & { value?: number; max?: number },
+): HTMLProgressElement {
+  return createElement("progress", props) as HTMLProgressElement;
 }
 
-export function outputLegacy(props: DOMProps & { htmlFor?: string }, ...content: DOMChildren[]): HTMLOutputElement {
-  return createElement('output', props, ...content) as HTMLOutputElement;
+export function outputLegacy(
+  props: DOMProps & { htmlFor?: string },
+  ...content: DOMChildren[]
+): HTMLOutputElement {
+  return createElement("output", props, ...content) as HTMLOutputElement;
 }

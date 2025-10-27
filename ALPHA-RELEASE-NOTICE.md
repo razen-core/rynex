@@ -50,7 +50,7 @@ const app = vbox()
       .size(2)
       .weight('bold')
       .build(),
-    
+
     button('+')
       .click(() => count.value++)
       .bg('#22c55e')
@@ -87,6 +87,6 @@ const box = vbox().pad(2).add([children]).build();
 
 ---
 
-**Last Updated**: October 26, 2025  
-**Version**: 0.1.60-alpha  
+**Last Updated**: October 26, 2025
+**Version**: 0.1.60-alpha
 **Status**: Alpha - Active Development

@@ -3,11 +3,11 @@
  * Provides gzip and brotli compression for production builds
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
-import * as zlib from 'zlib';
-import { promisify } from 'util';
-import { logger } from './logger.js';
+import * as fs from "fs";
+import * as path from "path";
+import * as zlib from "zlib";
+import { promisify } from "util";
+import { logger } from "./logger.js";
 
 const gzip = promisify(zlib.gzip);
 const brotliCompress = promisify(zlib.brotliCompress);
@@ -30,14 +30,14 @@ export interface CompressionResult {
  */
 async function compressFile(
   filePath: string,
-  options: CompressionOptions
+  options: CompressionOptions,
 ): Promise<CompressionResult> {
   const content = await fs.promises.readFile(filePath);
   const originalSize = content.length;
-  
+
   const result: CompressionResult = {
     file: path.basename(filePath),
-    originalSize
+    originalSize,
   };
 
   // Skip small files
@@ -49,7 +49,7 @@ async function compressFile(
     // Gzip compression
     if (options.gzip !== false) {
       const gzipped = await gzip(content, {
-        level: zlib.constants.Z_BEST_COMPRESSION
+        level: zlib.constants.Z_BEST_COMPRESSION,
       });
       await fs.promises.writeFile(`${filePath}.gz`, gzipped);
       result.gzipSize = gzipped.length;
@@ -59,9 +59,10 @@ async function compressFile(
     if (options.brotli !== false) {
       const brotlied = await brotliCompress(content, {
         params: {
-          [zlib.constants.BROTLI_PARAM_QUALITY]: zlib.constants.BROTLI_MAX_QUALITY,
-          [zlib.constants.BROTLI_PARAM_MODE]: zlib.constants.BROTLI_MODE_TEXT
-        }
+          [zlib.constants.BROTLI_PARAM_QUALITY]:
+            zlib.constants.BROTLI_MAX_QUALITY,
+          [zlib.constants.BROTLI_PARAM_MODE]: zlib.constants.BROTLI_MODE_TEXT,
+        },
       });
       await fs.promises.writeFile(`${filePath}.br`, brotlied);
       result.brotliSize = brotlied.length;
@@ -78,29 +79,36 @@ async function compressFile(
  */
 export async function compressDirectory(
   distDir: string,
-  options: CompressionOptions = {}
+  options: CompressionOptions = {},
 ): Promise<CompressionResult[]> {
   const results: CompressionResult[] = [];
-  
+
   // File extensions to compress
-  const compressibleExtensions = ['.js', '.css', '.html', '.json', '.svg', '.xml'];
-  
+  const compressibleExtensions = [
+    ".js",
+    ".css",
+    ".html",
+    ".json",
+    ".svg",
+    ".xml",
+  ];
+
   async function processDirectory(dir: string): Promise<void> {
     const entries = await fs.promises.readdir(dir, { withFileTypes: true });
-    
+
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
-      
+
       if (entry.isDirectory()) {
         await processDirectory(fullPath);
       } else if (entry.isFile()) {
         const ext = path.extname(entry.name);
-        
+
         // Skip already compressed files
-        if (entry.name.endsWith('.gz') || entry.name.endsWith('.br')) {
+        if (entry.name.endsWith(".gz") || entry.name.endsWith(".br")) {
           continue;
         }
-        
+
         // Only compress eligible file types
         if (compressibleExtensions.includes(ext)) {
           const result = await compressFile(fullPath, options);
@@ -111,7 +119,7 @@ export async function compressDirectory(
       }
     }
   }
-  
+
   await processDirectory(distDir);
   return results;
 }
@@ -141,44 +149,52 @@ export function printCompressionSummary(results: CompressionResult[]): void {
     return;
   }
 
-  logger.info('\nCompression Summary:');
-  logger.info('='.repeat(70));
-  
+  logger.info("\nCompression Summary:");
+  logger.info("=".repeat(70));
+
   let totalOriginal = 0;
   let totalGzip = 0;
   let totalBrotli = 0;
-  
+
   for (const result of results) {
     totalOriginal += result.originalSize;
-    
+
     const parts: string[] = [
       `  ${result.file}:`,
-      `${formatSize(result.originalSize)}`
+      `${formatSize(result.originalSize)}`,
     ];
-    
+
     if (result.gzipSize) {
       totalGzip += result.gzipSize;
-      parts.push(`--> gzip: ${formatSize(result.gzipSize)} (${compressionRatio(result.originalSize, result.gzipSize)})`);
+      parts.push(
+        `--> gzip: ${formatSize(result.gzipSize)} (${compressionRatio(result.originalSize, result.gzipSize)})`,
+      );
     }
-    
+
     if (result.brotliSize) {
       totalBrotli += result.brotliSize;
-      parts.push(`--> br: ${formatSize(result.brotliSize)} (${compressionRatio(result.originalSize, result.brotliSize)})`);
+      parts.push(
+        `--> br: ${formatSize(result.brotliSize)} (${compressionRatio(result.originalSize, result.brotliSize)})`,
+      );
     }
-    
-    logger.info(parts.join(' '));
+
+    logger.info(parts.join(" "));
   }
-  
-  logger.info('='.repeat(70));
+
+  logger.info("=".repeat(70));
   logger.info(`  Total: ${formatSize(totalOriginal)}`);
-  
+
   if (totalGzip > 0) {
-    logger.info(`  Gzipped: ${formatSize(totalGzip)} (${compressionRatio(totalOriginal, totalGzip)} reduction)`);
+    logger.info(
+      `  Gzipped: ${formatSize(totalGzip)} (${compressionRatio(totalOriginal, totalGzip)} reduction)`,
+    );
   }
-  
+
   if (totalBrotli > 0) {
-    logger.info(`  Brotli: ${formatSize(totalBrotli)} (${compressionRatio(totalOriginal, totalBrotli)} reduction)`);
+    logger.info(
+      `  Brotli: ${formatSize(totalBrotli)} (${compressionRatio(totalOriginal, totalBrotli)} reduction)`,
+    );
   }
-  
-  logger.success('Compression complete\n');
+
+  logger.success("Compression complete\n");
 }

@@ -3,7 +3,7 @@
  * Component lifecycle management
  */
 
-import { effect } from '../state.js';
+import { effect } from "../state.js";
 
 type CleanupFunction = () => void;
 type EffectFunction = () => void | CleanupFunction;
@@ -12,15 +12,18 @@ type EffectFunction = () => void | CleanupFunction;
  * Component mount lifecycle hook
  * Executes callback when element is mounted to DOM
  */
-export function onMount(element: HTMLElement, callback: () => void | CleanupFunction): void {
+export function onMount(
+  element: HTMLElement,
+  callback: () => void | CleanupFunction,
+): void {
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
-      if (mutation.type === 'childList') {
+      if (mutation.type === "childList") {
         mutation.addedNodes.forEach((node) => {
           if (node === element || (node as HTMLElement).contains?.(element)) {
             const cleanup = callback();
-            if (cleanup && typeof cleanup === 'function') {
-              element.dataset.cleanup = 'registered';
+            if (cleanup && typeof cleanup === "function") {
+              element.dataset.cleanup = "registered";
               (element as any).__cleanup = cleanup;
             }
             observer.disconnect();
@@ -32,14 +35,14 @@ export function onMount(element: HTMLElement, callback: () => void | CleanupFunc
 
   observer.observe(document.body, {
     childList: true,
-    subtree: true
+    subtree: true,
   });
 
   // Check if already mounted
   if (document.body.contains(element)) {
     const cleanup = callback();
-    if (cleanup && typeof cleanup === 'function') {
-      element.dataset.cleanup = 'registered';
+    if (cleanup && typeof cleanup === "function") {
+      element.dataset.cleanup = "registered";
       (element as any).__cleanup = cleanup;
     }
     observer.disconnect();
@@ -50,10 +53,13 @@ export function onMount(element: HTMLElement, callback: () => void | CleanupFunc
  * Component unmount lifecycle hook
  * Executes callback when element is removed from DOM
  */
-export function onUnmount(element: HTMLElement, callback: CleanupFunction): void {
+export function onUnmount(
+  element: HTMLElement,
+  callback: CleanupFunction,
+): void {
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
-      if (mutation.type === 'childList') {
+      if (mutation.type === "childList") {
         mutation.removedNodes.forEach((node) => {
           if (node === element || (node as HTMLElement).contains?.(element)) {
             callback();
@@ -66,7 +72,7 @@ export function onUnmount(element: HTMLElement, callback: CleanupFunction): void
 
   observer.observe(document.body, {
     childList: true,
-    subtree: true
+    subtree: true,
   });
 }
 
@@ -74,7 +80,10 @@ export function onUnmount(element: HTMLElement, callback: CleanupFunction): void
  * Component update lifecycle hook
  * Executes callback when element attributes or children change
  */
-export function onUpdate(element: HTMLElement, callback: (mutations: MutationRecord[]) => void): CleanupFunction {
+export function onUpdate(
+  element: HTMLElement,
+  callback: (mutations: MutationRecord[]) => void,
+): CleanupFunction {
   const observer = new MutationObserver((mutations) => {
     callback(mutations);
   });
@@ -83,7 +92,7 @@ export function onUpdate(element: HTMLElement, callback: (mutations: MutationRec
     attributes: true,
     childList: true,
     subtree: true,
-    characterData: true
+    characterData: true,
   });
 
   return () => observer.disconnect();
@@ -96,7 +105,7 @@ export function onUpdate(element: HTMLElement, callback: (mutations: MutationRec
 export function watch<T>(
   getter: () => T,
   callback: (newValue: T, oldValue: T) => void,
-  options?: { immediate?: boolean }
+  options?: { immediate?: boolean },
 ): CleanupFunction {
   let oldValue: T = getter();
 
@@ -143,7 +152,10 @@ export function watchEffect(effectFn: EffectFunction): CleanupFunction {
  * On error handler for component errors
  * Catches and handles errors within a component tree
  */
-export function onError(element: HTMLElement, handler: (error: Error) => void): void {
+export function onError(
+  element: HTMLElement,
+  handler: (error: Error) => void,
+): void {
   const errorHandler = (event: ErrorEvent) => {
     if (element.contains(event.target as Node)) {
       event.preventDefault();
@@ -151,9 +163,9 @@ export function onError(element: HTMLElement, handler: (error: Error) => void): 
     }
   };
 
-  window.addEventListener('error', errorHandler);
+  window.addEventListener("error", errorHandler);
 
   onUnmount(element, () => {
-    window.removeEventListener('error', errorHandler);
+    window.removeEventListener("error", errorHandler);
   });
 }

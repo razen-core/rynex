@@ -3,7 +3,7 @@
  * Shows progress bars and timing diagnostics during builds
  */
 
-import { logger } from './logger.js';
+import { logger } from "./logger.js";
 
 export class BuildProgress {
   private startTime: number = 0;
@@ -54,20 +54,22 @@ export class BuildProgress {
     }
 
     const totalDuration = Date.now() - this.startTime;
-    
-    logger.info('\nBuild Summary:');
-    logger.info('='.repeat(50));
-    
+
+    logger.info("\nBuild Summary:");
+    logger.info("=".repeat(50));
+
     // Show each step's timing
     for (const [name, timing] of this.steps.entries()) {
       if (timing.end) {
         const duration = timing.end - timing.start;
         const percentage = ((duration / totalDuration) * 100).toFixed(1);
-        logger.info(`  ${name}: ${this.formatDuration(duration)} (${percentage}%)`);
+        logger.info(
+          `  ${name}: ${this.formatDuration(duration)} (${percentage}%)`,
+        );
       }
     }
-    
-    logger.info('='.repeat(50));
+
+    logger.info("=".repeat(50));
     logger.success(`Total build time: ${this.formatDuration(totalDuration)}\n`);
   }
 
@@ -90,7 +92,7 @@ export class BuildProgress {
    * Show a simple spinner for long operations
    */
   spinner(message: string): () => void {
-    const frames = ['|', '/', '-', '\\'];
+    const frames = ["|", "/", "-", "\\"];
     let i = 0;
     let isSpinning = true;
 
@@ -106,7 +108,7 @@ export class BuildProgress {
     return () => {
       isSpinning = false;
       clearInterval(interval);
-      process.stdout.write('\r');
+      process.stdout.write("\r");
     };
   }
 }

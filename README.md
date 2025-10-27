@@ -109,7 +109,7 @@ import { RouteContext } from 'rynex';
 
 export default function UserPage(ctx: RouteContext) {
   const userId = ctx.params.id;
-  
+
   return UI.vbox({
     style: { padding: '2rem' }
   }, [
@@ -204,7 +204,7 @@ export default {
   minify: true,
   sourceMaps: true,
   hotReload: true,
-  
+
   // Routing configuration
   routing: {
     mode: 'history',
@@ -212,7 +212,7 @@ export default {
     pagesDir: 'src/pages',
     scrollBehavior: 'smooth'
   },
-  
+
   // Build configuration
   build: {
     splitting: true,
@@ -322,5 +322,5 @@ Apache License 2.0 - see [LICENSE](./LICENSE) file for details
 
 ---
 
-Built with care by the Razen Core 
+Built with care by the Razen Core
 - Developer: Prathmesh Barot

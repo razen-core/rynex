@@ -1,7 +1,7 @@
 # Rynex Framework - Complete Functions Reference
 
-> **Version:** 0.1.0-alpha.67  
-> **Last Updated:** October 21, 2025  
+> **Version:** 0.1.0-beta.0
+> **Last Updated:** October 21, 2025
 > **Status:** Production Ready (100% Complete)
 
 ## Table of Contents
@@ -421,7 +421,7 @@ Note: Events are handled via props (e.g., onClick, onChange) in createElement
 
 ---
 
-**Last Updated:** October 21, 2025  
+**Last Updated:** October 21, 2025
 **Maintained By:** Team
 **Organization:** Razen Core
 **License:** Apache-2.0

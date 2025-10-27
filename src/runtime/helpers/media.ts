@@ -3,15 +3,15 @@
  * Media and embedded content elements with Rust-style Builder API
  */
 
-import { createElement, DOMProps, DOMChildren } from '../dom.js';
-import { ElementBuilder } from './builder.js';
+import { createElement, DOMProps, DOMChildren } from "../dom.js";
+import { ElementBuilder } from "./builder.js";
 
 /**
  * Video player - Builder API
  */
 export class VideoBuilder extends ElementBuilder<HTMLVideoElement> {
   constructor() {
-    super('video');
+    super("video");
   }
 
   src(value: string): this {
@@ -54,7 +54,7 @@ export function video(): VideoBuilder {
  */
 export class AudioBuilder extends ElementBuilder<HTMLAudioElement> {
   constructor() {
-    super('audio');
+    super("audio");
   }
 
   src(value: string): this {
@@ -92,10 +92,16 @@ export function audio(): AudioBuilder {
  */
 export class CanvasBuilder extends ElementBuilder<HTMLCanvasElement> {
   constructor() {
-    super('canvas');
+    super("canvas");
   }
 
-  getContext(contextId: '2d' | 'webgl' | 'webgl2'): CanvasRenderingContext2D | WebGLRenderingContext | WebGL2RenderingContext | null {
+  getContext(
+    contextId: "2d" | "webgl" | "webgl2",
+  ):
+    | CanvasRenderingContext2D
+    | WebGLRenderingContext
+    | WebGL2RenderingContext
+    | null {
     return this.element.getContext(contextId) as any;
   }
 }
@@ -105,34 +111,52 @@ export function canvas(): CanvasBuilder {
 }
 
 // Legacy support
-export function videoLegacy(props: DOMProps & { src?: string; controls?: boolean }, ...children: DOMChildren[]): HTMLVideoElement {
-  return createElement('video', props, ...children) as HTMLVideoElement;
+export function videoLegacy(
+  props: DOMProps & { src?: string; controls?: boolean },
+  ...children: DOMChildren[]
+): HTMLVideoElement {
+  return createElement("video", props, ...children) as HTMLVideoElement;
 }
 
-export function audioLegacy(props: DOMProps & { src?: string; controls?: boolean }, ...children: DOMChildren[]): HTMLAudioElement {
-  return createElement('audio', props, ...children) as HTMLAudioElement;
+export function audioLegacy(
+  props: DOMProps & { src?: string; controls?: boolean },
+  ...children: DOMChildren[]
+): HTMLAudioElement {
+  return createElement("audio", props, ...children) as HTMLAudioElement;
 }
 
-export function canvasLegacy(props: DOMProps & { width?: number; height?: number }): HTMLCanvasElement {
-  return createElement('canvas', props) as HTMLCanvasElement;
+export function canvasLegacy(
+  props: DOMProps & { width?: number; height?: number },
+): HTMLCanvasElement {
+  return createElement("canvas", props) as HTMLCanvasElement;
 }
 
 /**
  * SVG container - creates proper SVG element with namespace
  */
-export function svg(props: DOMProps & { viewBox?: string; width?: string | number; height?: string | number }, innerHTML?: string): SVGSVGElement {
-  const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  
+export function svg(
+  props: DOMProps & {
+    viewBox?: string;
+    width?: string | number;
+    height?: string | number;
+  },
+  innerHTML?: string,
+): SVGSVGElement {
+  const svgElement = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "svg",
+  );
+
   // Apply props
   if (props) {
     for (const [key, value] of Object.entries(props)) {
       if (value === null || value === undefined) continue;
-      
-      if (key === 'style' && typeof value === 'object') {
+
+      if (key === "style" && typeof value === "object") {
         Object.assign(svgElement.style, value);
-      } else if (key === 'class' || key === 'className') {
-        svgElement.setAttribute('class', value);
-      } else if (key.startsWith('on') && typeof value === 'function') {
+      } else if (key === "class" || key === "className") {
+        svgElement.setAttribute("class", value);
+      } else if (key.startsWith("on") && typeof value === "function") {
         const eventName = key.slice(2).toLowerCase();
         svgElement.addEventListener(eventName, value as EventListener);
       } else {
@@ -140,12 +164,12 @@ export function svg(props: DOMProps & { viewBox?: string; width?: string | numbe
       }
     }
   }
-  
+
   // Set innerHTML if provided (for SVG paths)
   if (innerHTML) {
     svgElement.innerHTML = innerHTML;
   }
-  
+
   return svgElement;
 }
 
@@ -153,9 +177,9 @@ export function svg(props: DOMProps & { viewBox?: string; width?: string | numbe
  * Create SVG path element
  */
 export function svgPath(d: string, props?: DOMProps): SVGPathElement {
-  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  path.setAttribute('d', d);
-  
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", d);
+
   if (props) {
     for (const [key, value] of Object.entries(props)) {
       if (value !== null && value !== undefined) {
@@ -163,7 +187,7 @@ export function svgPath(d: string, props?: DOMProps): SVGPathElement {
       }
     }
   }
-  
+
   return path;
 }
 
@@ -172,7 +196,7 @@ export function svgPath(d: string, props?: DOMProps): SVGPathElement {
  */
 export class IframeBuilder extends ElementBuilder<HTMLIFrameElement> {
   constructor() {
-    super('iframe');
+    super("iframe");
   }
 
   src(value: string): this {
@@ -199,7 +223,7 @@ export function iframe(): IframeBuilder {
  * Picture element - Builder API
  */
 export function picture(): ElementBuilder<HTMLPictureElement> {
-  return new ElementBuilder<HTMLPictureElement>('picture');
+  return new ElementBuilder<HTMLPictureElement>("picture");
 }
 
 /**
@@ -207,7 +231,7 @@ export function picture(): ElementBuilder<HTMLPictureElement> {
  */
 export class SourceBuilder extends ElementBuilder<HTMLSourceElement> {
   constructor() {
-    super('source');
+    super("source");
   }
 
   src(value: string): this {
@@ -235,7 +259,7 @@ export function source(): SourceBuilder {
  */
 export class TrackBuilder extends ElementBuilder<HTMLTrackElement> {
   constructor() {
-    super('track');
+    super("track");
   }
 
   src(value: string): this {
@@ -243,7 +267,9 @@ export class TrackBuilder extends ElementBuilder<HTMLTrackElement> {
     return this;
   }
 
-  kind(value: 'subtitles' | 'captions' | 'descriptions' | 'chapters' | 'metadata'): this {
+  kind(
+    value: "subtitles" | "captions" | "descriptions" | "chapters" | "metadata",
+  ): this {
     this.element.kind = value;
     return this;
   }
@@ -264,18 +290,27 @@ export function track(): TrackBuilder {
 }
 
 // Legacy support
-export function iframeLegacy(props: DOMProps & { src: string }): HTMLIFrameElement {
-  return createElement('iframe', props) as HTMLIFrameElement;
+export function iframeLegacy(
+  props: DOMProps & { src: string },
+): HTMLIFrameElement {
+  return createElement("iframe", props) as HTMLIFrameElement;
 }
 
-export function pictureLegacy(props: DOMProps, ...children: DOMChildren[]): HTMLPictureElement {
-  return createElement('picture', props, ...children) as HTMLPictureElement;
+export function pictureLegacy(
+  props: DOMProps,
+  ...children: DOMChildren[]
+): HTMLPictureElement {
+  return createElement("picture", props, ...children) as HTMLPictureElement;
 }
 
-export function sourceLegacy(props: DOMProps & { src: string; type?: string }): HTMLSourceElement {
-  return createElement('source', props) as HTMLSourceElement;
+export function sourceLegacy(
+  props: DOMProps & { src: string; type?: string },
+): HTMLSourceElement {
+  return createElement("source", props) as HTMLSourceElement;
 }
 
-export function trackLegacy(props: DOMProps & { src: string; kind?: string; srclang?: string }): HTMLTrackElement {
-  return createElement('track', props) as HTMLTrackElement;
+export function trackLegacy(
+  props: DOMProps & { src: string; kind?: string; srclang?: string },
+): HTMLTrackElement {
+  return createElement("track", props) as HTMLTrackElement;
 }

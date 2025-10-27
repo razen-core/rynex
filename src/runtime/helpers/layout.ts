@@ -3,17 +3,17 @@
  * Layout and positioning components with Rust-style Builder API
  */
 
-import { createElement, DOMProps, DOMChildren } from '../dom.js';
-import { ElementBuilder } from './builder.js';
+import { createElement, DOMProps, DOMChildren } from "../dom.js";
+import { ElementBuilder } from "./builder.js";
 
 /**
  * Vertical box layout (flex column) - Builder API
  */
 export class VBoxBuilder extends ElementBuilder {
   constructor() {
-    super('div');
-    this.element.style.display = 'flex';
-    this.element.style.flexDirection = 'column';
+    super("div");
+    this.element.style.display = "flex";
+    this.element.style.flexDirection = "column";
   }
 }
 
@@ -22,13 +22,16 @@ export function vbox(): VBoxBuilder {
 }
 
 // Legacy support
-export function vboxLegacy(props: DOMProps, ...children: DOMChildren[]): HTMLElement {
+export function vboxLegacy(
+  props: DOMProps,
+  ...children: DOMChildren[]
+): HTMLElement {
   const style = {
-    display: 'flex',
-    flexDirection: 'column',
-    ...(typeof props.style === 'object' ? props.style : {})
+    display: "flex",
+    flexDirection: "column",
+    ...(typeof props.style === "object" ? props.style : {}),
   };
-  return createElement('div', { ...props, style }, ...children);
+  return createElement("div", { ...props, style }, ...children);
 }
 
 /**
@@ -36,9 +39,9 @@ export function vboxLegacy(props: DOMProps, ...children: DOMChildren[]): HTMLEle
  */
 export class HBoxBuilder extends ElementBuilder {
   constructor() {
-    super('div');
-    this.element.style.display = 'flex';
-    this.element.style.flexDirection = 'row';
+    super("div");
+    this.element.style.display = "flex";
+    this.element.style.flexDirection = "row";
   }
 }
 
@@ -47,13 +50,16 @@ export function hbox(): HBoxBuilder {
 }
 
 // Legacy support
-export function hboxLegacy(props: DOMProps, ...children: DOMChildren[]): HTMLElement {
+export function hboxLegacy(
+  props: DOMProps,
+  ...children: DOMChildren[]
+): HTMLElement {
   const style = {
-    display: 'flex',
-    flexDirection: 'row',
-    ...(typeof props.style === 'object' ? props.style : {})
+    display: "flex",
+    flexDirection: "row",
+    ...(typeof props.style === "object" ? props.style : {}),
   };
-  return createElement('div', { ...props, style }, ...children);
+  return createElement("div", { ...props, style }, ...children);
 }
 
 /**
@@ -61,8 +67,8 @@ export function hboxLegacy(props: DOMProps, ...children: DOMChildren[]): HTMLEle
  */
 export class GridBuilder extends ElementBuilder {
   constructor() {
-    super('div');
-    this.element.style.display = 'grid';
+    super("div");
+    this.element.style.display = "grid";
   }
 
   /**
@@ -92,7 +98,9 @@ export class GridBuilder extends ElementBuilder {
   /**
    * Set grid auto flow
    */
-  autoFlow(value: 'row' | 'column' | 'dense' | 'row dense' | 'column dense'): this {
+  autoFlow(
+    value: "row" | "column" | "dense" | "row dense" | "column dense",
+  ): this {
     this.element.style.gridAutoFlow = value;
     return this;
   }
@@ -107,26 +115,29 @@ export function gridLegacy(
   props: DOMProps & { columns?: number; gap?: string },
   ...children: DOMChildren[]
 ): HTMLElement {
-  const { columns = 1, gap = '1rem', ...restProps } = props;
+  const { columns = 1, gap = "1rem", ...restProps } = props;
   const style = {
-    display: 'grid',
+    display: "grid",
     gridTemplateColumns: `repeat(${columns}, 1fr)`,
     gap,
-    ...(typeof restProps.style === 'object' ? restProps.style : {})
+    ...(typeof restProps.style === "object" ? restProps.style : {}),
   };
-  return createElement('div', { ...restProps, style }, ...children);
+  return createElement("div", { ...restProps, style }, ...children);
 }
 
 /**
  * Plain container (div without flex) - Builder API
  */
 export function container(): ElementBuilder {
-  return new ElementBuilder('div');
+  return new ElementBuilder("div");
 }
 
 // Legacy support
-export function containerLegacy(props: DOMProps, ...children: DOMChildren[]): HTMLElement {
-  return createElement('div', props, ...children);
+export function containerLegacy(
+  props: DOMProps,
+  ...children: DOMChildren[]
+): HTMLElement {
+  return createElement("div", props, ...children);
 }
 
 /**
@@ -134,8 +145,8 @@ export function containerLegacy(props: DOMProps, ...children: DOMChildren[]): HT
  */
 export class StackBuilder extends ElementBuilder {
   constructor() {
-    super('div');
-    this.element.style.position = 'relative';
+    super("div");
+    this.element.style.position = "relative";
   }
 }
 
@@ -144,12 +155,15 @@ export function stack(): StackBuilder {
 }
 
 // Legacy support
-export function stackLegacy(props: DOMProps, ...children: DOMChildren[]): HTMLElement {
+export function stackLegacy(
+  props: DOMProps,
+  ...children: DOMChildren[]
+): HTMLElement {
   const style = {
-    position: 'relative',
-    ...(typeof props.style === 'object' ? props.style : {})
+    position: "relative",
+    ...(typeof props.style === "object" ? props.style : {}),
   };
-  return createElement('div', { ...props, style }, ...children);
+  return createElement("div", { ...props, style }, ...children);
 }
 
 /**
@@ -157,10 +171,10 @@ export function stackLegacy(props: DOMProps, ...children: DOMChildren[]): HTMLEl
  */
 export class CenterBuilder extends ElementBuilder {
   constructor() {
-    super('div');
-    this.element.style.display = 'flex';
-    this.element.style.alignItems = 'center';
-    this.element.style.justifyContent = 'center';
+    super("div");
+    this.element.style.display = "flex";
+    this.element.style.alignItems = "center";
+    this.element.style.justifyContent = "center";
   }
 }
 
@@ -169,14 +183,17 @@ export function center(): CenterBuilder {
 }
 
 // Legacy support
-export function centerLegacy(props: DOMProps, ...children: DOMChildren[]): HTMLElement {
+export function centerLegacy(
+  props: DOMProps,
+  ...children: DOMChildren[]
+): HTMLElement {
   const style = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...(typeof props.style === 'object' ? props.style : {})
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    ...(typeof props.style === "object" ? props.style : {}),
   };
-  return createElement('div', { ...props, style }, ...children);
+  return createElement("div", { ...props, style }, ...children);
 }
 
 /**
@@ -184,8 +201,8 @@ export function centerLegacy(props: DOMProps, ...children: DOMChildren[]): HTMLE
  */
 export class SpacerBuilder extends ElementBuilder {
   constructor() {
-    super('div');
-    this.element.style.flex = '1';
+    super("div");
+    this.element.style.flex = "1";
   }
 }
 
@@ -196,10 +213,10 @@ export function spacer(): SpacerBuilder {
 // Legacy support
 export function spacerLegacy(props: DOMProps = {}): HTMLElement {
   const style = {
-    flex: '1',
-    ...(typeof props.style === 'object' ? props.style : {})
+    flex: "1",
+    ...(typeof props.style === "object" ? props.style : {}),
   };
-  return createElement('div', { ...props, style });
+  return createElement("div", { ...props, style });
 }
 
 /**
@@ -207,9 +224,9 @@ export function spacerLegacy(props: DOMProps = {}): HTMLElement {
  */
 export class WrapBuilder extends ElementBuilder {
   constructor() {
-    super('div');
-    this.element.style.display = 'flex';
-    this.element.style.flexWrap = 'wrap';
+    super("div");
+    this.element.style.display = "flex";
+    this.element.style.flexWrap = "wrap";
   }
 }
 
@@ -218,13 +235,16 @@ export function wrap(): WrapBuilder {
 }
 
 // Legacy support
-export function wrapLegacy(props: DOMProps, ...children: DOMChildren[]): HTMLElement {
+export function wrapLegacy(
+  props: DOMProps,
+  ...children: DOMChildren[]
+): HTMLElement {
   const style = {
-    display: 'flex',
-    flexWrap: 'wrap',
-    ...(typeof props.style === 'object' ? props.style : {})
+    display: "flex",
+    flexWrap: "wrap",
+    ...(typeof props.style === "object" ? props.style : {}),
   };
-  return createElement('div', { ...props, style }, ...children);
+  return createElement("div", { ...props, style }, ...children);
 }
 
 /**
@@ -232,15 +252,15 @@ export function wrapLegacy(props: DOMProps, ...children: DOMChildren[]): HTMLEle
  */
 export class ScrollBuilder extends ElementBuilder {
   constructor() {
-    super('div');
-    this.element.style.overflow = 'auto';
+    super("div");
+    this.element.style.overflow = "auto";
   }
 
   /**
    * Set scroll behavior
    */
   smooth(): this {
-    this.element.style.scrollBehavior = 'smooth';
+    this.element.style.scrollBehavior = "smooth";
     return this;
   }
 
@@ -248,8 +268,8 @@ export class ScrollBuilder extends ElementBuilder {
    * Hide scrollbar
    */
   hideScrollbar(): this {
-    this.element.style.scrollbarWidth = 'none';
-    (this.element.style as any).msOverflowStyle = 'none';
+    this.element.style.scrollbarWidth = "none";
+    (this.element.style as any).msOverflowStyle = "none";
     return this;
   }
 }
@@ -259,12 +279,15 @@ export function scroll(): ScrollBuilder {
 }
 
 // Legacy support
-export function scrollLegacy(props: DOMProps, ...children: DOMChildren[]): HTMLElement {
+export function scrollLegacy(
+  props: DOMProps,
+  ...children: DOMChildren[]
+): HTMLElement {
   const style = {
-    overflow: 'auto',
-    ...(typeof props.style === 'object' ? props.style : {})
+    overflow: "auto",
+    ...(typeof props.style === "object" ? props.style : {}),
   };
-  return createElement('div', { ...props, style }, ...children);
+  return createElement("div", { ...props, style }, ...children);
 }
 
 /**
@@ -272,16 +295,16 @@ export function scrollLegacy(props: DOMProps, ...children: DOMChildren[]): HTMLE
  */
 export class StickyBuilder extends ElementBuilder {
   constructor() {
-    super('div');
-    this.element.style.position = 'sticky';
-    this.element.style.top = '0';
+    super("div");
+    this.element.style.position = "sticky";
+    this.element.style.top = "0";
   }
 
   /**
    * Set top position
    */
   top(value: string | number): this {
-    this.element.style.top = typeof value === 'number' ? `${value}px` : value;
+    this.element.style.top = typeof value === "number" ? `${value}px` : value;
     return this;
   }
 
@@ -289,7 +312,8 @@ export class StickyBuilder extends ElementBuilder {
    * Set bottom position
    */
   bottom(value: string | number): this {
-    this.element.style.bottom = typeof value === 'number' ? `${value}px` : value;
+    this.element.style.bottom =
+      typeof value === "number" ? `${value}px` : value;
     return this;
   }
 }
@@ -299,14 +323,17 @@ export function sticky(): StickyBuilder {
 }
 
 // Legacy support
-export function stickyLegacy(props: DOMProps & { top?: string }, ...children: DOMChildren[]): HTMLElement {
-  const { top = '0', ...restProps } = props;
+export function stickyLegacy(
+  props: DOMProps & { top?: string },
+  ...children: DOMChildren[]
+): HTMLElement {
+  const { top = "0", ...restProps } = props;
   const style = {
-    position: 'sticky',
+    position: "sticky",
     top,
-    ...(typeof restProps.style === 'object' ? restProps.style : {})
+    ...(typeof restProps.style === "object" ? restProps.style : {}),
   };
-  return createElement('div', { ...restProps, style }, ...children);
+  return createElement("div", { ...restProps, style }, ...children);
 }
 
 /**
@@ -314,27 +341,28 @@ export function stickyLegacy(props: DOMProps & { top?: string }, ...children: DO
  */
 export class FixedBuilder extends ElementBuilder {
   constructor() {
-    super('div');
-    this.element.style.position = 'fixed';
+    super("div");
+    this.element.style.position = "fixed";
   }
 
   top(value: string | number): this {
-    this.element.style.top = typeof value === 'number' ? `${value}px` : value;
+    this.element.style.top = typeof value === "number" ? `${value}px` : value;
     return this;
   }
 
   bottom(value: string | number): this {
-    this.element.style.bottom = typeof value === 'number' ? `${value}px` : value;
+    this.element.style.bottom =
+      typeof value === "number" ? `${value}px` : value;
     return this;
   }
 
   left(value: string | number): this {
-    this.element.style.left = typeof value === 'number' ? `${value}px` : value;
+    this.element.style.left = typeof value === "number" ? `${value}px` : value;
     return this;
   }
 
   right(value: string | number): this {
-    this.element.style.right = typeof value === 'number' ? `${value}px` : value;
+    this.element.style.right = typeof value === "number" ? `${value}px` : value;
     return this;
   }
 }
@@ -348,27 +376,28 @@ export function fixed(): FixedBuilder {
  */
 export class AbsoluteBuilder extends ElementBuilder {
   constructor() {
-    super('div');
-    this.element.style.position = 'absolute';
+    super("div");
+    this.element.style.position = "absolute";
   }
 
   top(value: string | number): this {
-    this.element.style.top = typeof value === 'number' ? `${value}px` : value;
+    this.element.style.top = typeof value === "number" ? `${value}px` : value;
     return this;
   }
 
   bottom(value: string | number): this {
-    this.element.style.bottom = typeof value === 'number' ? `${value}px` : value;
+    this.element.style.bottom =
+      typeof value === "number" ? `${value}px` : value;
     return this;
   }
 
   left(value: string | number): this {
-    this.element.style.left = typeof value === 'number' ? `${value}px` : value;
+    this.element.style.left = typeof value === "number" ? `${value}px` : value;
     return this;
   }
 
   right(value: string | number): this {
-    this.element.style.right = typeof value === 'number' ? `${value}px` : value;
+    this.element.style.right = typeof value === "number" ? `${value}px` : value;
     return this;
   }
 }
@@ -382,8 +411,8 @@ export function absolute(): AbsoluteBuilder {
  */
 export class RelativeBuilder extends ElementBuilder {
   constructor() {
-    super('div');
-    this.element.style.position = 'relative';
+    super("div");
+    this.element.style.position = "relative";
   }
 }
 
@@ -392,26 +421,35 @@ export function relative(): RelativeBuilder {
 }
 
 // Legacy support
-export function fixedLegacy(props: DOMProps, ...children: DOMChildren[]): HTMLElement {
+export function fixedLegacy(
+  props: DOMProps,
+  ...children: DOMChildren[]
+): HTMLElement {
   const style = {
-    position: 'fixed',
-    ...(typeof props.style === 'object' ? props.style : {})
+    position: "fixed",
+    ...(typeof props.style === "object" ? props.style : {}),
   };
-  return createElement('div', { ...props, style }, ...children);
+  return createElement("div", { ...props, style }, ...children);
 }
 
-export function absoluteLegacy(props: DOMProps, ...children: DOMChildren[]): HTMLElement {
+export function absoluteLegacy(
+  props: DOMProps,
+  ...children: DOMChildren[]
+): HTMLElement {
   const style = {
-    position: 'absolute',
-    ...(typeof props.style === 'object' ? props.style : {})
+    position: "absolute",
+    ...(typeof props.style === "object" ? props.style : {}),
   };
-  return createElement('div', { ...props, style }, ...children);
+  return createElement("div", { ...props, style }, ...children);
 }
 
-export function relativeLegacy(props: DOMProps, ...children: DOMChildren[]): HTMLElement {
+export function relativeLegacy(
+  props: DOMProps,
+  ...children: DOMChildren[]
+): HTMLElement {
   const style = {
-    position: 'relative',
-    ...(typeof props.style === 'object' ? props.style : {})
+    position: "relative",
+    ...(typeof props.style === "object" ? props.style : {}),
   };
-  return createElement('div', { ...props, style }, ...children);
+  return createElement("div", { ...props, style }, ...children);
 }

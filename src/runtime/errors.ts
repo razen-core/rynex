@@ -5,22 +5,22 @@
 
 // Error severity levels
 export enum ErrorSeverity {
-  WARNING = 'warning',
-  ERROR = 'error',
-  CRITICAL = 'critical'
+  WARNING = "warning",
+  ERROR = "error",
+  CRITICAL = "critical",
 }
 
 // Error categories
 export enum ErrorCategory {
-  VALIDATION = 'validation',
-  RUNTIME = 'runtime',
-  DOM = 'dom',
-  STATE = 'state',
-  COMPONENT = 'component',
-  ROUTER = 'router',
-  LIFECYCLE = 'lifecycle',
-  PROPS = 'props',
-  CHILDREN = 'children'
+  VALIDATION = "validation",
+  RUNTIME = "runtime",
+  DOM = "dom",
+  STATE = "state",
+  COMPONENT = "component",
+  ROUTER = "router",
+  LIFECYCLE = "lifecycle",
+  PROPS = "props",
+  CHILDREN = "children",
 }
 
 // Base error class for Rynex
@@ -34,10 +34,10 @@ export class RynexError extends Error {
     message: string,
     category: ErrorCategory,
     severity: ErrorSeverity = ErrorSeverity.ERROR,
-    context?: any
+    context?: any,
   ) {
     super(message);
-    this.name = 'RynexError';
+    this.name = "RynexError";
     this.severity = severity;
     this.category = category;
     this.timestamp = Date.now();
@@ -58,42 +58,50 @@ export class RynexError extends Error {
 export class ValidationError extends RynexError {
   constructor(message: string, context?: any) {
     super(message, ErrorCategory.VALIDATION, ErrorSeverity.ERROR, context);
-    this.name = 'ValidationError';
+    this.name = "ValidationError";
   }
 }
 
 export class DOMError extends RynexError {
-  constructor(message: string, severity: ErrorSeverity = ErrorSeverity.ERROR, context?: any) {
+  constructor(
+    message: string,
+    severity: ErrorSeverity = ErrorSeverity.ERROR,
+    context?: any,
+  ) {
     super(message, ErrorCategory.DOM, severity, context);
-    this.name = 'DOMError';
+    this.name = "DOMError";
   }
 }
 
 export class StateError extends RynexError {
   constructor(message: string, context?: any) {
     super(message, ErrorCategory.STATE, ErrorSeverity.ERROR, context);
-    this.name = 'StateError';
+    this.name = "StateError";
   }
 }
 
 export class ComponentError extends RynexError {
-  constructor(message: string, severity: ErrorSeverity = ErrorSeverity.ERROR, context?: any) {
+  constructor(
+    message: string,
+    severity: ErrorSeverity = ErrorSeverity.ERROR,
+    context?: any,
+  ) {
     super(message, ErrorCategory.COMPONENT, severity, context);
-    this.name = 'ComponentError';
+    this.name = "ComponentError";
   }
 }
 
 export class RouterError extends RynexError {
   constructor(message: string, context?: any) {
     super(message, ErrorCategory.ROUTER, ErrorSeverity.ERROR, context);
-    this.name = 'RouterError';
+    this.name = "RouterError";
   }
 }
 
 export class LifecycleError extends RynexError {
   constructor(message: string, context?: any) {
     super(message, ErrorCategory.LIFECYCLE, ErrorSeverity.ERROR, context);
-    this.name = 'LifecycleError';
+    this.name = "LifecycleError";
   }
 }
 
@@ -109,7 +117,7 @@ class ErrorHandler {
   private config: ErrorHandlerConfig = {
     throwOnError: true,
     logErrors: true,
-    captureStackTrace: true
+    captureStackTrace: true,
   };
 
   private errorLog: RynexError[] = [];
@@ -132,8 +140,8 @@ class ErrorHandler {
       console.error(
         `%c${error.toString()}`,
         style,
-        error.context ? `\nContext:` : '',
-        error.context || ''
+        error.context ? `\nContext:` : "",
+        error.context || "",
       );
       if (this.config.captureStackTrace && error.stack) {
         console.error(error.stack);
@@ -154,13 +162,13 @@ class ErrorHandler {
   private getConsoleStyle(severity: ErrorSeverity): string {
     switch (severity) {
       case ErrorSeverity.WARNING:
-        return 'color: #ffc107; font-weight: bold;';
+        return "color: #ffc107; font-weight: bold;";
       case ErrorSeverity.ERROR:
-        return 'color: #dc3545; font-weight: bold;';
+        return "color: #dc3545; font-weight: bold;";
       case ErrorSeverity.CRITICAL:
-        return 'color: #ff0000; font-weight: bold; font-size: 14px;';
+        return "color: #ff0000; font-weight: bold; font-size: 14px;";
       default:
-        return '';
+        return "";
     }
   }
 
@@ -173,11 +181,11 @@ class ErrorHandler {
   }
 
   getErrorsByCategory(category: ErrorCategory): RynexError[] {
-    return this.errorLog.filter(err => err.category === category);
+    return this.errorLog.filter((err) => err.category === category);
   }
 
   getErrorsBySeverity(severity: ErrorSeverity): RynexError[] {
-    return this.errorLog.filter(err => err.severity === severity);
+    return this.errorLog.filter((err) => err.severity === severity);
   }
 }
 
@@ -193,7 +201,7 @@ export const validators = {
     if (value === null || value === undefined) {
       throw new ValidationError(
         `${fieldName} is required but received ${value}`,
-        { fieldName, value, ...context }
+        { fieldName, value, ...context },
       );
     }
   },
@@ -201,12 +209,17 @@ export const validators = {
   /**
    * Validate type of a value
    */
-  type(value: any, expectedType: string, fieldName: string, context?: any): void {
+  type(
+    value: any,
+    expectedType: string,
+    fieldName: string,
+    context?: any,
+  ): void {
     const actualType = typeof value;
     if (actualType !== expectedType) {
       throw new ValidationError(
         `${fieldName} expected type '${expectedType}' but received '${actualType}'`,
-        { fieldName, expectedType, actualType, value, ...context }
+        { fieldName, expectedType, actualType, value, ...context },
       );
     }
   },
@@ -215,10 +228,10 @@ export const validators = {
    * Validate that value is a function
    */
   isFunction(value: any, fieldName: string, context?: any): void {
-    if (typeof value !== 'function') {
+    if (typeof value !== "function") {
       throw new ValidationError(
         `${fieldName} must be a function but received ${typeof value}`,
-        { fieldName, value, ...context }
+        { fieldName, value, ...context },
       );
     }
   },
@@ -227,10 +240,10 @@ export const validators = {
    * Validate that value is an object
    */
   isObject(value: any, fieldName: string, context?: any): void {
-    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    if (typeof value !== "object" || value === null || Array.isArray(value)) {
       throw new ValidationError(
         `${fieldName} must be an object but received ${typeof value}`,
-        { fieldName, value, ...context }
+        { fieldName, value, ...context },
       );
     }
   },
@@ -242,7 +255,7 @@ export const validators = {
     if (!Array.isArray(value)) {
       throw new ValidationError(
         `${fieldName} must be an array but received ${typeof value}`,
-        { fieldName, value, ...context }
+        { fieldName, value, ...context },
       );
     }
   },
@@ -251,10 +264,10 @@ export const validators = {
    * Validate that value is a string
    */
   isString(value: any, fieldName: string, context?: any): void {
-    if (typeof value !== 'string') {
+    if (typeof value !== "string") {
       throw new ValidationError(
         `${fieldName} must be a string but received ${typeof value}`,
-        { fieldName, value, ...context }
+        { fieldName, value, ...context },
       );
     }
   },
@@ -263,10 +276,10 @@ export const validators = {
    * Validate that value is a number
    */
   isNumber(value: any, fieldName: string, context?: any): void {
-    if (typeof value !== 'number' || isNaN(value)) {
+    if (typeof value !== "number" || isNaN(value)) {
       throw new ValidationError(
         `${fieldName} must be a valid number but received ${typeof value}`,
-        { fieldName, value, ...context }
+        { fieldName, value, ...context },
       );
     }
   },
@@ -275,10 +288,10 @@ export const validators = {
    * Validate that value is a boolean
    */
   isBoolean(value: any, fieldName: string, context?: any): void {
-    if (typeof value !== 'boolean') {
+    if (typeof value !== "boolean") {
       throw new ValidationError(
         `${fieldName} must be a boolean but received ${typeof value}`,
-        { fieldName, value, ...context }
+        { fieldName, value, ...context },
       );
     }
   },
@@ -291,7 +304,7 @@ export const validators = {
       throw new DOMError(
         `${fieldName} must be an HTMLElement but received ${value?.constructor?.name || typeof value}`,
         ErrorSeverity.ERROR,
-        { fieldName, value, ...context }
+        { fieldName, value, ...context },
       );
     }
   },
@@ -299,12 +312,16 @@ export const validators = {
   /**
    * Validate that element exists in DOM
    */
-  elementExists(element: HTMLElement | null, fieldName: string, context?: any): void {
+  elementExists(
+    element: HTMLElement | null,
+    fieldName: string,
+    context?: any,
+  ): void {
     if (!element) {
       throw new DOMError(
         `${fieldName} element not found in DOM`,
         ErrorSeverity.ERROR,
-        { fieldName, ...context }
+        { fieldName, ...context },
       );
     }
   },
@@ -319,7 +336,7 @@ export const validators = {
       throw new DOMError(
         `${fieldName} contains invalid CSS selector: ${selector}`,
         ErrorSeverity.ERROR,
-        { fieldName, selector, error, ...context }
+        { fieldName, selector, error, ...context },
       );
     }
   },
@@ -327,11 +344,16 @@ export const validators = {
   /**
    * Validate that value is one of allowed values
    */
-  oneOf(value: any, allowedValues: any[], fieldName: string, context?: any): void {
+  oneOf(
+    value: any,
+    allowedValues: any[],
+    fieldName: string,
+    context?: any,
+  ): void {
     if (!allowedValues.includes(value)) {
       throw new ValidationError(
-        `${fieldName} must be one of [${allowedValues.join(', ')}] but received '${value}'`,
-        { fieldName, value, allowedValues, ...context }
+        `${fieldName} must be one of [${allowedValues.join(", ")}] but received '${value}'`,
+        { fieldName, value, allowedValues, ...context },
       );
     }
   },
@@ -341,10 +363,11 @@ export const validators = {
    */
   notEmpty(arr: any[], fieldName: string, context?: any): void {
     if (!Array.isArray(arr) || arr.length === 0) {
-      throw new ValidationError(
-        `${fieldName} must be a non-empty array`,
-        { fieldName, value: arr, ...context }
-      );
+      throw new ValidationError(`${fieldName} must be a non-empty array`, {
+        fieldName,
+        value: arr,
+        ...context,
+      });
     }
   },
 
@@ -352,22 +375,29 @@ export const validators = {
    * Validate string is not empty
    */
   notEmptyString(value: string, fieldName: string, context?: any): void {
-    if (typeof value !== 'string' || value.trim().length === 0) {
-      throw new ValidationError(
-        `${fieldName} must be a non-empty string`,
-        { fieldName, value, ...context }
-      );
+    if (typeof value !== "string" || value.trim().length === 0) {
+      throw new ValidationError(`${fieldName} must be a non-empty string`, {
+        fieldName,
+        value,
+        ...context,
+      });
     }
   },
 
   /**
    * Validate number is in range
    */
-  inRange(value: number, min: number, max: number, fieldName: string, context?: any): void {
-    if (typeof value !== 'number' || value < min || value > max) {
+  inRange(
+    value: number,
+    min: number,
+    max: number,
+    fieldName: string,
+    context?: any,
+  ): void {
+    if (typeof value !== "number" || value < min || value > max) {
       throw new ValidationError(
         `${fieldName} must be between ${min} and ${max} but received ${value}`,
-        { fieldName, value, min, max, ...context }
+        { fieldName, value, min, max, ...context },
       );
     }
   },
@@ -375,12 +405,12 @@ export const validators = {
   /**
    * Validate props object
    */
-  validProps(props: any, fieldName: string = 'props', context?: any): void {
+  validProps(props: any, fieldName: string = "props", context?: any): void {
     if (props !== null && props !== undefined) {
-      if (typeof props !== 'object' || Array.isArray(props)) {
+      if (typeof props !== "object" || Array.isArray(props)) {
         throw new ValidationError(
           `${fieldName} must be an object or null/undefined but received ${typeof props}`,
-          { fieldName, props, ...context }
+          { fieldName, props, ...context },
         );
       }
     }
@@ -389,15 +419,19 @@ export const validators = {
   /**
    * Validate children
    */
-  validChildren(children: any, fieldName: string = 'children', context?: any): void {
+  validChildren(
+    children: any,
+    fieldName: string = "children",
+    context?: any,
+  ): void {
     const validateChild = (child: any): boolean => {
       return (
         child === null ||
         child === undefined ||
         child === false ||
         child === true ||
-        typeof child === 'string' ||
-        typeof child === 'number' ||
+        typeof child === "string" ||
+        typeof child === "number" ||
         child instanceof HTMLElement ||
         child instanceof SVGElement ||
         child instanceof Text
@@ -410,17 +444,17 @@ export const validators = {
         if (!validateChild(flatChildren[i])) {
           throw new ValidationError(
             `Invalid child at index ${i}: expected HTMLElement, string, number, or null/undefined but received ${typeof flatChildren[i]}`,
-            { fieldName, index: i, child: flatChildren[i], ...context }
+            { fieldName, index: i, child: flatChildren[i], ...context },
           );
         }
       }
     } else if (!validateChild(children)) {
       throw new ValidationError(
         `${fieldName} must be a valid DOM child (HTMLElement, string, number, or null/undefined) but received ${typeof children}`,
-        { fieldName, children, ...context }
+        { fieldName, children, ...context },
       );
     }
-  }
+  },
 };
 
 // Safe execution wrapper
@@ -428,7 +462,7 @@ export function safeExecute<T>(
   fn: () => T,
   errorMessage: string,
   category: ErrorCategory = ErrorCategory.RUNTIME,
-  context?: any
+  context?: any,
 ): T | null {
   try {
     return fn();
@@ -437,7 +471,7 @@ export function safeExecute<T>(
       `${errorMessage}: ${error instanceof Error ? error.message : String(error)}`,
       category,
       ErrorSeverity.ERROR,
-      { originalError: error, ...context }
+      { originalError: error, ...context },
     );
     errorHandler.handle(rynexError);
     return null;
@@ -471,13 +505,17 @@ export function devValidate(validationFn: () => void): void {
 }
 
 // Assert function for critical validations
-export function assert(condition: boolean, message: string, context?: any): void {
+export function assert(
+  condition: boolean,
+  message: string,
+  context?: any,
+): void {
   if (!condition) {
     throw new RynexError(
       message,
       ErrorCategory.VALIDATION,
       ErrorSeverity.CRITICAL,
-      context
+      context,
     );
   }
 }

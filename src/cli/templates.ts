@@ -6,10 +6,10 @@
 export interface TemplateConfig {
   projectName: string;
   useTypeScript: boolean;
-  template: 'empty' | 'minimal' | 'routed';
+  template: "empty" | "minimal" | "routed";
 }
 
-const ext = (config: TemplateConfig) => config.useTypeScript ? 'ts' : 'js';
+const ext = (config: TemplateConfig) => (config.useTypeScript ? "ts" : "js");
 
 /**
  * Package.json template
@@ -24,10 +24,14 @@ export const packageJson = (config: TemplateConfig) => `{
   },
   "dependencies": {
     "rynex": "^0.1.3"
-  }${config.useTypeScript ? `,
+  }${
+    config.useTypeScript
+      ? `,
   "devDependencies": {
     "typescript": "^5.3.0"
-  }` : ''}
+  }`
+      : ""
+  }
 }`;
 
 /**
@@ -65,7 +69,7 @@ export const tsConfig = () => `{
  */
 export const readme = (config: TemplateConfig) => `# ${config.projectName}
 
-A Rynex application${config.template !== 'empty' ? ` built with the ${config.template} template` : ''}.
+A Rynex application${config.template !== "empty" ? ` built with the ${config.template} template` : ""}.
 
 ## Getting Started
 
@@ -86,9 +90,13 @@ npm run build
 ${config.projectName}/
 ├── src/
 │   ├── index.${ext(config)}           # Entry point
-│   ├── App.${ext(config)}             # Root component${config.template === 'routed' ? `
+│   ├── App.${ext(config)}             # Root component${
+  config.template === "routed"
+    ? `
 │   ├── components/        # Reusable components
-│   └── pages/            # Route pages` : ''}
+│   └── pages/            # Route pages`
+    : ""
+}
 ├── public/
 │   ├── index.html        # HTML shell
 │   └── styles.css        # Global styles
@@ -112,12 +120,16 @@ export const html = (config: TemplateConfig) => `<!DOCTYPE html>
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>${config.projectName}</title>
-  ${config.template !== 'empty' ? `
+  ${
+    config.template !== "empty"
+      ? `
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  ` : ''}
+  `
+      : ""
+  }
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -130,7 +142,7 @@ export const html = (config: TemplateConfig) => `<!DOCTYPE html>
  * CSS template
  */
 export const css = (config: TemplateConfig) => {
-  if (config.template === 'empty') {
+  if (config.template === "empty") {
     return `/* Global styles */
 * {
   margin: 0;
@@ -142,7 +154,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }`;
   }
-  
+
   return `/* Global styles */
 * {
   margin: 0;
@@ -183,8 +195,10 @@ h1, h2, h3, h4, h5, h6 {
 /**
  * Entry point template
  */
-export const indexFile = (config: TemplateConfig) => `import { render } from 'rynex';
-import App from './App.${ext(config) === 'ts' ? 'js' : ext(config)}';
+export const indexFile = (
+  config: TemplateConfig,
+) => `import { render } from 'rynex';
+import App from './App.${ext(config) === "ts" ? "js" : ext(config)}';
 
 const root = document.getElementById('root');
 if (root) {
@@ -194,7 +208,9 @@ if (root) {
 /**
  * Empty App template
  */
-export const emptyApp = (config: TemplateConfig) => `import { div, text } from 'rynex';
+export const emptyApp = (
+  config: TemplateConfig,
+) => `import { div, text } from 'rynex';
 
 export default function App() {
   return div({
@@ -210,7 +226,9 @@ export default function App() {
 /**
  * Minimal App template (single page with styling)
  */
-export const minimalApp = (config: TemplateConfig) => `import { state, vbox, hbox, container, h1, text, button, svg } from 'rynex';
+export const minimalApp = (
+  config: TemplateConfig,
+) => `import { state, vbox, hbox, container, h1, text, button, svg } from 'rynex';
 
 export default function App() {
   const appState = state({
@@ -280,7 +298,7 @@ export default function App() {
           color: '#00ff88'
         }
       }, () => \`\${appState.count}\`),
-      
+
       hbox({
         style: { gap: '1rem' }
       }, [
@@ -300,7 +318,7 @@ export default function App() {
             background: '#444444'
           }
         }, '-'),
-        
+
         button({
           onClick: () => appState.count++,
           style: {
@@ -335,10 +353,12 @@ export default function App() {
 /**
  * Routed App template
  */
-export const routedApp = (config: TemplateConfig) => `import { state, createRouter, vbox, nav, hbox, h2, NavLink, RouterOutlet, NotFound } from 'rynex';
-import HomePage from './pages/home/page.${ext(config) === 'ts' ? 'js' : ext(config)}';
-import AboutPage from './pages/about/page.${ext(config) === 'ts' ? 'js' : ext(config)}';
-import BlogPage from './pages/blog/page.${ext(config) === 'ts' ? 'js' : ext(config)}';
+export const routedApp = (
+  config: TemplateConfig,
+) => `import { state, createRouter, vbox, nav, hbox, h2, NavLink, RouterOutlet, NotFound } from 'rynex';
+import HomePage from './pages/home/page.${ext(config) === "ts" ? "js" : ext(config)}';
+import AboutPage from './pages/about/page.${ext(config) === "ts" ? "js" : ext(config)}';
+import BlogPage from './pages/blog/page.${ext(config) === "ts" ? "js" : ext(config)}';
 
 export default function App() {
   // Create router
@@ -407,7 +427,7 @@ export default function App() {
             borderRadius: '0.5rem'
           }
         }, 'Home'),
-        
+
         NavLink({
           href: '/about',
           activeClass: 'active',
@@ -419,7 +439,7 @@ export default function App() {
             borderRadius: '0.5rem'
           }
         }, 'About'),
-        
+
         NavLink({
           href: '/blog',
           activeClass: 'active',
@@ -450,7 +470,9 @@ export default function App() {
 /**
  * Home page template
  */
-export const homePage = (config: TemplateConfig) => `import { vbox, h1, text, hbox, button } from 'rynex';
+export const homePage = (
+  config: TemplateConfig,
+) => `import { vbox, h1, text, hbox, button } from 'rynex';
 
 export default function HomePage() {
   return vbox({
@@ -478,7 +500,7 @@ export default function HomePage() {
           margin: 0
         }
       }, 'Welcome Home'),
-      
+
       text({
         style: {
           fontSize: '1.25rem',
@@ -508,7 +530,7 @@ export default function HomePage() {
           cursor: 'pointer'
         }
       }, 'Get Started'),
-      
+
       button({
         onClick: () => window.location.href = '/about',
         style: {
@@ -528,7 +550,9 @@ export default function HomePage() {
 /**
  * About page template
  */
-export const aboutPage = (config: TemplateConfig) => `import { vbox, h1, h2, text } from 'rynex';
+export const aboutPage = (
+  config: TemplateConfig,
+) => `import { vbox, h1, h2, text } from 'rynex';
 
 export default function AboutPage() {
   return vbox({
@@ -558,7 +582,7 @@ export default function AboutPage() {
           lineHeight: '1.8'
         }
       }, 'Rynex is a minimalist TypeScript framework for building reactive web applications with no Virtual DOM.'),
-      
+
       text({
         style: {
           fontSize: '1.125rem',
@@ -649,7 +673,9 @@ export default function AboutPage() {
 /**
  * Blog page template
  */
-export const blogPage = (config: TemplateConfig) => `import { state, vbox, h1, h2, text, hbox } from 'rynex';
+export const blogPage = (
+  config: TemplateConfig,
+) => `import { state, vbox, h1, h2, text, hbox } from 'rynex';
 
 export default function BlogPage() {
   const blogState = state({
@@ -694,7 +720,7 @@ export default function BlogPage() {
 
     vbox({
       style: { gap: '1.5rem' }
-    }, blogState.posts.map(post => 
+    }, blogState.posts.map(post =>
       vbox({
         style: {
           padding: '1.5rem',
@@ -717,14 +743,14 @@ export default function BlogPage() {
             margin: 0
           }
         }, post.title),
-        
+
         text({
           style: {
             color: '#b0b0b0',
             lineHeight: '1.6'
           }
         }, post.excerpt),
-        
+
         text({
           style: {
             fontSize: '0.875rem',

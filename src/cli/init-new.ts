@@ -3,18 +3,27 @@
  * Interactive project scaffolding with multiple templates
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
-import { logger } from './logger.js';
-import { banner, select, confirm, input, nextSteps, info, warn, success } from './prompts.js';
+import * as fs from "fs";
+import * as path from "path";
+import { fileURLToPath } from "url";
+import { logger } from "./logger.js";
+import {
+  banner,
+  select,
+  confirm,
+  input,
+  nextSteps,
+  info,
+  warn,
+  success,
+} from "./prompts.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 interface ProjectConfig {
   name: string;
-  template: 'empty' | 'minimal' | 'routed';
+  template: "empty" | "minimal" | "routed";
   useTypeScript: boolean;
 }
 
@@ -45,10 +54,10 @@ function copyDir(src: string, dest: string): void {
  */
 function replacePlaceholders(filePath: string, projectName: string): void {
   if (!fs.existsSync(filePath)) return;
-  
-  let content = fs.readFileSync(filePath, 'utf8');
+
+  let content = fs.readFileSync(filePath, "utf8");
   content = content.replace(/PROJECT_NAME/g, projectName);
-  fs.writeFileSync(filePath, content, 'utf8');
+  fs.writeFileSync(filePath, content, "utf8");
 }
 
 /**
@@ -59,10 +68,8 @@ export async function initProject(projectName?: string): Promise<void> {
   banner();
 
   // Get project name
-  const name = projectName || await input(
-    'What is your project name?',
-    'my-rynex-app'
-  );
+  const name =
+    projectName || (await input("What is your project name?", "my-rynex-app"));
 
   // Check if directory exists
   const projectPath = path.join(process.cwd(), name);
@@ -72,58 +79,61 @@ export async function initProject(projectName?: string): Promise<void> {
   }
 
   // Select template
-  const template = await select(
-    'Which template would you like to use?',
+  const template = (await select(
+    "Which template would you like to use?",
     [
       {
-        value: 'empty',
-        label: 'Empty',
-        description: 'Minimal setup with just the basics'
+        value: "empty",
+        label: "Empty",
+        description: "Minimal setup with just the basics",
       },
       {
-        value: 'minimal',
-        label: 'Minimal',
-        description: 'Single page app with modern UI'
+        value: "minimal",
+        label: "Minimal",
+        description: "Single page app with modern UI",
       },
       {
-        value: 'routed',
-        label: 'Routed',
-        description: 'Multi-page app with routing and navigation'
-      }
+        value: "routed",
+        label: "Routed",
+        description: "Multi-page app with routing and navigation",
+      },
     ],
-    'minimal'
-  ) as 'empty' | 'minimal' | 'routed';
+    "minimal",
+  )) as "empty" | "minimal" | "routed";
 
   // Select language
   const useTypeScript = await select(
-    'Would you like to use TypeScript or JavaScript?',
+    "Would you like to use TypeScript or JavaScript?",
     [
       {
-        value: 'typescript',
-        label: 'TypeScript',
-        description: 'Recommended for better type safety'
+        value: "typescript",
+        label: "TypeScript",
+        description: "Recommended for better type safety",
       },
       {
-        value: 'javascript',
-        label: 'JavaScript',
-        description: 'Classic JavaScript (Coming soon)'
-      }
+        value: "javascript",
+        label: "JavaScript",
+        description: "Classic JavaScript (Coming soon)",
+      },
     ],
-    'typescript'
+    "typescript",
   );
 
   // Check if JavaScript selected
-  if (useTypeScript === 'javascript') {
+  if (useTypeScript === "javascript") {
     console.log();
-    warn('JavaScript templates are not available yet.');
-    info('We are working on bringing JavaScript support soon!');
-    info('TypeScript provides better type safety and IDE support.');
+    warn("JavaScript templates are not available yet.");
+    info("We are working on bringing JavaScript support soon!");
+    info("TypeScript provides better type safety and IDE support.");
     console.log();
-    
-    const switchToTS = await confirm('Would you like to use TypeScript instead?', true);
-    
+
+    const switchToTS = await confirm(
+      "Would you like to use TypeScript instead?",
+      true,
+    );
+
     if (!switchToTS) {
-      logger.error('Project creation cancelled');
+      logger.error("Project creation cancelled");
       process.exit(0);
     }
   }
@@ -131,7 +141,7 @@ export async function initProject(projectName?: string): Promise<void> {
   const config: ProjectConfig = {
     name,
     template,
-    useTypeScript: true // Always TypeScript for now
+    useTypeScript: true, // Always TypeScript for now
   };
 
   // Create project
@@ -145,9 +155,9 @@ export async function initProject(projectName?: string): Promise<void> {
     // We need to go up to package root and then into templates
     const templatePath = path.join(
       path.dirname(path.dirname(__dirname)), // Go up to package root
-      'templates',
+      "templates",
       config.template,
-      'typescript'
+      "typescript",
     );
 
     if (!fs.existsSync(templatePath)) {
@@ -159,7 +169,7 @@ export async function initProject(projectName?: string): Promise<void> {
     copyDir(templatePath, projectPath);
 
     // Replace placeholders in package.json
-    const packageJsonPath = path.join(projectPath, 'package.json');
+    const packageJsonPath = path.join(projectPath, "package.json");
     replacePlaceholders(packageJsonPath, config.name);
 
     // Create README
@@ -186,9 +196,13 @@ npm run build
 ${config.name}/
 ├── src/
 │   ├── index.ts           # Entry point
-│   ├── App.ts             # Root component${config.template === 'routed' ? `
+│   ├── App.ts             # Root component${
+      config.template === "routed"
+        ? `
 │   ├── components/        # Reusable components
-│   ├── pages/             # Route pages` : ''}
+│   ├── pages/             # Route pages`
+        : ""
+    }
 │   ├── assets/            # Images, fonts, etc.
 │   └── styles/            # Global styles
 ├── dist/                  # Build output (auto-generated)
@@ -205,22 +219,25 @@ ${config.name}/
 
 ## Features
 
-${config.template === 'empty' ? '- Minimal setup\n- Quick start\n- Clean slate for your ideas' : ''}${config.template === 'minimal' ? '- Modern dark theme\n- Reactive state management\n- Beautiful UI components\n- Hot reload support' : ''}${config.template === 'routed' ? '- File-based routing\n- Multiple pages\n- Navigation components\n- Lazy loading support\n- Modern dark theme' : ''}
+${config.template === "empty" ? "- Minimal setup\n- Quick start\n- Clean slate for your ideas" : ""}${config.template === "minimal" ? "- Modern dark theme\n- Reactive state management\n- Beautiful UI components\n- Hot reload support" : ""}${config.template === "routed" ? "- File-based routing\n- Multiple pages\n- Navigation components\n- Lazy loading support\n- Modern dark theme" : ""}
 
 Built with Rynex v0.1.3
 `;
 
-    fs.writeFileSync(path.join(projectPath, 'README.md'), readmeContent, 'utf8');
+    fs.writeFileSync(
+      path.join(projectPath, "README.md"),
+      readmeContent,
+      "utf8",
+    );
 
     // Success!
     console.log();
-    success('Project created successfully!');
-    
+    success("Project created successfully!");
+
     // Show next steps
     nextSteps(config.name, config.useTypeScript);
-
   } catch (error) {
-    logger.error('Failed to create project');
+    logger.error("Failed to create project");
     console.error(error);
     process.exit(1);
   }

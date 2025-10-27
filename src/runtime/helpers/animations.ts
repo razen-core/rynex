@@ -3,7 +3,7 @@
  * Simple, performant animations without external dependencies
  */
 
-import { debugLog, debugWarn } from '../debug.js';
+import { debugLog, debugWarn } from "../debug.js";
 
 export interface TransitionConfig {
   duration?: number;
@@ -16,8 +16,8 @@ export interface TransitionConfig {
 export interface AnimationConfig extends TransitionConfig {
   keyframes: Keyframe[] | PropertyIndexedKeyframes;
   iterations?: number;
-  direction?: 'normal' | 'reverse' | 'alternate' | 'alternate-reverse';
-  fill?: 'none' | 'forwards' | 'backwards' | 'both';
+  direction?: "normal" | "reverse" | "alternate" | "alternate-reverse";
+  fill?: "none" | "forwards" | "backwards" | "both";
 }
 
 /**
@@ -26,34 +26,28 @@ export interface AnimationConfig extends TransitionConfig {
  */
 export function transition(
   element: HTMLElement,
-  config: TransitionConfig = {}
+  config: TransitionConfig = {},
 ): HTMLElement {
   if (!element || !(element instanceof HTMLElement)) {
-    debugWarn('Animation', 'Invalid element provided to transition');
+    debugWarn("Animation", "Invalid element provided to transition");
     return element;
   }
 
-  const {
-    duration = 300,
-    easing = 'ease',
-    delay = 0,
-    onStart,
-    onEnd
-  } = config;
+  const { duration = 300, easing = "ease", delay = 0, onStart, onEnd } = config;
 
   try {
     element.style.transition = `all ${duration}ms ${easing} ${delay}ms`;
-    debugLog('Animation', `Transition applied: ${duration}ms ${easing}`);
+    debugLog("Animation", `Transition applied: ${duration}ms ${easing}`);
 
     if (onStart) {
       onStart();
     }
 
     if (onEnd) {
-      element.addEventListener('transitionend', () => onEnd(), { once: true });
+      element.addEventListener("transitionend", () => onEnd(), { once: true });
     }
   } catch (error) {
-    debugWarn('Animation', 'Error applying transition:', error);
+    debugWarn("Animation", "Error applying transition:", error);
   }
 
   return element;
@@ -65,23 +59,23 @@ export function transition(
  */
 export function animate(
   element: HTMLElement,
-  config: AnimationConfig
+  config: AnimationConfig,
 ): Animation | null {
   if (!element || !(element instanceof HTMLElement)) {
-    debugWarn('Animation', 'Invalid element provided to animate');
+    debugWarn("Animation", "Invalid element provided to animate");
     return null;
   }
 
   const {
     keyframes,
     duration = 300,
-    easing = 'ease',
+    easing = "ease",
     delay = 0,
     iterations = 1,
-    direction = 'normal',
-    fill = 'both',
+    direction = "normal",
+    fill = "both",
     onStart,
-    onEnd
+    onEnd,
   } = config;
 
   try {
@@ -95,10 +89,10 @@ export function animate(
       delay,
       iterations,
       direction,
-      fill
+      fill,
     });
 
-    debugLog('Animation', `Animation started: ${duration}ms`);
+    debugLog("Animation", `Animation started: ${duration}ms`);
 
     if (onEnd) {
       animation.onfinish = () => onEnd();
@@ -106,7 +100,7 @@ export function animate(
 
     return animation;
   } catch (error) {
-    debugWarn('Animation', 'Error creating animation:', error);
+    debugWarn("Animation", "Error creating animation:", error);
     return null;
   }
 }
@@ -117,32 +111,26 @@ export function animate(
  */
 export function fade(
   element: HTMLElement,
-  direction: 'in' | 'out' | 'toggle' = 'in',
-  config: TransitionConfig = {}
+  direction: "in" | "out" | "toggle" = "in",
+  config: TransitionConfig = {},
 ): Animation | null {
   if (!element || !(element instanceof HTMLElement)) {
-    debugWarn('Animation', 'Invalid element provided to fade');
+    debugWarn("Animation", "Invalid element provided to fade");
     return null;
   }
-  const { duration = 300, easing = 'ease', delay = 0, onStart, onEnd } = config;
+  const { duration = 300, easing = "ease", delay = 0, onStart, onEnd } = config;
 
   const currentOpacity = window.getComputedStyle(element).opacity;
   let keyframes: Keyframe[];
 
-  if (direction === 'toggle') {
-    direction = parseFloat(currentOpacity) > 0.5 ? 'out' : 'in';
+  if (direction === "toggle") {
+    direction = parseFloat(currentOpacity) > 0.5 ? "out" : "in";
   }
 
-  if (direction === 'in') {
-    keyframes = [
-      { opacity: 0 },
-      { opacity: 1 }
-    ];
+  if (direction === "in") {
+    keyframes = [{ opacity: 0 }, { opacity: 1 }];
   } else {
-    keyframes = [
-      { opacity: 1 },
-      { opacity: 0 }
-    ];
+    keyframes = [{ opacity: 1 }, { opacity: 0 }];
   }
 
   return animate(element, {
@@ -151,7 +139,7 @@ export function fade(
     easing,
     delay,
     onStart,
-    onEnd
+    onEnd,
   });
 }
 
@@ -161,40 +149,40 @@ export function fade(
  */
 export function slide(
   element: HTMLElement,
-  direction: 'up' | 'down' | 'left' | 'right' = 'down',
-  config: TransitionConfig = {}
+  direction: "up" | "down" | "left" | "right" = "down",
+  config: TransitionConfig = {},
 ): Animation | null {
   if (!element || !(element instanceof HTMLElement)) {
-    debugWarn('Animation', 'Invalid element provided to slide');
+    debugWarn("Animation", "Invalid element provided to slide");
     return null;
   }
-  const { duration = 300, easing = 'ease', delay = 0, onStart, onEnd } = config;
+  const { duration = 300, easing = "ease", delay = 0, onStart, onEnd } = config;
 
   let keyframes: Keyframe[];
 
   switch (direction) {
-    case 'up':
+    case "up":
       keyframes = [
-        { transform: 'translateY(100%)', opacity: 0 },
-        { transform: 'translateY(0)', opacity: 1 }
+        { transform: "translateY(100%)", opacity: 0 },
+        { transform: "translateY(0)", opacity: 1 },
       ];
       break;
-    case 'down':
+    case "down":
       keyframes = [
-        { transform: 'translateY(-100%)', opacity: 0 },
-        { transform: 'translateY(0)', opacity: 1 }
+        { transform: "translateY(-100%)", opacity: 0 },
+        { transform: "translateY(0)", opacity: 1 },
       ];
       break;
-    case 'left':
+    case "left":
       keyframes = [
-        { transform: 'translateX(100%)', opacity: 0 },
-        { transform: 'translateX(0)', opacity: 1 }
+        { transform: "translateX(100%)", opacity: 0 },
+        { transform: "translateX(0)", opacity: 1 },
       ];
       break;
-    case 'right':
+    case "right":
       keyframes = [
-        { transform: 'translateX(-100%)', opacity: 0 },
-        { transform: 'translateX(0)', opacity: 1 }
+        { transform: "translateX(-100%)", opacity: 0 },
+        { transform: "translateX(0)", opacity: 1 },
       ];
       break;
   }
@@ -205,7 +193,7 @@ export function slide(
     easing,
     delay,
     onStart,
-    onEnd
+    onEnd,
   });
 }
 
@@ -215,31 +203,34 @@ export function slide(
  */
 export function scale(
   element: HTMLElement,
-  direction: 'in' | 'out' | 'toggle' = 'in',
-  config: TransitionConfig = {}
+  direction: "in" | "out" | "toggle" = "in",
+  config: TransitionConfig = {},
 ): Animation | null {
   if (!element || !(element instanceof HTMLElement)) {
-    debugWarn('Animation', 'Invalid element provided to scale');
+    debugWarn("Animation", "Invalid element provided to scale");
     return null;
   }
-  const { duration = 300, easing = 'ease', delay = 0, onStart, onEnd } = config;
+  const { duration = 300, easing = "ease", delay = 0, onStart, onEnd } = config;
 
   const currentTransform = window.getComputedStyle(element).transform;
   let keyframes: Keyframe[];
 
-  if (direction === 'toggle') {
-    direction = currentTransform !== 'none' && currentTransform.includes('scale') ? 'out' : 'in';
+  if (direction === "toggle") {
+    direction =
+      currentTransform !== "none" && currentTransform.includes("scale")
+        ? "out"
+        : "in";
   }
 
-  if (direction === 'in') {
+  if (direction === "in") {
     keyframes = [
-      { transform: 'scale(0)', opacity: 0 },
-      { transform: 'scale(1)', opacity: 1 }
+      { transform: "scale(0)", opacity: 0 },
+      { transform: "scale(1)", opacity: 1 },
     ];
   } else {
     keyframes = [
-      { transform: 'scale(1)', opacity: 1 },
-      { transform: 'scale(0)', opacity: 0 }
+      { transform: "scale(1)", opacity: 1 },
+      { transform: "scale(0)", opacity: 0 },
     ];
   }
 
@@ -249,7 +240,7 @@ export function scale(
     easing,
     delay,
     onStart,
-    onEnd
+    onEnd,
   });
 }
 
@@ -260,17 +251,17 @@ export function scale(
 export function rotate(
   element: HTMLElement,
   degrees: number = 360,
-  config: TransitionConfig = {}
+  config: TransitionConfig = {},
 ): Animation | null {
   if (!element || !(element instanceof HTMLElement)) {
-    debugWarn('Animation', 'Invalid element provided to rotate');
+    debugWarn("Animation", "Invalid element provided to rotate");
     return null;
   }
-  const { duration = 300, easing = 'ease', delay = 0, onStart, onEnd } = config;
+  const { duration = 300, easing = "ease", delay = 0, onStart, onEnd } = config;
 
   const keyframes: Keyframe[] = [
-    { transform: 'rotate(0deg)' },
-    { transform: `rotate(${degrees}deg)` }
+    { transform: "rotate(0deg)" },
+    { transform: `rotate(${degrees}deg)` },
   ];
 
   return animate(element, {
@@ -279,6 +270,6 @@ export function rotate(
     easing,
     delay,
     onStart,
-    onEnd
+    onEnd,
   });
 }

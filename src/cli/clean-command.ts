@@ -3,11 +3,11 @@
  * Removes the dist directory and all build artifacts
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
-import { logger } from './logger.js';
-import { loadConfig } from './config.js';
-import { confirm } from './prompts.js';
+import * as fs from "fs";
+import * as path from "path";
+import { logger } from "./logger.js";
+import { loadConfig } from "./config.js";
+import { confirm } from "./prompts.js";
 
 /**
  * Get directory size in bytes
@@ -39,13 +39,13 @@ function getDirectorySize(dirPath: string): number {
  * Format bytes to human readable size
  */
 function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) return "0 Bytes";
 
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
 /**
@@ -87,19 +87,19 @@ export interface CleanOptions {
  */
 export async function cleanCommand(options: CleanOptions = {}): Promise<void> {
   const projectRoot = process.cwd();
-  
+
   // Load config to get output directory
   const config = await loadConfig();
-  const outputDir = config.output || 'dist/bundle.js';
+  const outputDir = config.output || "dist/bundle.js";
   const distDir = path.join(projectRoot, path.dirname(outputDir));
 
-  logger.info('Rynex Clean Command');
+  logger.info("Rynex Clean Command");
   console.log();
 
   // Check if dist directory exists
   if (!fs.existsSync(distDir)) {
     logger.info(`Directory '${path.basename(distDir)}' does not exist`);
-    logger.success('Nothing to clean!');
+    logger.success("Nothing to clean!");
     return;
   }
 
@@ -109,7 +109,7 @@ export async function cleanCommand(options: CleanOptions = {}): Promise<void> {
 
   if (fileCount === 0) {
     logger.info(`Directory '${path.basename(distDir)}' is already empty`);
-    logger.success('Nothing to clean!');
+    logger.success("Nothing to clean!");
     return;
   }
 
@@ -125,19 +125,19 @@ export async function cleanCommand(options: CleanOptions = {}): Promise<void> {
   if (!shouldClean) {
     shouldClean = await confirm(
       `Are you sure you want to delete the '${path.basename(distDir)}' directory?`,
-      false
+      false,
     );
   }
 
   if (!shouldClean) {
-    logger.info('Clean cancelled');
+    logger.info("Clean cancelled");
     return;
   }
 
   // Perform cleaning
   try {
-    logger.info('Cleaning...');
-    
+    logger.info("Cleaning...");
+
     if (options.verbose) {
       // Show files being deleted
       const files = fs.readdirSync(distDir);
@@ -151,16 +151,17 @@ export async function cleanCommand(options: CleanOptions = {}): Promise<void> {
 
     console.log();
     logger.success(`Cleaned ${fileCount} file(s) (${formatBytes(dirSize)})`);
-    logger.success(`Directory '${path.basename(distDir)}' removed successfully!`);
-
+    logger.success(
+      `Directory '${path.basename(distDir)}' removed successfully!`,
+    );
   } catch (error) {
     console.log();
-    logger.error('Failed to clean directory');
-    
+    logger.error("Failed to clean directory");
+
     if (error instanceof Error) {
       logger.error(error.message);
     }
-    
+
     process.exit(1);
   }
 }

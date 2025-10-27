@@ -3,16 +3,21 @@
  * Hot-reload development server
  */
 
-import * as http from 'http';
-import * as fs from 'fs';
-import * as path from 'path';
-import { watch } from 'chokidar';
-import { logger } from './logger.js';
-import { RouteConfig, RynexConfig } from './config.js';
-import { scanRoutes, RouteManifest } from './route-scanner.js';
-import { readBuildManifest } from './hash-utils.js';
-import { watchCSS, checkCSSSetup, hasPostCSSConfig, printCSSSetupInstructions } from './css-processor.js';
-import { ChildProcess } from 'child_process';
+import * as http from "http";
+import * as fs from "fs";
+import * as path from "path";
+import { watch } from "chokidar";
+import { logger } from "./logger.js";
+import { RouteConfig, RynexConfig } from "./config.js";
+import { scanRoutes, RouteManifest } from "./route-scanner.js";
+import { readBuildManifest } from "./hash-utils.js";
+import {
+  watchCSS,
+  checkCSSSetup,
+  hasPostCSSConfig,
+  printCSSSetupInstructions,
+} from "./css-processor.js";
+import { ChildProcess } from "child_process";
 
 export interface DevServerOptions {
   port: number;
@@ -22,71 +27,90 @@ export interface DevServerOptions {
   config?: RynexConfig;
 }
 
-type Middleware = (req: http.IncomingMessage, res: http.ServerResponse, next: () => void) => void;
+type Middleware = (
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+  next: () => void,
+) => void;
 
 /**
  * Start development server
  */
 export async function startDevServer(options: DevServerOptions): Promise<void> {
   const { port, root, hotReload, routes, config } = options;
-  
+
   // Middleware stack
   const middlewareStack: Middleware[] = [];
-  
+
   // Start CSS watcher if enabled
   let cssWatcher: ChildProcess | null = null;
   if (config?.css?.enabled) {
     const projectRoot = process.cwd();
     const cssSetup = checkCSSSetup(projectRoot);
-    
-    if (!cssSetup.hasTailwind || !cssSetup.hasPostCSS || !cssSetup.hasPostCSSCLI) {
-      logger.warning('CSS processing is enabled but dependencies are missing');
+
+    if (
+      !cssSetup.hasTailwind ||
+      !cssSetup.hasPostCSS ||
+      !cssSetup.hasPostCSSCLI
+    ) {
+      logger.warning("CSS processing is enabled but dependencies are missing");
       printCSSSetupInstructions();
     } else if (!hasPostCSSConfig(projectRoot)) {
-      logger.warning('PostCSS config not found. Run: rynex init:css');
+      logger.warning("PostCSS config not found. Run: rynex init:css");
     } else {
-      const cssEntry = config.css.entry || 'src/styles/main.css';
-      const cssOutput = config.css.output || 'dist/styles.css';
-      
+      const cssEntry = config.css.entry || "src/styles/main.css";
+      const cssOutput = config.css.output || "dist/styles.css";
+
       logger.info(`Watching CSS: ${cssEntry} → ${cssOutput}`);
-      
-      cssWatcher = watchCSS({
-        entry: cssEntry,
-        output: cssOutput,
-        minify: false,
-        sourcemap: true,
-        projectRoot
-      }, () => {
-        // Notify clients when CSS changes
-        if (hotReload) {
-          clients.forEach(client => {
-            client.write('data: reload\n\n');
-          });
-        }
-      });
-      
+
+      cssWatcher = watchCSS(
+        {
+          entry: cssEntry,
+          output: cssOutput,
+          minify: false,
+          sourcemap: true,
+          projectRoot,
+        },
+        () => {
+          // Notify clients when CSS changes
+          if (hotReload) {
+            clients.forEach((client) => {
+              client.write("data: reload\n\n");
+            });
+          }
+        },
+      );
+
       if (cssWatcher) {
-        logger.success('CSS watcher started');
+        logger.success("CSS watcher started");
       }
     }
   }
-  
+
   // Scan routes if file-based routing is enabled
   let routeManifest: RouteManifest | null = null;
   if (config?.routing?.fileBasedRouting) {
-    const pagesDir = path.join(process.cwd(), config.routing.pagesDir || 'src/pages');
+    const pagesDir = path.join(
+      process.cwd(),
+      config.routing.pagesDir || "src/pages",
+    );
     routeManifest = scanRoutes(pagesDir);
-    logger.info(`File-based routing enabled with ${routeManifest.routes.length} routes`);
+    logger.info(
+      `File-based routing enabled with ${routeManifest.routes.length} routes`,
+    );
   }
-  
+
   const clients: http.ServerResponse[] = [];
 
   // Add CORS middleware
   middlewareStack.push((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    if (req.method === 'OPTIONS') {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS",
+    );
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    if (req.method === "OPTIONS") {
       res.writeHead(200);
       res.end();
       return;
@@ -97,9 +121,11 @@ export async function startDevServer(options: DevServerOptions): Promise<void> {
   // Add logging middleware
   middlewareStack.push((req, res, next) => {
     const start = Date.now();
-    res.on('finish', () => {
+    res.on("finish", () => {
       const duration = Date.now() - start;
-      logger.debug(`${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
+      logger.debug(
+        `${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`,
+      );
     });
     next();
   });
@@ -121,74 +147,76 @@ export async function startDevServer(options: DevServerOptions): Promise<void> {
 
   // Request handler
   function handleRequest(req: http.IncomingMessage, res: http.ServerResponse) {
-    const url = req.url || '/';
+    const url = req.url || "/";
 
     // Handle build info endpoint
-    if (url === '/__rynex_build_info') {
+    if (url === "/__rynex_build_info") {
       const manifest = readBuildManifest(root);
-      res.writeHead(200, { 
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache, no-store, must-revalidate'
+      res.writeHead(200, {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
       });
-      res.end(JSON.stringify({
-        buildHash: manifest?.hash || manifest?.buildHash || 'dev',  // Support both formats
-        hash: manifest?.hash || manifest?.buildHash || 'dev',
-        timestamp: manifest?.timestamp || Date.now()
-      }));
+      res.end(
+        JSON.stringify({
+          buildHash: manifest?.hash || manifest?.buildHash || "dev", // Support both formats
+          hash: manifest?.hash || manifest?.buildHash || "dev",
+          timestamp: manifest?.timestamp || Date.now(),
+        }),
+      );
       return;
     }
 
     // Handle SSE for hot reload
-    if (hotReload && url === '/__rynex_hmr') {
+    if (hotReload && url === "/__rynex_hmr") {
       res.writeHead(200, {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive'
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
       });
-      
+
       clients.push(res);
-      
-      req.on('close', () => {
+
+      req.on("close", () => {
         const index = clients.indexOf(res);
         if (index !== -1) {
           clients.splice(index, 1);
         }
       });
-      
+
       return;
     }
 
     // Parse URL and query params
-    const [pathname, queryString] = url.split('?');
-    
+    const [pathname, queryString] = url.split("?");
+
     // Check if URL matches a route
-    let filePath = path.join(root, pathname === '/' ? 'index.html' : pathname);
-    
+    let filePath = path.join(root, pathname === "/" ? "index.html" : pathname);
+
     // Match against file-based routes first
     if (routeManifest && routeManifest.routes.length > 0) {
       const matchedRoute = matchRoute(pathname, routeManifest.routes);
       if (matchedRoute) {
         // For SPA, serve index.html and let client-side router handle it
-        filePath = path.join(root, 'index.html');
+        filePath = path.join(root, "index.html");
         logger.debug(`Matched file-based route ${pathname}`);
       }
     } else if (routes && routes.length > 0) {
-      const matchedRoute = routes.find(route => route.path === pathname);
+      const matchedRoute = routes.find((route) => route.path === pathname);
       if (matchedRoute && matchedRoute.component) {
         // Serve the component HTML file for this route
         filePath = path.join(root, matchedRoute.component);
         logger.debug(`Matched route ${pathname} to ${matchedRoute.component}`);
       }
     }
-    
+
     // Check if file exists
     if (!fs.existsSync(filePath)) {
       // Try adding .html
-      if (fs.existsSync(filePath + '.html')) {
-        filePath = filePath + '.html';
+      if (fs.existsSync(filePath + ".html")) {
+        filePath = filePath + ".html";
       } else {
         res.writeHead(404);
-        res.end('404 Not Found');
+        res.end("404 Not Found");
         return;
       }
     }
@@ -196,62 +224,63 @@ export async function startDevServer(options: DevServerOptions): Promise<void> {
     // Determine content type
     const ext = path.extname(filePath);
     const contentTypes: Record<string, string> = {
-      '.html': 'text/html; charset=utf-8',
-      '.js': 'application/javascript; charset=utf-8',
-      '.mjs': 'application/javascript; charset=utf-8',
-      '.css': 'text/css; charset=utf-8',
-      '.json': 'application/json',
-      '.png': 'image/png',
-      '.jpg': 'image/jpeg',
-      '.jpeg': 'image/jpeg',
-      '.gif': 'image/gif',
-      '.svg': 'image/svg+xml',
-      '.ico': 'image/x-icon',
-      '.webp': 'image/webp',
-      '.map': 'application/json'
+      ".html": "text/html; charset=utf-8",
+      ".js": "application/javascript; charset=utf-8",
+      ".mjs": "application/javascript; charset=utf-8",
+      ".css": "text/css; charset=utf-8",
+      ".json": "application/json",
+      ".png": "image/png",
+      ".jpg": "image/jpeg",
+      ".jpeg": "image/jpeg",
+      ".gif": "image/gif",
+      ".svg": "image/svg+xml",
+      ".ico": "image/x-icon",
+      ".webp": "image/webp",
+      ".map": "application/json",
     };
 
-    const contentType = contentTypes[ext] || 'application/octet-stream';
+    const contentType = contentTypes[ext] || "application/octet-stream";
 
     // Read and serve file
     fs.readFile(filePath, (err, data) => {
       if (err) {
-        res.writeHead(500, { 'Content-Type': 'text/plain' });
-        res.end('500 Internal Server Error');
+        res.writeHead(500, { "Content-Type": "text/plain" });
+        res.end("500 Internal Server Error");
         return;
       }
 
       // Set cache headers based on file type
-      const isAsset = ext === '.html' || ext === '.js' || ext === '.mjs' || ext === '.css';
+      const isAsset =
+        ext === ".html" || ext === ".js" || ext === ".mjs" || ext === ".css";
       const headers: Record<string, string> = {
-        'Content-Type': contentType
+        "Content-Type": contentType,
       };
-      
+
       if (isAsset) {
         // Force no-cache for HTML, JS, and CSS in development
-        headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
-        headers['Pragma'] = 'no-cache';
-        headers['Expires'] = '0';
+        headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+        headers["Pragma"] = "no-cache";
+        headers["Expires"] = "0";
       } else {
         // Allow caching for images and other static assets
-        headers['Cache-Control'] = 'public, max-age=3600';
+        headers["Cache-Control"] = "public, max-age=3600";
       }
-      
+
       res.writeHead(200, headers);
-      
+
       // Inject HMR script into HTML
-      if (hotReload && ext === '.html') {
+      if (hotReload && ext === ".html") {
         const html = data.toString();
-        
+
         // Read build manifest to get current build hash
         const manifest = readBuildManifest(root);
-        const buildHash = manifest?.hash || manifest?.buildHash || 'dev';
-        
+        const buildHash = manifest?.hash || manifest?.buildHash || "dev";
+
         const hmrScript = `
           <script>
             // Store current build version
             const CURRENT_BUILD = '${buildHash}';
-            
+
             const eventSource = new EventSource('/__rynex_hmr');
             eventSource.onmessage = (event) => {
               if (event.data === 'reload') {
@@ -260,11 +289,11 @@ export async function startDevServer(options: DevServerOptions): Promise<void> {
                 window.location.reload(true);
               }
             };
-            
+
             eventSource.onerror = (error) => {
               console.error('[Rynex] HMR connection error:', error);
             };
-            
+
             // Check build version on focus
             window.addEventListener('focus', async () => {
               try {
@@ -280,7 +309,7 @@ export async function startDevServer(options: DevServerOptions): Promise<void> {
             });
           </script>
         `;
-        const modifiedHtml = html.replace('</body>', `${hmrScript}</body>`);
+        const modifiedHtml = html.replace("</body>", `${hmrScript}</body>`);
         res.end(modifiedHtml);
       } else {
         res.end(data);
@@ -303,9 +332,9 @@ export async function startDevServer(options: DevServerOptions): Promise<void> {
   function routePathToRegex(routePath: string): RegExp {
     let pattern = routePath;
     // Dynamic segments: :id -> ([^/]+)
-    pattern = pattern.replace(/:([^/]+)/g, '([^/]+)');
+    pattern = pattern.replace(/:([^/]+)/g, "([^/]+)");
     // Wildcards: * -> (.*)
-    pattern = pattern.replace(/\*/g, '(.*)');
+    pattern = pattern.replace(/\*/g, "(.*)");
     return new RegExp(`^${pattern}$`);
   }
 
@@ -313,15 +342,15 @@ export async function startDevServer(options: DevServerOptions): Promise<void> {
   if (hotReload) {
     const watcher = watch(root, {
       ignored: /(^|[/\\])\../, // ignore dotfiles
-      persistent: true
+      persistent: true,
     });
 
-    watcher.on('change', (filePath) => {
+    watcher.on("change", (filePath) => {
       logger.info(`File changed: ${filePath}`);
-      
+
       // Notify all connected clients
-      clients.forEach(client => {
-        client.write('data: reload\n\n');
+      clients.forEach((client) => {
+        client.write("data: reload\n\n");
       });
     });
   }
@@ -331,16 +360,16 @@ export async function startDevServer(options: DevServerOptions): Promise<void> {
     logger.success(`Dev server running at http://localhost:${port}`);
     logger.info(`Serving files from: ${root}`);
     if (hotReload) {
-      logger.info('Hot reload enabled');
+      logger.info("Hot reload enabled");
     }
     if (cssWatcher) {
-      logger.info('CSS watching enabled');
+      logger.info("CSS watching enabled");
     }
   });
-  
+
   // Cleanup on exit
-  process.on('SIGINT', () => {
-    logger.info('\nShutting down dev server...');
+  process.on("SIGINT", () => {
+    logger.info("\nShutting down dev server...");
     if (cssWatcher) {
       cssWatcher.kill();
     }

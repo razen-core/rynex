@@ -362,4 +362,4 @@ rynex build       # Build with optimized CSS
 
 **Implementation Date**: 2025
 **Tailwind CSS Version**: v4.0+
-**Rynex Version**: v0.1.0-alpha.67+
+**Rynex Version**: v0.1.0-beta.0+

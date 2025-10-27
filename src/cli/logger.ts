@@ -4,28 +4,28 @@
  */
 
 export enum LogLevel {
-  INFO = 'INFO',
-  SUCCESS = 'SUCCESS',
-  WARNING = 'WARNING',
-  ERROR = 'ERROR',
-  DEBUG = 'DEBUG'
+  INFO = "INFO",
+  SUCCESS = "SUCCESS",
+  WARNING = "WARNING",
+  ERROR = "ERROR",
+  DEBUG = "DEBUG",
 }
 
 const colors = {
-  reset: '\x1b[0m',
-  bright: '\x1b[1m',
-  dim: '\x1b[2m',
-  
+  reset: "\x1b[0m",
+  bright: "\x1b[1m",
+  dim: "\x1b[2m",
+
   // Foreground colors
-  black: '\x1b[30m',
-  red: '\x1b[31m',
-  green: '\x1b[32m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  magenta: '\x1b[35m',
-  cyan: '\x1b[36m',
-  white: '\x1b[37m',
-  gray: '\x1b[90m',
+  black: "\x1b[30m",
+  red: "\x1b[31m",
+  green: "\x1b[32m",
+  yellow: "\x1b[33m",
+  blue: "\x1b[34m",
+  magenta: "\x1b[35m",
+  cyan: "\x1b[36m",
+  white: "\x1b[37m",
+  gray: "\x1b[90m",
 };
 
 class Logger {
@@ -34,12 +34,13 @@ class Logger {
 
   constructor(useColors = true) {
     this.useColors = useColors && process.stdout.isTTY;
-    this.debugEnabled = process.env.DEBUG === 'true' || process.argv.includes('--debug');
+    this.debugEnabled =
+      process.env.DEBUG === "true" || process.argv.includes("--debug");
   }
 
   private formatMessage(level: LogLevel, message: string): string {
-    const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
-    
+    const timestamp = new Date().toISOString().split("T")[1].split(".")[0];
+
     if (!this.useColors) {
       return `[${timestamp}] [${level}] ${message}`;
     }
@@ -90,17 +91,17 @@ class Logger {
       console.log(this.formatMessage(LogLevel.DEBUG, message));
     }
   }
-  
+
   setDebug(enabled: boolean): void {
     this.debugEnabled = enabled;
   }
 
   section(title: string): void {
-    console.log('\n' + colors.bright + title + colors.reset);
+    console.log("\n" + colors.bright + title + colors.reset);
   }
 
   divider(): void {
-    console.log(colors.dim + '─'.repeat(60) + colors.reset);
+    console.log(colors.dim + "─".repeat(60) + colors.reset);
   }
 }
 

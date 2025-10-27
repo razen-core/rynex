@@ -4,7 +4,7 @@
  * Inspired by Express.js and Next.js routing patterns
  */
 
-import { state } from './state.js';
+import { state } from "./state.js";
 
 export interface RouteParams {
   [key: string]: string;
@@ -22,8 +22,13 @@ export interface RouteContext {
   data?: any;
 }
 
-export type RouteComponent = (ctx: RouteContext) => HTMLElement | Promise<HTMLElement>;
-export type RouteMiddleware = (ctx: RouteContext, next: () => void | Promise<void>) => void | Promise<void>;
+export type RouteComponent = (
+  ctx: RouteContext,
+) => HTMLElement | Promise<HTMLElement>;
+export type RouteMiddleware = (
+  ctx: RouteContext,
+  next: () => void | Promise<void>,
+) => void | Promise<void>;
 export type RouteGuard = (ctx: RouteContext) => boolean | Promise<boolean>;
 
 export interface RouteConfig {
@@ -58,28 +63,37 @@ export class Router {
   private container: HTMLElement | null = null;
   private globalMiddleware: RouteMiddleware[] = [];
   private notFoundHandler: RouteComponent | null = null;
-  private errorHandler: ((error: Error, ctx: RouteContext) => void) | null = null;
-  
+  private errorHandler: ((error: Error, ctx: RouteContext) => void) | null =
+    null;
+
   // Reactive state for current route
   public routeState = state<RouteContext>({
     path: window.location.pathname,
     params: {},
     query: this.parseQuery(window.location.search),
-    hash: window.location.hash
+    hash: window.location.hash,
   });
 
   constructor() {
     // Listen to popstate for browser back/forward
-    window.addEventListener('popstate', () => {
-      this.handleNavigation(window.location.pathname + window.location.search + window.location.hash);
+    window.addEventListener("popstate", () => {
+      this.handleNavigation(
+        window.location.pathname +
+          window.location.search +
+          window.location.hash,
+      );
     });
 
     // Intercept link clicks
-    document.addEventListener('click', (e) => {
-      const target = (e.target as HTMLElement).closest('a');
+    document.addEventListener("click", (e) => {
+      const target = (e.target as HTMLElement).closest("a");
       if (target && target.href && target.origin === window.location.origin) {
-        const href = target.getAttribute('href');
-        if (href && !href.startsWith('http') && !target.hasAttribute('data-external')) {
+        const href = target.getAttribute("href");
+        if (
+          href &&
+          !href.startsWith("http") &&
+          !target.hasAttribute("data-external")
+        ) {
           e.preventDefault();
           this.push(href);
         }
@@ -99,7 +113,7 @@ export class Router {
    * Add multiple routes
    */
   addRoutes(configs: RouteConfig[]): void {
-    configs.forEach(config => this.addRoute(config));
+    configs.forEach((config) => this.addRoute(config));
   }
 
   /**
@@ -128,7 +142,9 @@ export class Router {
    */
   mount(container: HTMLElement): void {
     this.container = container;
-    this.handleNavigation(window.location.pathname + window.location.search + window.location.hash);
+    this.handleNavigation(
+      window.location.pathname + window.location.search + window.location.hash,
+    );
   }
 
   /**
@@ -136,11 +152,11 @@ export class Router {
    */
   async push(path: string, options: NavigationOptions = {}): Promise<void> {
     if (!options.replace) {
-      window.history.pushState(options.state || {}, '', path);
+      window.history.pushState(options.state || {}, "", path);
     } else {
-      window.history.replaceState(options.state || {}, '', path);
+      window.history.replaceState(options.state || {}, "", path);
     }
-    
+
     await this.handleNavigation(path, options.scroll !== false);
   }
 
@@ -189,16 +205,16 @@ export class Router {
     // Handle dynamic segments: /user/:id -> /user/([^/]+)
     pattern = pattern.replace(/:(\w+)/g, (_, key) => {
       keys.push(key);
-      return '([^/]+)';
+      return "([^/]+)";
     });
 
     // Handle wildcard: /docs/* -> /docs/(.*)
-    pattern = pattern.replace(/\*/g, '(.*)');
+    pattern = pattern.replace(/\*/g, "(.*)");
 
     // Handle optional segments: /user/:id? -> /user(?:/([^/]+))?
     pattern = pattern.replace(/\/:(\w+)\?/g, (_, key) => {
       keys.push(key);
-      return '(?:/([^/]+))?';
+      return "(?:/([^/]+))?";
     });
 
     // Exact match
@@ -210,7 +226,9 @@ export class Router {
   /**
    * Match a path against routes
    */
-  private matchRoute(path: string): { route: CompiledRoute; params: RouteParams } | null {
+  private matchRoute(
+    path: string,
+  ): { route: CompiledRoute; params: RouteParams } | null {
     for (const route of this.routes) {
       const match = path.match(route.pattern);
       if (match) {
@@ -230,7 +248,7 @@ export class Router {
   private parseQuery(search: string): RouteQuery {
     const query: RouteQuery = {};
     const params = new URLSearchParams(search);
-    
+
     params.forEach((value, key) => {
       if (query[key]) {
         if (Array.isArray(query[key])) {
@@ -242,30 +260,33 @@ export class Router {
         query[key] = value;
       }
     });
-    
+
     return query;
   }
 
   /**
    * Handle navigation
    */
-  private async handleNavigation(fullPath: string, scroll: boolean = true): Promise<void> {
+  private async handleNavigation(
+    fullPath: string,
+    scroll: boolean = true,
+  ): Promise<void> {
     try {
       // Parse URL
-      const [pathWithQuery, hash = ''] = fullPath.split('#');
-      const [path, search = ''] = pathWithQuery.split('?');
-      
+      const [pathWithQuery, hash = ""] = fullPath.split("#");
+      const [path, search = ""] = pathWithQuery.split("?");
+
       // Create route context
       const ctx: RouteContext = {
         path,
         params: {},
-        query: this.parseQuery(search ? `?${search}` : ''),
-        hash: hash ? `#${hash}` : ''
+        query: this.parseQuery(search ? `?${search}` : ""),
+        hash: hash ? `#${hash}` : "",
       };
 
       // Match route
       const matched = this.matchRoute(path);
-      
+
       if (!matched) {
         // No route matched - show 404
         if (this.notFoundHandler) {
@@ -296,12 +317,15 @@ export class Router {
       }
 
       // Run middleware
-      const allMiddleware = [...this.globalMiddleware, ...(matched.route.config.middleware || [])];
+      const allMiddleware = [
+        ...this.globalMiddleware,
+        ...(matched.route.config.middleware || []),
+      ];
       await this.runMiddleware(ctx, allMiddleware);
 
       // Load component
       let component: RouteComponent;
-      
+
       if (matched.route.config.lazy) {
         // Lazy load component
         const module = await matched.route.config.lazy();
@@ -321,15 +345,14 @@ export class Router {
         if (ctx.hash) {
           const element = document.querySelector(ctx.hash);
           if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
+            element.scrollIntoView({ behavior: "smooth" });
           }
         } else {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          window.scrollTo({ top: 0, behavior: "smooth" });
         }
       }
-
     } catch (error) {
-      console.error('Navigation error:', error);
+      console.error("Navigation error:", error);
       if (this.errorHandler && this.currentRoute) {
         this.errorHandler(error as Error, this.currentRoute);
       }
@@ -339,12 +362,15 @@ export class Router {
   /**
    * Run middleware chain
    */
-  private async runMiddleware(ctx: RouteContext, middleware: RouteMiddleware[]): Promise<void> {
+  private async runMiddleware(
+    ctx: RouteContext,
+    middleware: RouteMiddleware[],
+  ): Promise<void> {
     let index = 0;
 
     const next = async (): Promise<void> => {
       if (index >= middleware.length) return;
-      
+
       const mw = middleware[index++];
       await mw(ctx, next);
     };
@@ -355,14 +381,17 @@ export class Router {
   /**
    * Render route component
    */
-  private async renderRoute(ctx: RouteContext, component: RouteComponent): Promise<void> {
+  private async renderRoute(
+    ctx: RouteContext,
+    component: RouteComponent,
+  ): Promise<void> {
     if (!this.container) {
-      console.error('Router not mounted to a container');
+      console.error("Router not mounted to a container");
       return;
     }
 
     // Clear container
-    this.container.innerHTML = '';
+    this.container.innerHTML = "";
 
     // Render component
     const element = await component(ctx);
@@ -387,20 +416,20 @@ export function createRouter(routes?: RouteConfig[]): Router {
 export function createLink(
   href: string,
   text: string,
-  options: { class?: string; style?: Partial<CSSStyleDeclaration> } = {}
+  options: { class?: string; style?: Partial<CSSStyleDeclaration> } = {},
 ): HTMLAnchorElement {
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = href;
   link.textContent = text;
-  
+
   if (options.class) {
     link.className = options.class;
   }
-  
+
   if (options.style) {
     Object.assign(link.style, options.style);
   }
-  
+
   return link;
 }
 
@@ -423,10 +452,12 @@ export function useQuery(router: Router): RouteQuery {
  */
 export function useNavigate(router: Router) {
   return {
-    push: (path: string, options?: NavigationOptions) => router.push(path, options),
-    replace: (path: string, options?: NavigationOptions) => router.replace(path, options),
+    push: (path: string, options?: NavigationOptions) =>
+      router.push(path, options),
+    replace: (path: string, options?: NavigationOptions) =>
+      router.replace(path, options),
     back: () => router.back(),
     forward: () => router.forward(),
-    go: (delta: number) => router.go(delta)
+    go: (delta: number) => router.go(delta),
   };
 }

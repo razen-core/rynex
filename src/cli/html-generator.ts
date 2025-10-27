@@ -22,17 +22,17 @@ export interface HTMLGeneratorOptions {
  */
 export function generateHTML(options: HTMLGeneratorOptions): string {
   const {
-    title = 'Rynex App',
-    description = 'Built with Rynex Framework',
-    lang = 'en',
-    charset = 'UTF-8',
-    viewport = 'width=device-width, initial-scale=1.0',
+    title = "Rynex App",
+    description = "Built with Rynex Framework",
+    lang = "en",
+    charset = "UTF-8",
+    viewport = "width=device-width, initial-scale=1.0",
     bundlePath,
-    stylePath = 'styles.css',
+    stylePath = "styles.css",
     favicon,
     meta = {},
     inlineStyles,
-    buildHash
+    buildHash,
   } = options;
 
   // Build meta tags
@@ -48,7 +48,7 @@ export function generateHTML(options: HTMLGeneratorOptions): string {
       `<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />`,
       `<meta http-equiv="Pragma" content="no-cache" />`,
       `<meta http-equiv="Expires" content="0" />`,
-      `<meta name="build-version" content="${buildHash}" />`
+      `<meta name="build-version" content="${buildHash}" />`,
     );
   }
 
@@ -69,14 +69,14 @@ export function generateHTML(options: HTMLGeneratorOptions): string {
   // Build inline styles
   const inlineStyleTag = inlineStyles
     ? `<style>\n${inlineStyles}\n</style>`
-    : '';
+    : "";
 
   return `<!DOCTYPE html>
 <html lang="${lang}">
 <head>
-  ${metaTags.join('\n  ')}
+  ${metaTags.join("\n  ")}
   <title>${title}</title>
-  ${linkTags.join('\n  ')}
+  ${linkTags.join("\n  ")}
   ${inlineStyleTag}
 </head>
 <body>
@@ -126,13 +126,14 @@ export interface HTMLConfig {
 export function generateHTMLWithConfig(
   bundlePath: string,
   htmlConfig: HTMLConfig = {},
-  buildHash?: string
+  buildHash?: string,
 ): string {
   const options: HTMLGeneratorOptions = {
     ...htmlConfig,
     bundlePath,
     buildHash,
-    inlineStyles: htmlConfig.inlineStyles !== false ? getDefaultInlineStyles() : undefined
+    inlineStyles:
+      htmlConfig.inlineStyles !== false ? getDefaultInlineStyles() : undefined,
   };
 
   return generateHTML(options);

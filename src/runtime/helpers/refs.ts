@@ -13,7 +13,7 @@ export interface Ref<T = HTMLElement> {
  */
 export function ref<T = HTMLElement>(initialValue: T | null = null): Ref<T> {
   return {
-    current: initialValue
+    current: initialValue,
   };
 }
 
@@ -30,16 +30,16 @@ export function useRef<T = HTMLElement>(initialValue: T | null = null): Ref<T> {
  * Allows parent to access child's DOM element
  */
 export function forwardRef<P extends Record<string, any>>(
-  component: (props: P, ref: Ref) => HTMLElement
+  component: (props: P, ref: Ref) => HTMLElement,
 ): (props: P & { ref?: Ref }) => HTMLElement {
   return (props: P & { ref?: Ref }) => {
     const internalRef = props.ref || ref();
     const element = component(props, internalRef);
-    
+
     if (internalRef) {
       internalRef.current = element;
     }
-    
+
     return element;
   };
 }
@@ -49,7 +49,7 @@ export function forwardRef<P extends Record<string, any>>(
  * Executes callback when ref is set
  */
 export function callbackRef<T = HTMLElement>(
-  callback: (element: T | null) => void
+  callback: (element: T | null) => void,
 ): (element: T | null) => void {
   return (element: T | null) => {
     callback(element);
@@ -60,12 +60,14 @@ export function callbackRef<T = HTMLElement>(
  * Merge multiple refs into one
  * Useful when you need to forward ref and use it internally
  */
-export function mergeRefs<T = HTMLElement>(...refs: (Ref<T> | ((element: T | null) => void) | null)[]): (element: T | null) => void {
+export function mergeRefs<T = HTMLElement>(
+  ...refs: (Ref<T> | ((element: T | null) => void) | null)[]
+): (element: T | null) => void {
   return (element: T | null) => {
-    refs.forEach(ref => {
+    refs.forEach((ref) => {
       if (!ref) return;
-      
-      if (typeof ref === 'function') {
+
+      if (typeof ref === "function") {
         ref(element);
       } else {
         ref.current = element;

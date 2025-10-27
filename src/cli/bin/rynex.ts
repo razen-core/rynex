@@ -5,7 +5,7 @@
  * Command-line interface for Rynex framework
  */
 
-import { initProject } from "../init-new.js";  // Modern project initialization
+import { initProject } from "../init-new.js"; // Modern project initialization
 import { build, watch } from "../builder.js";
 import { startDevServer } from "../dev-server.js";
 import { startProductionServer } from "../prod-server.js";
@@ -39,7 +39,9 @@ async function main() {
       const rynexValid = runRynexValidation(process.cwd());
 
       if (!rynexValid) {
-        logger.error("\n[ERROR] Build failed: Fix Rynex validation errors above\n");
+        logger.error(
+          "\n[ERROR] Build failed: Fix Rynex validation errors above\n",
+        );
         process.exit(1);
       }
 

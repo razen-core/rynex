@@ -3,7 +3,7 @@
  * Advanced styling helpers
  */
 
-import { createElement, DOMProps } from '../dom.js';
+import { createElement, DOMProps } from "../dom.js";
 
 /**
  * Theme context for managing application theme
@@ -20,7 +20,7 @@ const themeListeners = new Set<(theme: Theme) => void>();
  */
 export function setTheme(theme: Theme): void {
   currentTheme = { ...currentTheme, ...theme };
-  themeListeners.forEach(listener => listener(currentTheme));
+  themeListeners.forEach((listener) => listener(currentTheme));
 }
 
 /**
@@ -37,7 +37,7 @@ export function getTheme(): Theme {
 export function useTheme(callback: (theme: Theme) => void): () => void {
   callback(currentTheme);
   themeListeners.add(callback);
-  
+
   return () => {
     themeListeners.delete(callback);
   };
@@ -49,17 +49,20 @@ export function useTheme(callback: (theme: Theme) => void): () => void {
  */
 export function styled<P extends DOMProps>(
   tag: string,
-  styles: Partial<CSSStyleDeclaration> | ((props: P) => Partial<CSSStyleDeclaration>)
+  styles:
+    | Partial<CSSStyleDeclaration>
+    | ((props: P) => Partial<CSSStyleDeclaration>),
 ): (props: P, ...children: any[]) => HTMLElement {
   return (props: P, ...children: any[]) => {
-    const computedStyles = typeof styles === 'function' ? styles(props) : styles;
-    
+    const computedStyles =
+      typeof styles === "function" ? styles(props) : styles;
+
     const mergedProps = {
       ...props,
       style: {
-        ...(typeof props.style === 'object' ? props.style : {}),
-        ...computedStyles
-      }
+        ...(typeof props.style === "object" ? props.style : {}),
+        ...computedStyles,
+      },
     };
 
     return createElement(tag, mergedProps, ...children);
@@ -70,15 +73,17 @@ export function styled<P extends DOMProps>(
  * Conditional class names helper
  * Combines class names based on conditions
  */
-export function classNames(...args: (string | Record<string, boolean> | false | null | undefined)[]): string {
+export function classNames(
+  ...args: (string | Record<string, boolean> | false | null | undefined)[]
+): string {
   const classes: string[] = [];
 
-  args.forEach(arg => {
+  args.forEach((arg) => {
     if (!arg) return;
 
-    if (typeof arg === 'string') {
+    if (typeof arg === "string") {
       classes.push(arg);
-    } else if (typeof arg === 'object') {
+    } else if (typeof arg === "object") {
       Object.entries(arg).forEach(([key, value]) => {
         if (value) {
           classes.push(key);
@@ -87,17 +92,24 @@ export function classNames(...args: (string | Record<string, boolean> | false | 
     }
   });
 
-  return classes.join(' ');
+  return classes.join(" ");
 }
 
 /**
  * Merge style objects
  * Deep merges multiple style objects
  */
-export function mergeStyles(...styles: (Partial<CSSStyleDeclaration> | Record<string, any> | null | undefined)[]): Record<string, any> {
+export function mergeStyles(
+  ...styles: (
+    | Partial<CSSStyleDeclaration>
+    | Record<string, any>
+    | null
+    | undefined
+  )[]
+): Record<string, any> {
   const merged: Record<string, any> = {};
 
-  styles.forEach(style => {
+  styles.forEach((style) => {
     if (!style) return;
 
     Object.entries(style).forEach(([key, value]) => {
@@ -113,14 +125,21 @@ export function mergeStyles(...styles: (Partial<CSSStyleDeclaration> | Record<st
 /**
  * Create CSS variables from theme
  */
-export function createCSSVariables(theme: Theme, prefix: string = '--theme'): string {
+export function createCSSVariables(
+  theme: Theme,
+  prefix: string = "--theme",
+): string {
   const vars: string[] = [];
 
-  const processObject = (obj: any, path: string = '') => {
+  const processObject = (obj: any, path: string = "") => {
     Object.entries(obj).forEach(([key, value]) => {
       const varName = path ? `${path}-${key}` : key;
-      
-      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+
+      if (
+        typeof value === "object" &&
+        value !== null &&
+        !Array.isArray(value)
+      ) {
         processObject(value, varName);
       } else {
         vars.push(`${prefix}-${varName}: ${value};`);
@@ -129,37 +148,47 @@ export function createCSSVariables(theme: Theme, prefix: string = '--theme'): st
   };
 
   processObject(theme);
-  return vars.join('\n');
+  return vars.join("\n");
 }
 
 /**
  * Apply theme as CSS variables to root
  */
-export function applyThemeVariables(theme: Theme, prefix: string = '--theme'): void {
+export function applyThemeVariables(
+  theme: Theme,
+  prefix: string = "--theme",
+): void {
   const cssVars = createCSSVariables(theme, prefix);
-  const style = document.createElement('style');
-  style.setAttribute('data-theme-vars', 'true');
+  const style = document.createElement("style");
+  style.setAttribute("data-theme-vars", "true");
   style.textContent = `:root {\n${cssVars}\n}`;
-  
+
   // Remove old theme vars
   const oldStyle = document.querySelector('style[data-theme-vars="true"]');
   if (oldStyle) {
     oldStyle.remove();
   }
-  
+
   document.head.appendChild(style);
 }
 
 /**
  * Get CSS variable value
  */
-export function getCSSVariable(name: string, element: HTMLElement = document.documentElement): string {
+export function getCSSVariable(
+  name: string,
+  element: HTMLElement = document.documentElement,
+): string {
   return getComputedStyle(element).getPropertyValue(name).trim();
 }
 
 /**
  * Set CSS variable value
  */
-export function setCSSVariable(name: string, value: string, element: HTMLElement = document.documentElement): void {
+export function setCSSVariable(
+  name: string,
+  value: string,
+  element: HTMLElement = document.documentElement,
+): void {
   element.style.setProperty(name, value);
 }

@@ -4,41 +4,55 @@
  * Supports both simple and advanced project structures
  */
 
-import { rolldown, Plugin as RolldownPlugin } from 'rolldown';
-import * as fs from 'fs';
-import * as path from 'path';
-import { parseRynexFile, transformImports } from './parser.js';
-import { RouteConfig, RynexConfig } from './config.js';
-import { logger } from './logger.js';
-import { scanRoutes, generateRouteManifest, generateRouterConfig } from './route-scanner.js';
-import { 
-  generateBuildHash, 
-  generateFileHash, 
-  cleanOldBundles, 
+import { rolldown, Plugin as RolldownPlugin } from "rolldown";
+import * as fs from "fs";
+import * as path from "path";
+import { parseRynexFile, transformImports } from "./parser.js";
+import { RouteConfig, RynexConfig } from "./config.js";
+import { logger } from "./logger.js";
+import {
+  scanRoutes,
+  generateRouteManifest,
+  generateRouterConfig,
+} from "./route-scanner.js";
+import {
+  generateBuildHash,
+  generateFileHash,
+  cleanOldBundles,
   createBuildManifest,
-  cleanDistDirectory 
-} from './hash-utils.js';
-import { validateHTMLDirectory, printValidationResults } from './html-validator.js';
-import { confirm } from './prompts.js';
-import { generateHTMLWithConfig } from './html-generator.js';
-import { createAliasPlugin } from './path-resolver.js';
-import { buildProgress } from './progress.js';
-import { compressDirectory, printCompressionSummary } from './compression.js';
-import { handleError, parseBuildError } from './error-handler.js';
-import { 
-  processCSS, 
-  checkCSSSetup, 
-  hasPostCSSConfig, 
-  printCSSSetupInstructions 
-} from './css-processor.js';
+  cleanDistDirectory,
+} from "./hash-utils.js";
+import {
+  validateHTMLDirectory,
+  printValidationResults,
+} from "./html-validator.js";
+import { confirm } from "./prompts.js";
+import { generateHTMLWithConfig } from "./html-generator.js";
+import { createAliasPlugin } from "./path-resolver.js";
+import { buildProgress } from "./progress.js";
+import { compressDirectory, printCompressionSummary } from "./compression.js";
+import { handleError, parseBuildError } from "./error-handler.js";
+import {
+  processCSS,
+  checkCSSSetup,
+  hasPostCSSConfig,
+  printCSSSetupInstructions,
+} from "./css-processor.js";
 
 /**
  * Check if Tailwind CSS is configured
  * Note: Tailwind CSS support with Rolldown will need a custom plugin or PostCSS integration
  */
 function hasTailwindConfig(projectRoot: string): boolean {
-  const configFiles = ['tailwind.config.js', 'tailwind.config.cjs', 'tailwind.config.mjs', 'tailwind.config.ts'];
-  return configFiles.some(file => fs.existsSync(path.join(projectRoot, file)));
+  const configFiles = [
+    "tailwind.config.js",
+    "tailwind.config.cjs",
+    "tailwind.config.mjs",
+    "tailwind.config.ts",
+  ];
+  return configFiles.some((file) =>
+    fs.existsSync(path.join(projectRoot, file)),
+  );
 }
 
 export interface BuildOptions {
@@ -56,12 +70,12 @@ export interface BuildOptions {
  */
 function copyPublicFiles(sourceDir: string, destDir: string): void {
   const files = fs.readdirSync(sourceDir);
-  
+
   for (const file of files) {
     const sourcePath = path.join(sourceDir, file);
     const destPath = path.join(destDir, file);
     const stat = fs.statSync(sourcePath);
-    
+
     if (stat.isDirectory()) {
       // Recursively copy directories
       if (!fs.existsSync(destPath)) {
@@ -70,7 +84,7 @@ function copyPublicFiles(sourceDir: string, destDir: string): void {
       copyPublicFiles(sourcePath, destPath);
     } else {
       // Copy files (skip styles.css as it's handled separately)
-      if (file !== 'styles.css') {
+      if (file !== "styles.css") {
         fs.copyFileSync(sourcePath, destPath);
         logger.debug(`Copied: ${file}`);
       }
@@ -85,27 +99,29 @@ async function buildComponents(
   projectRoot: string,
   distDir: string,
   minify: boolean,
-  sourceMaps: boolean
+  sourceMaps: boolean,
 ): Promise<void> {
-  const isDebug = process.argv.includes('--debug');
-  const componentsDir = path.join(projectRoot, 'src', 'components');
+  const isDebug = process.argv.includes("--debug");
+  const componentsDir = path.join(projectRoot, "src", "components");
   if (!fs.existsSync(componentsDir)) {
-    logger.debug('No components directory found');
+    logger.debug("No components directory found");
     return;
   }
 
-  const componentFiles = fs.readdirSync(componentsDir).filter(f => 
-    (f.endsWith('.ts') || f.endsWith('.tsx')) && !f.endsWith('.d.ts')
-  );
-  
+  const componentFiles = fs
+    .readdirSync(componentsDir)
+    .filter(
+      (f) => (f.endsWith(".ts") || f.endsWith(".tsx")) && !f.endsWith(".d.ts"),
+    );
+
   if (componentFiles.length === 0) {
-    logger.debug('No component files to build');
+    logger.debug("No component files to build");
     return;
   }
 
   logger.info(`Building ${componentFiles.length} components`);
 
-  const distComponentsDir = path.join(distDir, 'components');
+  const distComponentsDir = path.join(distDir, "components");
   if (!fs.existsSync(distComponentsDir)) {
     fs.mkdirSync(distComponentsDir, { recursive: true });
   }
@@ -113,9 +129,12 @@ async function buildComponents(
   for (const file of componentFiles) {
     const componentPath = path.join(componentsDir, file);
     const componentName = path.basename(file, path.extname(file));
-    
+
     // Build to temporary file first
-    const tempOutputPath = path.join(distComponentsDir, `${componentName}.temp.js`);
+    const tempOutputPath = path.join(
+      distComponentsDir,
+      `${componentName}.temp.js`,
+    );
 
     logger.debug(`Building component: ${componentName}`);
 
@@ -124,39 +143,42 @@ async function buildComponents(
         input: componentPath,
         cwd: projectRoot,
         plugins: [createAliasPlugin(projectRoot)],
-        platform: 'browser',
+        platform: "browser",
         treeshake: minify,
         external: [],
-        logLevel: isDebug ? 'debug' : 'info'
+        logLevel: isDebug ? "debug" : "info",
       });
 
       await build.write({
         file: tempOutputPath,
-        format: 'es',
+        format: "es",
         sourcemap: sourceMaps,
         minify,
-        exports: 'auto'
+        exports: "auto",
       });
 
       await build.close();
-      
+
       // Generate hash from built file content
       const fileHash = generateFileHash(tempOutputPath);
-      const finalOutputPath = path.join(distComponentsDir, `${componentName}.${fileHash}.js`);
-      
+      const finalOutputPath = path.join(
+        distComponentsDir,
+        `${componentName}.${fileHash}.js`,
+      );
+
       // Clean old bundles with different hashes
       cleanOldBundles(distComponentsDir, componentName, fileHash);
-      
+
       // Rename temp file to final hashed name
       fs.renameSync(tempOutputPath, finalOutputPath);
-      
+
       // Rename source map if it exists
       const tempMapPath = `${tempOutputPath}.map`;
       if (fs.existsSync(tempMapPath)) {
         const finalMapPath = `${finalOutputPath}.map`;
         fs.renameSync(tempMapPath, finalMapPath);
       }
-      
+
       logger.success(`Built component: ${componentName}.${fileHash}.js`);
     } catch (error) {
       const buildError = error as any;
@@ -168,11 +190,15 @@ async function buildComponents(
   }
 }
 
-
 /**
  * Generate HTML file for a page with cache-busting
  */
-function generatePageHTML(pageName: string, distPageDir: string, bundleFileName: string, buildHash: string): void {
+function generatePageHTML(
+  pageName: string,
+  distPageDir: string,
+  bundleFileName: string,
+  buildHash: string,
+): void {
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -192,9 +218,11 @@ function generatePageHTML(pageName: string, distPageDir: string, bundleFileName:
 </html>
 `;
 
-  const htmlPath = path.join(distPageDir, 'page.html');
-  fs.writeFileSync(htmlPath, html, 'utf8');
-  logger.debug(`Generated HTML for page: ${pageName} with bundle: ${bundleFileName}`);
+  const htmlPath = path.join(distPageDir, "page.html");
+  fs.writeFileSync(htmlPath, html, "utf8");
+  logger.debug(
+    `Generated HTML for page: ${pageName} with bundle: ${bundleFileName}`,
+  );
 }
 
 /**
@@ -213,8 +241,8 @@ body {
 }
 `;
 
-  const cssPath = path.join(distPageDir, 'styles.css');
-  fs.writeFileSync(cssPath, css, 'utf8');
+  const cssPath = path.join(distPageDir, "styles.css");
+  fs.writeFileSync(cssPath, css, "utf8");
   logger.debug(`Generated CSS for page`);
 }
 
@@ -226,22 +254,22 @@ async function buildPages(
   distDir: string,
   minify: boolean,
   sourceMaps: boolean,
-  buildHash: string
+  buildHash: string,
 ): Promise<void> {
-  const isDebug = process.argv.includes('--debug');
-  const pagesDir = path.join(projectRoot, 'src', 'pages');
+  const isDebug = process.argv.includes("--debug");
+  const pagesDir = path.join(projectRoot, "src", "pages");
   if (!fs.existsSync(pagesDir)) {
-    logger.debug('No pages directory found');
+    logger.debug("No pages directory found");
     return;
   }
 
-  const pageDirectories = fs.readdirSync(pagesDir).filter(f => {
+  const pageDirectories = fs.readdirSync(pagesDir).filter((f) => {
     const fullPath = path.join(pagesDir, f);
     return fs.statSync(fullPath).isDirectory();
   });
 
   if (pageDirectories.length === 0) {
-    logger.debug('No page directories to build');
+    logger.debug("No page directories to build");
     return;
   }
 
@@ -249,20 +277,20 @@ async function buildPages(
 
   for (const pageDir of pageDirectories) {
     const pagePath = path.join(pagesDir, pageDir);
-    const pageFile = path.join(pagePath, 'page.ts');
-    
+    const pageFile = path.join(pagePath, "page.ts");
+
     if (!fs.existsSync(pageFile)) {
       logger.warning(`No page.ts found in ${pageDir}`);
       continue;
     }
 
-    const distPageDir = path.join(distDir, 'pages', pageDir);
+    const distPageDir = path.join(distDir, "pages", pageDir);
     if (!fs.existsSync(distPageDir)) {
       fs.mkdirSync(distPageDir, { recursive: true });
     }
 
     // Build page TypeScript to temporary file first
-    const tempOutputPath = path.join(distPageDir, 'bundle.temp.js');
+    const tempOutputPath = path.join(distPageDir, "bundle.temp.js");
     logger.debug(`Building page: ${pageDir}`);
 
     try {
@@ -270,33 +298,33 @@ async function buildPages(
         input: pageFile,
         cwd: projectRoot,
         plugins: [createAliasPlugin(projectRoot)],
-        platform: 'browser',
+        platform: "browser",
         treeshake: minify,
         external: [],
-        logLevel: isDebug ? 'debug' : 'info'
+        logLevel: isDebug ? "debug" : "info",
       });
 
       await build.write({
         file: tempOutputPath,
-        format: 'es',
+        format: "es",
         sourcemap: sourceMaps,
         minify,
-        exports: 'auto'
+        exports: "auto",
       });
 
       await build.close();
-      
+
       // Generate hash from built file content
       const fileHash = generateFileHash(tempOutputPath);
       const finalOutputPath = path.join(distPageDir, `bundle.${fileHash}.js`);
       const bundleFileName = `bundle.${fileHash}.js`;
-      
+
       // Clean old bundles with different hashes
-      cleanOldBundles(distPageDir, 'bundle', fileHash);
-      
+      cleanOldBundles(distPageDir, "bundle", fileHash);
+
       // Rename temp file to final hashed name
       fs.renameSync(tempOutputPath, finalOutputPath);
-      
+
       // Rename source map if it exists
       const tempMapPath = `${tempOutputPath}.map`;
       if (fs.existsSync(tempMapPath)) {
@@ -328,14 +356,14 @@ async function buildMainEntry(
   projectRoot: string,
   options: BuildOptions,
   allStyles: string,
-  buildHash: string
+  buildHash: string,
 ): Promise<void> {
-  const isDebug = process.argv.includes('--debug');
+  const isDebug = process.argv.includes("--debug");
   const distDir = path.join(projectRoot, path.dirname(options.output));
 
   // Create Rolldown plugin for Rynex transformation
   const rynexPlugin: RolldownPlugin = {
-    name: 'rynex-transform',
+    name: "rynex-transform",
     async transform(code, id) {
       // Only process TypeScript and JavaScript files
       if (!/\.(ts|js|tsx|jsx)$/.test(id)) {
@@ -343,25 +371,27 @@ async function buildMainEntry(
       }
 
       logger.debug(`Processing file: ${id}`);
-      
+
       // Check if file contains view or style keywords
-      if (code.includes('view {') || code.includes('style {')) {
+      if (code.includes("view {") || code.includes("style {")) {
         logger.debug(`Found view/style keywords in: ${id}`);
         const parsed = parseRynexFile(code);
-        
+
         if (parsed.styles) {
-          logger.debug(`Extracted ${parsed.styles.length} chars of styles from: ${id}`);
+          logger.debug(
+            `Extracted ${parsed.styles.length} chars of styles from: ${id}`,
+          );
           allStyles += parsed.styles;
         }
-        
+
         let transformedCode = parsed.code;
         transformedCode = transformImports(transformedCode);
-        
+
         logger.debug(`Transformed file: ${id}`);
 
         return {
           code: transformedCode,
-          map: null
+          map: null,
         };
       }
 
@@ -370,56 +400,62 @@ async function buildMainEntry(
       const transformedCode = transformImports(code);
       return {
         code: transformedCode,
-        map: null
+        map: null,
       };
-    }
+    },
   };
 
   logger.debug(`Building main entry: ${options.entry}`);
-  
+
   // Setup plugins array
   const plugins: RolldownPlugin[] = [];
-  
+
   // Add path alias resolution plugin
   plugins.push(createAliasPlugin(projectRoot));
-  
+
   // Check for Tailwind CSS
   if (hasTailwindConfig(projectRoot)) {
-    logger.info('Tailwind CSS config detected (manual PostCSS integration recommended)');
+    logger.info(
+      "Tailwind CSS config detected (manual PostCSS integration recommended)",
+    );
   }
-  
+
   // Add Rynex plugin
   plugins.push(rynexPlugin);
-  
+
   // Determine environment
   const isDevelopment = !options.minify;
-  
+
   // Build with Rolldown - using all advanced features
   const build = await rolldown({
     input: path.join(projectRoot, options.entry),
     cwd: projectRoot,
     plugins: plugins,
     external: [],
-    platform: 'browser',
-    treeshake: options.minify ? {
-      moduleSideEffects: 'no-external',
-      propertyReadSideEffects: false
-    } : false,
-    logLevel: isDebug ? 'debug' : 'info',
+    platform: "browser",
+    treeshake: options.minify
+      ? {
+          moduleSideEffects: "no-external",
+          propertyReadSideEffects: false,
+        }
+      : false,
+    logLevel: isDebug ? "debug" : "info",
     // Define global constants for build-time replacement
     define: {
-      'process.env.NODE_ENV': JSON.stringify(isDevelopment ? 'development' : 'production'),
-      '__DEV__': JSON.stringify(isDevelopment),
-      '__BUILD_HASH__': JSON.stringify(buildHash)
-    }
+      "process.env.NODE_ENV": JSON.stringify(
+        isDevelopment ? "development" : "production",
+      ),
+      __DEV__: JSON.stringify(isDevelopment),
+      __BUILD_HASH__: JSON.stringify(buildHash),
+    },
   });
 
   await build.write({
     file: path.join(projectRoot, options.output),
-    format: 'es',
+    format: "es",
     sourcemap: options.sourceMaps,
     minify: options.minify,
-    exports: 'auto'
+    exports: "auto",
   });
 
   await build.close();
@@ -427,17 +463,19 @@ async function buildMainEntry(
   logger.debug(`Rolldown build completed successfully`);
 
   // Handle styles.css
-  const publicStylesPath = path.join(projectRoot, 'public', 'styles.css');
-  const distStylesPath = path.join(distDir, 'styles.css');
-  
+  const publicStylesPath = path.join(projectRoot, "public", "styles.css");
+  const distStylesPath = path.join(distDir, "styles.css");
+
   if (allStyles) {
     // If we extracted styles from components, write them
-    logger.debug(`Writing ${allStyles.length} chars of extracted CSS to ${distStylesPath}`);
-    await fs.promises.writeFile(distStylesPath, allStyles, 'utf8');
-    logger.success('Component styles written to dist/styles.css');
+    logger.debug(
+      `Writing ${allStyles.length} chars of extracted CSS to ${distStylesPath}`,
+    );
+    await fs.promises.writeFile(distStylesPath, allStyles, "utf8");
+    logger.success("Component styles written to dist/styles.css");
   } else if (!fs.existsSync(distStylesPath)) {
     // If no extracted styles and no styles.css exists, create empty one
-    logger.debug('No styles found, creating default styles.css');
+    logger.debug("No styles found, creating default styles.css");
     const defaultStyles = `/* Rynex Styles */
 * {
   margin: 0;
@@ -449,8 +487,8 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 `;
-    await fs.promises.writeFile(distStylesPath, defaultStyles, 'utf8');
-    logger.success('Created default styles.css');
+    await fs.promises.writeFile(distStylesPath, defaultStyles, "utf8");
+    logger.success("Created default styles.css");
   }
 
   logger.success(`Build complete: ${options.output}`);
@@ -461,28 +499,28 @@ body {
  * Supports both simple and advanced project structures
  */
 export async function build(options: BuildOptions): Promise<void> {
-  const isDebug = process.argv.includes('--debug');
+  const isDebug = process.argv.includes("--debug");
   if (isDebug) {
     logger.setDebug(true);
   }
 
   // Start progress tracking
   buildProgress.start();
-  
-  logger.info('Building Rynex project');
+
+  logger.info("Building Rynex project");
   logger.debug(`Build options: ${JSON.stringify(options)}`);
 
   const projectRoot = process.cwd();
-  const srcDir = path.join(projectRoot, 'src');
+  const srcDir = path.join(projectRoot, "src");
   const distDir = path.join(projectRoot, path.dirname(options.output));
-  
+
   logger.debug(`Project root: ${projectRoot}`);
   logger.debug(`Source directory: ${srcDir}`);
   logger.debug(`Output directory: ${distDir}`);
 
   // Start initialization
-  buildProgress.step('Initializing build');
-  
+  buildProgress.step("Initializing build");
+
   // Clean dist directory before starting new build
   const cleanedCount = cleanDistDirectory(distDir);
   if (cleanedCount > 0) {
@@ -499,96 +537,120 @@ export async function build(options: BuildOptions): Promise<void> {
   logger.info(`Build hash: ${buildHash}`);
 
   // Collect all styles
-  let allStyles = '';
-  
+  let allStyles = "";
+
   // Track built files for manifest
   const builtFiles = new Map<string, string>();
 
   try {
     // Process CSS if enabled
     if (options.config?.css?.enabled) {
-      buildProgress.step('Processing CSS');
-      
+      buildProgress.step("Processing CSS");
+
       const cssSetup = checkCSSSetup(projectRoot);
-      
-      if (!cssSetup.hasTailwind || !cssSetup.hasPostCSS || !cssSetup.hasPostCSSCLI) {
-        logger.warning('CSS processing is enabled but dependencies are missing');
+
+      if (
+        !cssSetup.hasTailwind ||
+        !cssSetup.hasPostCSS ||
+        !cssSetup.hasPostCSSCLI
+      ) {
+        logger.warning(
+          "CSS processing is enabled but dependencies are missing",
+        );
         printCSSSetupInstructions();
       } else if (!hasPostCSSConfig(projectRoot)) {
-        logger.warning('PostCSS config not found. Run: rynex init:css');
+        logger.warning("PostCSS config not found. Run: rynex init:css");
       } else {
-        const cssEntry = options.config.css.entry || 'src/styles/main.css';
-        const cssOutput = options.config.css.output || 'dist/styles.css';
+        const cssEntry = options.config.css.entry || "src/styles/main.css";
+        const cssOutput = options.config.css.output || "dist/styles.css";
         const cssMinify = options.config.css.minify ?? options.minify;
         const cssSourcemap = options.config.css.sourcemap ?? options.sourceMaps;
-        
+
         logger.info(`Building CSS: ${cssEntry} → ${cssOutput}`);
-        
+
         const cssResult = await processCSS({
           entry: cssEntry,
           output: cssOutput,
           minify: cssMinify,
           sourcemap: cssSourcemap,
-          projectRoot
+          projectRoot,
         });
-        
+
         if (cssResult.success) {
-          logger.success('CSS compiled successfully');
+          logger.success("CSS compiled successfully");
         } else {
-          logger.error(`CSS compilation failed: ${cssResult.error || 'Unknown error'}`);
+          logger.error(
+            `CSS compilation failed: ${cssResult.error || "Unknown error"}`,
+          );
         }
       }
     }
-    
+
     // Scan and generate routes if file-based routing is enabled
-    buildProgress.step('Scanning routes');
+    buildProgress.step("Scanning routes");
     if (options.config?.routing?.fileBasedRouting) {
-      const pagesDir = path.join(projectRoot, options.config.routing.pagesDir || 'src/pages');
+      const pagesDir = path.join(
+        projectRoot,
+        options.config.routing.pagesDir || "src/pages",
+      );
       if (fs.existsSync(pagesDir)) {
-        logger.info('Scanning file-based routes...');
+        logger.info("Scanning file-based routes...");
         const routeManifest = scanRoutes(pagesDir);
-        
+
         // Generate route manifest
-        const manifestPath = path.join(distDir, 'route-manifest.js');
+        const manifestPath = path.join(distDir, "route-manifest.js");
         generateRouteManifest(routeManifest, manifestPath);
-        
+
         // Generate router config
-        const routerConfigPath = path.join(distDir, 'router-config.js');
+        const routerConfigPath = path.join(distDir, "router-config.js");
         generateRouterConfig(routeManifest, routerConfigPath);
-        
-        logger.success(`Generated routes: ${routeManifest.routes.length} routes found`);
+
+        logger.success(
+          `Generated routes: ${routeManifest.routes.length} routes found`,
+        );
       }
     }
-    
+
     // Check if this is an advanced project structure (has components or pages)
-    const hasComponents = fs.existsSync(path.join(srcDir, 'components'));
-    const hasPages = fs.existsSync(path.join(srcDir, 'pages'));
-    
+    const hasComponents = fs.existsSync(path.join(srcDir, "components"));
+    const hasPages = fs.existsSync(path.join(srcDir, "pages"));
+
     if (hasComponents || hasPages) {
-      logger.info('Detected advanced project structure');
-      
+      logger.info("Detected advanced project structure");
+
       // Build components
       if (hasComponents) {
-        buildProgress.step('Building components');
-        await buildComponents(projectRoot, distDir, options.minify, options.sourceMaps);
+        buildProgress.step("Building components");
+        await buildComponents(
+          projectRoot,
+          distDir,
+          options.minify,
+          options.sourceMaps,
+        );
       }
-      
+
       // Build pages
       if (hasPages) {
-        buildProgress.step('Building pages');
-        await buildPages(projectRoot, distDir, options.minify, options.sourceMaps, buildHash);
+        buildProgress.step("Building pages");
+        await buildPages(
+          projectRoot,
+          distDir,
+          options.minify,
+          options.sourceMaps,
+          buildHash,
+        );
       }
     }
-    
+
     // Always build main entry point
-    buildProgress.step('Building main entry');
+    buildProgress.step("Building main entry");
     await buildMainEntry(projectRoot, options, allStyles, buildHash);
-    
+
     // Hash the main bundle ONLY in production (when minify is true)
     const outputBasename = path.basename(options.output);
     const mainBundlePath = path.join(distDir, outputBasename);
     let hashedBundleName = outputBasename;
-    
+
     if (fs.existsSync(mainBundlePath)) {
       if (options.minify) {
         const mainHash = generateFileHash(mainBundlePath);
@@ -596,130 +658,134 @@ export async function build(options: BuildOptions): Promise<void> {
         const outputName = path.basename(outputBasename, outputExt);
         hashedBundleName = `${outputName}.${mainHash}${outputExt}`;
         const hashedBundlePath = path.join(distDir, hashedBundleName);
-        
+
         // Clean old main bundles with different hashes
         cleanOldBundles(distDir, outputName, mainHash);
-        
+
         // Rename main bundle
         fs.renameSync(mainBundlePath, hashedBundlePath);
-        
+
         // Rename source map if exists
         const mainMapPath = `${mainBundlePath}.map`;
         if (fs.existsSync(mainMapPath)) {
           fs.renameSync(mainMapPath, `${hashedBundlePath}.map`);
         }
-        
-        builtFiles.set('main', hashedBundleName);
+
+        builtFiles.set("main", hashedBundleName);
         logger.success(`Hashed main bundle: ${hashedBundleName}`);
       } else {
-        builtFiles.set('main', outputBasename);
+        builtFiles.set("main", outputBasename);
         logger.info(`Development mode: Using ${outputBasename} (no hashing)`);
       }
     }
-    
+
     // Copy assets from src/assets to dist/assets (if exists)
-    buildProgress.step('Copying assets');
-    const assetsDir = path.join(projectRoot, 'src', 'assets');
+    buildProgress.step("Copying assets");
+    const assetsDir = path.join(projectRoot, "src", "assets");
     if (fs.existsSync(assetsDir)) {
-      const distAssetsDir = path.join(distDir, 'assets');
+      const distAssetsDir = path.join(distDir, "assets");
       if (!fs.existsSync(distAssetsDir)) {
         fs.mkdirSync(distAssetsDir, { recursive: true });
       }
       logger.debug(`Copying assets from ${assetsDir} to ${distAssetsDir}`);
       copyPublicFiles(assetsDir, distAssetsDir);
-      logger.success('Assets copied to dist/assets');
+      logger.success("Assets copied to dist/assets");
     }
-    
+
     // Copy public files if they exist (for backward compatibility)
-    const publicDir = path.join(projectRoot, 'public');
+    const publicDir = path.join(projectRoot, "public");
     if (fs.existsSync(publicDir)) {
       logger.debug(`Copying public files from ${publicDir} to ${distDir}`);
       copyPublicFiles(publicDir, distDir);
-      logger.success('Public files copied to dist');
+      logger.success("Public files copied to dist");
     }
-    
+
     // Generate index.html automatically
-    buildProgress.step('Generating HTML');
-    const indexHtmlPath = path.join(distDir, 'index.html');
+    buildProgress.step("Generating HTML");
+    const indexHtmlPath = path.join(distDir, "index.html");
     const htmlConfig = options.config?.html || {};
     const generatedHTML = generateHTMLWithConfig(
       hashedBundleName,
       htmlConfig,
-      buildHash
+      buildHash,
     );
-    
-    fs.writeFileSync(indexHtmlPath, generatedHTML, 'utf8');
+
+    fs.writeFileSync(indexHtmlPath, generatedHTML, "utf8");
     logger.success(`Generated index.html with bundle: ${hashedBundleName}`);
 
     // Validate HTML files
-    buildProgress.step('Validating HTML');
-    logger.info('\nValidating HTML files...');
+    buildProgress.step("Validating HTML");
+    logger.info("\nValidating HTML files...");
     const validationResults = validateHTMLDirectory(distDir, false);
-    
+
     if (validationResults.size > 0) {
       printValidationResults(validationResults);
-      
+
       // Check if there are auto-fixable issues
       const hasFixableIssues = Array.from(validationResults.values()).some(
-        result => result.issues.some(issue => issue.autoFixable)
+        (result) => result.issues.some((issue) => issue.autoFixable),
       );
-      
+
       if (hasFixableIssues) {
         let shouldAutoFix = options.minify; // Auto-fix in production
-        
+
         // In development mode, ask user
         if (!shouldAutoFix) {
-          logger.info('');
-          shouldAutoFix = await confirm('Would you like to auto-fix these HTML issues?', true);
+          logger.info("");
+          shouldAutoFix = await confirm(
+            "Would you like to auto-fix these HTML issues?",
+            true,
+          );
         }
-        
+
         if (shouldAutoFix) {
-          logger.info('Auto-fixing HTML issues...');
+          logger.info("Auto-fixing HTML issues...");
           const fixedResults = validateHTMLDirectory(distDir, true);
-          logger.info('');
+          logger.info("");
           printValidationResults(fixedResults);
         } else {
-          logger.info('Skipping auto-fix. You can fix these manually.');
+          logger.info("Skipping auto-fix. You can fix these manually.");
         }
       }
     }
-    
+
     // Create build manifest
-    buildProgress.step('Creating manifest');
+    buildProgress.step("Creating manifest");
     createBuildManifest(distDir, buildHash, builtFiles);
     logger.success(`Build manifest created with hash: ${buildHash}`);
-    
+
     // Compress files in production
     if (options.minify) {
       const compressionConfig = options.config?.build?.compression;
-      const shouldCompress = compressionConfig !== undefined 
-        ? (compressionConfig.gzip !== false || compressionConfig.brotli !== false)
-        : true; // Default to enabled
-      
+      const shouldCompress =
+        compressionConfig !== undefined
+          ? compressionConfig.gzip !== false ||
+            compressionConfig.brotli !== false
+          : true; // Default to enabled
+
       if (shouldCompress) {
-        buildProgress.step('Compressing assets');
+        buildProgress.step("Compressing assets");
         const compressionResults = await compressDirectory(distDir, {
           gzip: compressionConfig?.gzip !== false,
           brotli: compressionConfig?.brotli !== false,
-          threshold: compressionConfig?.threshold || 1024
+          threshold: compressionConfig?.threshold || 1024,
         });
         printCompressionSummary(compressionResults);
       }
     }
-    
+
     // Complete build and show summary
     buildProgress.complete();
-
   } catch (error) {
     const buildError = error as any;
     const errorContext = parseBuildError(buildError);
-    
+
     if (errorContext.file || errorContext.line) {
       handleError(buildError, errorContext);
     } else {
-      logger.error('Build failed', buildError);
+      logger.error("Build failed", buildError);
     }
-    
+
     logger.debug(`Error details: ${JSON.stringify(buildError, null, 2)}`);
     process.exit(1);
   }
@@ -729,45 +795,47 @@ export async function build(options: BuildOptions): Promise<void> {
  * Watch mode for development
  */
 export async function watch(options: BuildOptions): Promise<void> {
-  logger.info('Watching for changes');
-  
+  logger.info("Watching for changes");
+
   // Use esbuild's watch mode
   const projectRoot = process.cwd();
-  
+
   const rynexPlugin: RolldownPlugin = {
-    name: 'rynex-transform',
+    name: "rynex-transform",
     async transform(code, id) {
       if (!/\.(ts|js|tsx|jsx)$/.test(id)) {
         return null;
       }
 
-      if (code.includes('view {') || code.includes('style {')) {
+      if (code.includes("view {") || code.includes("style {")) {
         const parsed = parseRynexFile(code);
         let transformedCode = parsed.code;
         transformedCode = transformImports(transformedCode);
 
         return {
           code: transformedCode,
-          map: null
+          map: null,
         };
       }
 
       const transformedCode = transformImports(code);
       return {
         code: transformedCode,
-        map: null
+        map: null,
       };
-    }
+    },
   };
 
   // Setup plugins for watch mode
   const watchPlugins: RolldownPlugin[] = [];
-  
+
   // Check for Tailwind CSS
   if (hasTailwindConfig(projectRoot)) {
-    logger.info('Tailwind CSS config detected (manual PostCSS integration recommended)');
+    logger.info(
+      "Tailwind CSS config detected (manual PostCSS integration recommended)",
+    );
   }
-  
+
   // Add Rynex plugin
   watchPlugins.push(rynexPlugin);
 
@@ -777,16 +845,18 @@ export async function watch(options: BuildOptions): Promise<void> {
     plugins: watchPlugins,
     external: [],
     watch: {
-      skipWrite: false
-    }
+      skipWrite: false,
+    },
   });
 
   await build.write({
     file: path.join(projectRoot, options.output),
-    format: 'es',
+    format: "es",
     sourcemap: true,
-    minify: false
+    minify: false,
   });
 
-  logger.success('Watch mode enabled (Note: Rolldown watch support may require manual rebuild)');
+  logger.success(
+    "Watch mode enabled (Note: Rolldown watch support may require manual rebuild)",
+  );
 }

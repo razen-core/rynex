@@ -3,9 +3,9 @@
  * Load and validate configuration
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
-import { logger } from './logger.js';
+import * as fs from "fs";
+import * as path from "path";
+import { logger } from "./logger.js";
 
 export interface RouteConfig {
   path: string;
@@ -27,11 +27,11 @@ export interface RynexConfig {
   hotReload: boolean;
   routes?: RouteConfig[];
   routing?: {
-    mode?: 'hash' | 'history';
+    mode?: "hash" | "history";
     base?: string;
     fileBasedRouting?: boolean;
     pagesDir?: string;
-    scrollBehavior?: 'auto' | 'smooth' | 'instant';
+    scrollBehavior?: "auto" | "smooth" | "instant";
     trailingSlash?: boolean;
   };
   middleware?: {
@@ -70,47 +70,47 @@ export interface RynexConfig {
 }
 
 const defaultConfig: RynexConfig = {
-  entry: 'src/index.ts',
-  output: 'dist/bundle.js',
+  entry: "src/index.ts",
+  output: "dist/bundle.js",
   minify: false,
   sourceMaps: true,
   port: 3000,
   hotReload: true,
   routing: {
-    mode: 'history',
-    base: '/',
+    mode: "history",
+    base: "/",
     fileBasedRouting: true,
-    pagesDir: 'src/pages',
-    scrollBehavior: 'smooth',
-    trailingSlash: false
+    pagesDir: "src/pages",
+    scrollBehavior: "smooth",
+    trailingSlash: false,
   },
   middleware: {
     global: [],
-    routes: {}
+    routes: {},
   },
   build: {
     splitting: true,
     chunkSize: 500,
-    publicPath: '/',
-    analyze: false
+    publicPath: "/",
+    analyze: false,
   },
   css: {
     enabled: false,
-    entry: 'src/styles/main.css',
-    output: 'dist/styles.css',
+    entry: "src/styles/main.css",
+    output: "dist/styles.css",
     minify: false,
-    sourcemap: true
-  }
+    sourcemap: true,
+  },
 };
 
 /**
  * Load Rynex configuration
  */
 export async function loadConfig(): Promise<RynexConfig> {
-  const configPath = path.join(process.cwd(), 'rynex.config.js');
+  const configPath = path.join(process.cwd(), "rynex.config.js");
 
   if (!fs.existsSync(configPath)) {
-    logger.info('Using default configuration');
+    logger.info("Using default configuration");
     return defaultConfig;
   }
 
@@ -120,10 +120,10 @@ export async function loadConfig(): Promise<RynexConfig> {
 
     return {
       ...defaultConfig,
-      ...userConfig
+      ...userConfig,
     };
   } catch (error) {
-    logger.error('Error loading config', error as Error);
+    logger.error("Error loading config", error as Error);
     return defaultConfig;
   }
 }
@@ -133,12 +133,12 @@ export async function loadConfig(): Promise<RynexConfig> {
  */
 export function validateConfig(config: RynexConfig): boolean {
   if (!config.entry) {
-    logger.error('Config error: entry is required');
+    logger.error("Config error: entry is required");
     return false;
   }
 
   if (!config.output) {
-    logger.error('Config error: output is required');
+    logger.error("Config error: output is required");
     return false;
   }
 

@@ -3,8 +3,13 @@
  * Rust-style Builder pattern for creating UI components with chainable methods
  */
 
-import { createElement, DOMChildren, applyProps, appendChildren } from '../dom.js';
-import { effect } from '../state.js';
+import {
+  createElement,
+  DOMChildren,
+  applyProps,
+  appendChildren,
+} from "../dom.js";
+import { effect } from "../state.js";
 
 /**
  * Responsive breakpoint configuration
@@ -47,7 +52,7 @@ export class ElementBuilder<T extends HTMLElement = HTMLElement> {
    * Set padding (in rem units)
    */
   pad(value: number | string): this {
-    const padding = typeof value === 'number' ? `${value}rem` : value;
+    const padding = typeof value === "number" ? `${value}rem` : value;
     this.element.style.padding = padding;
     return this;
   }
@@ -56,14 +61,14 @@ export class ElementBuilder<T extends HTMLElement = HTMLElement> {
    * Set padding for specific sides
    */
   padX(value: number | string): this {
-    const padding = typeof value === 'number' ? `${value}rem` : value;
+    const padding = typeof value === "number" ? `${value}rem` : value;
     this.element.style.paddingLeft = padding;
     this.element.style.paddingRight = padding;
     return this;
   }
 
   padY(value: number | string): this {
-    const padding = typeof value === 'number' ? `${value}rem` : value;
+    const padding = typeof value === "number" ? `${value}rem` : value;
     this.element.style.paddingTop = padding;
     this.element.style.paddingBottom = padding;
     return this;
@@ -73,20 +78,20 @@ export class ElementBuilder<T extends HTMLElement = HTMLElement> {
    * Set margin (in rem units)
    */
   margin(value: number | string): this {
-    const margin = typeof value === 'number' ? `${value}rem` : value;
+    const margin = typeof value === "number" ? `${value}rem` : value;
     this.element.style.margin = margin;
     return this;
   }
 
   marginX(value: number | string): this {
-    const margin = typeof value === 'number' ? `${value}rem` : value;
+    const margin = typeof value === "number" ? `${value}rem` : value;
     this.element.style.marginLeft = margin;
     this.element.style.marginRight = margin;
     return this;
   }
 
   marginY(value: number | string): this {
-    const margin = typeof value === 'number' ? `${value}rem` : value;
+    const margin = typeof value === "number" ? `${value}rem` : value;
     this.element.style.marginTop = margin;
     this.element.style.marginBottom = margin;
     return this;
@@ -96,7 +101,7 @@ export class ElementBuilder<T extends HTMLElement = HTMLElement> {
    * Set gap between children (for flex/grid)
    */
   gap(value: number | string): this {
-    const gap = typeof value === 'number' ? `${value}rem` : value;
+    const gap = typeof value === "number" ? `${value}rem` : value;
     this.element.style.gap = gap;
     return this;
   }
@@ -121,7 +126,7 @@ export class ElementBuilder<T extends HTMLElement = HTMLElement> {
    * Set border radius (in rem units)
    */
   radius(value: number | string): this {
-    const radius = typeof value === 'number' ? `${value}rem` : value;
+    const radius = typeof value === "number" ? `${value}rem` : value;
     this.element.style.borderRadius = radius;
     return this;
   }
@@ -129,8 +134,12 @@ export class ElementBuilder<T extends HTMLElement = HTMLElement> {
   /**
    * Set border
    */
-  border(width: number | string, style: string = 'solid', color?: string): this {
-    const borderWidth = typeof width === 'number' ? `${width}px` : width;
+  border(
+    width: number | string,
+    style: string = "solid",
+    color?: string,
+  ): this {
+    const borderWidth = typeof width === "number" ? `${width}px` : width;
     this.element.style.borderWidth = borderWidth;
     this.element.style.borderStyle = style;
     if (color) {
@@ -142,14 +151,15 @@ export class ElementBuilder<T extends HTMLElement = HTMLElement> {
   /**
    * Set box shadow
    */
-  shadow(size: 'sm' | 'md' | 'lg' | 'xl' | string): this {
+  shadow(size: "sm" | "md" | "lg" | "xl" | string): this {
     const shadows = {
-      sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-      md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-      lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
-      xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)'
+      sm: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+      md: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+      lg: "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+      xl: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
     };
-    this.element.style.boxShadow = shadows[size as keyof typeof shadows] || size;
+    this.element.style.boxShadow =
+      shadows[size as keyof typeof shadows] || size;
     return this;
   }
 
@@ -157,7 +167,7 @@ export class ElementBuilder<T extends HTMLElement = HTMLElement> {
    * Set width
    */
   width(value: number | string): this {
-    const width = typeof value === 'number' ? `${value}px` : value;
+    const width = typeof value === "number" ? `${value}px` : value;
     this.element.style.width = width;
     return this;
   }
@@ -166,7 +176,7 @@ export class ElementBuilder<T extends HTMLElement = HTMLElement> {
    * Set height
    */
   height(value: number | string): this {
-    const h = typeof value === 'number' ? `${value}px` : value;
+    const h = typeof value === "number" ? `${value}px` : value;
     this.element.style.height = h;
     return this;
   }
@@ -175,7 +185,7 @@ export class ElementBuilder<T extends HTMLElement = HTMLElement> {
    * Set max width
    */
   maxWidth(value: number | string): this {
-    const maxWidth = typeof value === 'number' ? `${value}px` : value;
+    const maxWidth = typeof value === "number" ? `${value}px` : value;
     this.element.style.maxWidth = maxWidth;
     return this;
   }
@@ -184,7 +194,7 @@ export class ElementBuilder<T extends HTMLElement = HTMLElement> {
    * Set max height
    */
   maxHeight(value: number | string): this {
-    const maxHeight = typeof value === 'number' ? `${value}px` : value;
+    const maxHeight = typeof value === "number" ? `${value}px` : value;
     this.element.style.maxHeight = maxHeight;
     return this;
   }
@@ -193,7 +203,7 @@ export class ElementBuilder<T extends HTMLElement = HTMLElement> {
    * Set min width
    */
   minWidth(value: number | string): this {
-    const minWidth = typeof value === 'number' ? `${value}px` : value;
+    const minWidth = typeof value === "number" ? `${value}px` : value;
     this.element.style.minWidth = minWidth;
     return this;
   }
@@ -202,7 +212,7 @@ export class ElementBuilder<T extends HTMLElement = HTMLElement> {
    * Set min height
    */
   minHeight(value: number | string): this {
-    const minHeight = typeof value === 'number' ? `${value}px` : value;
+    const minHeight = typeof value === "number" ? `${value}px` : value;
     this.element.style.minHeight = minHeight;
     return this;
   }
@@ -234,7 +244,9 @@ export class ElementBuilder<T extends HTMLElement = HTMLElement> {
   /**
    * Set position
    */
-  position(value: 'static' | 'relative' | 'absolute' | 'fixed' | 'sticky'): this {
+  position(
+    value: "static" | "relative" | "absolute" | "fixed" | "sticky",
+  ): this {
     this.element.style.position = value;
     return this;
   }
@@ -259,7 +271,7 @@ export class ElementBuilder<T extends HTMLElement = HTMLElement> {
    * Set flex properties
    */
   flex(value: number | string): this {
-    this.element.style.flex = typeof value === 'number' ? String(value) : value;
+    this.element.style.flex = typeof value === "number" ? String(value) : value;
     return this;
   }
 
@@ -340,7 +352,7 @@ export class ElementBuilder<T extends HTMLElement = HTMLElement> {
    */
   on<K extends keyof HTMLElementEventMap>(
     event: K,
-    handler: (event: HTMLElementEventMap[K]) => void
+    handler: (event: HTMLElementEventMap[K]) => void,
   ): this {
     this.element.addEventListener(event, handler as EventListener);
     return this;
@@ -350,7 +362,7 @@ export class ElementBuilder<T extends HTMLElement = HTMLElement> {
    * Add click event listener
    */
   click(handler: (event: MouseEvent) => void): this {
-    this.element.addEventListener('click', handler);
+    this.element.addEventListener("click", handler);
     return this;
   }
 
@@ -359,11 +371,11 @@ export class ElementBuilder<T extends HTMLElement = HTMLElement> {
    */
   hover(
     onEnter: (event: MouseEvent) => void,
-    onLeave?: (event: MouseEvent) => void
+    onLeave?: (event: MouseEvent) => void,
   ): this {
-    this.element.addEventListener('mouseenter', onEnter);
+    this.element.addEventListener("mouseenter", onEnter);
     if (onLeave) {
-      this.element.addEventListener('mouseleave', onLeave);
+      this.element.addEventListener("mouseleave", onLeave);
     }
     return this;
   }
@@ -373,20 +385,20 @@ export class ElementBuilder<T extends HTMLElement = HTMLElement> {
    */
   hoverStyle(styles: Partial<CSSStyleDeclaration>): this {
     const originalStyles: Partial<CSSStyleDeclaration> = {};
-    
-    this.element.addEventListener('mouseenter', () => {
-      Object.keys(styles).forEach(key => {
+
+    this.element.addEventListener("mouseenter", () => {
+      Object.keys(styles).forEach((key) => {
         originalStyles[key as any] = (this.element.style as any)[key];
         (this.element.style as any)[key] = (styles as any)[key];
       });
     });
-    
-    this.element.addEventListener('mouseleave', () => {
-      Object.keys(originalStyles).forEach(key => {
+
+    this.element.addEventListener("mouseleave", () => {
+      Object.keys(originalStyles).forEach((key) => {
         (this.element.style as any)[key] = (originalStyles as any)[key];
       });
     });
-    
+
     return this;
   }
 
@@ -443,14 +455,14 @@ export class ElementBuilder<T extends HTMLElement = HTMLElement> {
 
       if (config) {
         Object.entries(config).forEach(([key, value]) => {
-          if (key === 'pad') {
-            const padding = typeof value === 'number' ? `${value}rem` : value;
+          if (key === "pad") {
+            const padding = typeof value === "number" ? `${value}rem` : value;
             this.element.style.padding = padding;
-          } else if (key === 'gap') {
-            const gap = typeof value === 'number' ? `${value}rem` : value;
+          } else if (key === "gap") {
+            const gap = typeof value === "number" ? `${value}rem` : value;
             this.element.style.gap = gap;
-          } else if (key === 'size') {
-            const size = typeof value === 'number' ? `${value}rem` : value;
+          } else if (key === "size") {
+            const size = typeof value === "number" ? `${value}rem` : value;
             this.element.style.fontSize = size;
           } else {
             (this.element.style as any)[key] = value;
@@ -460,7 +472,7 @@ export class ElementBuilder<T extends HTMLElement = HTMLElement> {
     };
 
     applyConfig();
-    window.addEventListener('resize', applyConfig);
+    window.addEventListener("resize", applyConfig);
   }
 
   /**
@@ -481,7 +493,7 @@ export class TextBuilder extends ElementBuilder<HTMLSpanElement> {
   private content?: string | (() => string);
 
   constructor(content?: string | (() => string)) {
-    super('span');
+    super("span");
     this.content = content;
   }
 
@@ -489,7 +501,7 @@ export class TextBuilder extends ElementBuilder<HTMLSpanElement> {
    * Set font size (in rem units)
    */
   size(value: number | string): this {
-    const size = typeof value === 'number' ? `${value}rem` : value;
+    const size = typeof value === "number" ? `${value}rem` : value;
     this.element.style.fontSize = size;
     return this;
   }
@@ -514,7 +526,8 @@ export class TextBuilder extends ElementBuilder<HTMLSpanElement> {
    * Set line height
    */
   lineHeight(value: number | string): this {
-    this.element.style.lineHeight = typeof value === 'number' ? String(value) : value;
+    this.element.style.lineHeight =
+      typeof value === "number" ? String(value) : value;
     return this;
   }
 
@@ -529,7 +542,7 @@ export class TextBuilder extends ElementBuilder<HTMLSpanElement> {
   /**
    * Set text transform
    */
-  transform(value: 'none' | 'uppercase' | 'lowercase' | 'capitalize'): this {
+  transform(value: "none" | "uppercase" | "lowercase" | "capitalize"): this {
     this.element.style.textTransform = value;
     return this;
   }
@@ -544,7 +557,7 @@ export class TextBuilder extends ElementBuilder<HTMLSpanElement> {
 
   build(): HTMLSpanElement {
     if (this.content) {
-      if (typeof this.content === 'function') {
+      if (typeof this.content === "function") {
         // Reactive content
         const contentFn = this.content;
         effect(() => {
@@ -566,7 +579,7 @@ export class ButtonBuilder extends ElementBuilder<HTMLButtonElement> {
   private content?: string | (() => string);
 
   constructor(content?: string | (() => string)) {
-    super('button');
+    super("button");
     this.content = content;
   }
 
@@ -574,7 +587,7 @@ export class ButtonBuilder extends ElementBuilder<HTMLButtonElement> {
    * Set font size (in rem units)
    */
   size(value: number | string): this {
-    const size = typeof value === 'number' ? `${value}rem` : value;
+    const size = typeof value === "number" ? `${value}rem` : value;
     this.element.style.fontSize = size;
     return this;
   }
@@ -590,7 +603,7 @@ export class ButtonBuilder extends ElementBuilder<HTMLButtonElement> {
   /**
    * Set button type
    */
-  type(value: 'button' | 'submit' | 'reset'): this {
+  type(value: "button" | "submit" | "reset"): this {
     this.element.type = value;
     return this;
   }
@@ -605,7 +618,7 @@ export class ButtonBuilder extends ElementBuilder<HTMLButtonElement> {
 
   build(): HTMLButtonElement {
     if (this.content) {
-      if (typeof this.content === 'function') {
+      if (typeof this.content === "function") {
         // Reactive content
         const contentFn = this.content;
         effect(() => {
@@ -625,7 +638,7 @@ export class ButtonBuilder extends ElementBuilder<HTMLButtonElement> {
  */
 export class InputBuilder extends ElementBuilder<HTMLInputElement> {
   constructor() {
-    super('input');
+    super("input");
   }
 
   /**
@@ -680,7 +693,7 @@ export class InputBuilder extends ElementBuilder<HTMLInputElement> {
    * Add input event listener
    */
   input(handler: (event: Event) => void): this {
-    this.element.addEventListener('input', handler);
+    this.element.addEventListener("input", handler);
     return this;
   }
 
@@ -688,7 +701,7 @@ export class InputBuilder extends ElementBuilder<HTMLInputElement> {
    * Add change event listener
    */
   change(handler: (event: Event) => void): this {
-    this.element.addEventListener('change', handler);
+    this.element.addEventListener("change", handler);
     return this;
   }
 }
@@ -698,7 +711,7 @@ export class InputBuilder extends ElementBuilder<HTMLInputElement> {
  */
 export class ImageBuilder extends ElementBuilder<HTMLImageElement> {
   constructor(src?: string) {
-    super('img');
+    super("img");
     if (src) {
       this.element.src = src;
     }
@@ -724,14 +737,14 @@ export class ImageBuilder extends ElementBuilder<HTMLImageElement> {
    * Enable lazy loading
    */
   lazy(): this {
-    this.element.loading = 'lazy';
+    this.element.loading = "lazy";
     return this;
   }
 
   /**
    * Set object fit
    */
-  fit(value: 'contain' | 'cover' | 'fill' | 'none' | 'scale-down'): this {
+  fit(value: "contain" | "cover" | "fill" | "none" | "scale-down"): this {
     this.element.style.objectFit = value;
     return this;
   }

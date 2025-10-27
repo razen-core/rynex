@@ -183,81 +183,81 @@ const RYNEX_VALIDATION_RULES: Record<string, FunctionRule> = {
   },
   card: {
     minArgs: 0,
-    category: 'Components',
-    description: 'Card component container (Builder API)',
-    rules: []
+    category: "Components",
+    description: "Card component container (Builder API)",
+    rules: [],
   },
   button: {
     minArgs: 0,
     category: "Elements",
     description: "Button element (Builder API)",
-    rules: []
+    rules: [],
   },
   tabs: {
     minArgs: 0,
-    category: 'Components',
-    description: 'Tabs component (Builder API)',
-    rules: []
+    category: "Components",
+    description: "Tabs component (Builder API)",
+    rules: [],
   },
   accordion: {
     minArgs: 0,
-    category: 'Components',
-    description: 'Accordion component (Builder API)',
-    rules: []
+    category: "Components",
+    description: "Accordion component (Builder API)",
+    rules: [],
   },
   badge: {
     minArgs: 0,
-    category: 'Components',
-    description: 'Badge component (Builder API)',
-    rules: []
+    category: "Components",
+    description: "Badge component (Builder API)",
+    rules: [],
   },
   avatar: {
     minArgs: 0,
-    category: 'Components',
-    description: 'Avatar component (Builder API)',
-    rules: []
+    category: "Components",
+    description: "Avatar component (Builder API)",
+    rules: [],
   },
   icon: {
     minArgs: 0,
-    category: 'Components',
-    description: 'Icon component (Builder API)',
-    rules: []
+    category: "Components",
+    description: "Icon component (Builder API)",
+    rules: [],
   },
   tooltip: {
     minArgs: 0,
-    category: 'Components',
-    description: 'Tooltip component (Builder API)',
-    rules: []
+    category: "Components",
+    description: "Tooltip component (Builder API)",
+    rules: [],
   },
   dropdown: {
     minArgs: 0,
-    category: 'Components',
-    description: 'Dropdown component (Builder API)',
-    rules: []
+    category: "Components",
+    description: "Dropdown component (Builder API)",
+    rules: [],
   },
   toggle: {
     minArgs: 0,
-    category: 'Components',
-    description: 'Toggle component (Builder API)',
-    rules: []
+    category: "Components",
+    description: "Toggle component (Builder API)",
+    rules: [],
   },
   slider: {
     minArgs: 0,
-    category: 'Components',
-    description: 'Slider component (Builder API)',
-    rules: []
+    category: "Components",
+    description: "Slider component (Builder API)",
+    rules: [],
   },
   progressBar: {
     minArgs: 0,
-    category: 'Components',
-    description: 'Progress bar component (Builder API)',
-    rules: []
+    category: "Components",
+    description: "Progress bar component (Builder API)",
+    rules: [],
   },
   spinner: {
     minArgs: 0,
-    category: 'Components',
-    description: 'Spinner component (Builder API)',
-    rules: []
+    category: "Components",
+    description: "Spinner component (Builder API)",
+    rules: [],
   },
   createStore: {
     minArgs: 2,

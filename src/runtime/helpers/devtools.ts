@@ -11,7 +11,7 @@ export enum LogLevel {
   INFO = 1,
   WARN = 2,
   ERROR = 3,
-  NONE = 4
+  NONE = 4,
 }
 
 /**
@@ -29,15 +29,20 @@ export interface LoggerConfig {
  */
 class Logger {
   private config: LoggerConfig;
-  private logs: Array<{ level: string; message: string; timestamp: number; data?: any }> = [];
+  private logs: Array<{
+    level: string;
+    message: string;
+    timestamp: number;
+    data?: any;
+  }> = [];
 
   constructor(config: Partial<LoggerConfig> = {}) {
     this.config = {
       level: LogLevel.INFO,
-      prefix: '[Rynex]',
+      prefix: "[Rynex]",
       timestamp: true,
       colors: true,
-      ...config
+      ...config,
     };
   }
 
@@ -47,64 +52,69 @@ class Logger {
 
   private formatMessage(level: string, message: string, data?: any): string {
     const parts: string[] = [];
-    
+
     if (this.config.prefix) {
       parts.push(this.config.prefix);
     }
-    
+
     if (this.config.timestamp) {
       parts.push(`[${new Date().toISOString()}]`);
     }
-    
+
     parts.push(`[${level}]`);
     parts.push(message);
-    
-    return parts.join(' ');
+
+    return parts.join(" ");
   }
 
-  private logToConsole(level: string, message: string, data?: any, color?: string) {
+  private logToConsole(
+    level: string,
+    message: string,
+    data?: any,
+    color?: string,
+  ) {
     try {
       const formatted = this.formatMessage(level, message, data);
-      
+
       if (this.config.colors && color) {
-        console.log(`%c${formatted}`, `color: ${color}`, data || '');
+        console.log(`%c${formatted}`, `color: ${color}`, data || "");
       } else {
-        console.log(formatted, data || '');
+        console.log(formatted, data || "");
       }
     } catch (error) {
-      console.error('Logger error:', error);
+      console.error("Logger error:", error);
     }
   }
 
   debug(message: string, data?: any) {
     if (!message) return;
     if (this.shouldLog(LogLevel.DEBUG)) {
-      this.logToConsole('DEBUG', message, data, '#888');
-      this.logs.push({ level: 'DEBUG', message, timestamp: Date.now(), data });
+      this.logToConsole("DEBUG", message, data, "#888");
+      this.logs.push({ level: "DEBUG", message, timestamp: Date.now(), data });
     }
   }
 
   info(message: string, data?: any) {
     if (!message) return;
     if (this.shouldLog(LogLevel.INFO)) {
-      this.logToConsole('INFO', message, data, '#2196F3');
-      this.logs.push({ level: 'INFO', message, timestamp: Date.now(), data });
+      this.logToConsole("INFO", message, data, "#2196F3");
+      this.logs.push({ level: "INFO", message, timestamp: Date.now(), data });
     }
   }
 
   warn(message: string, data?: any) {
     if (!message) return;
     if (this.shouldLog(LogLevel.WARN)) {
-      this.logToConsole('WARN', message, data, '#FF9800');
-      this.logs.push({ level: 'WARN', message, timestamp: Date.now(), data });
+      this.logToConsole("WARN", message, data, "#FF9800");
+      this.logs.push({ level: "WARN", message, timestamp: Date.now(), data });
     }
   }
 
   error(message: string, data?: any) {
     if (!message) return;
     if (this.shouldLog(LogLevel.ERROR)) {
-      this.logToConsole('ERROR', message, data, '#F44336');
-      this.logs.push({ level: 'ERROR', message, timestamp: Date.now(), data });
+      this.logToConsole("ERROR", message, data, "#F44336");
+      this.logs.push({ level: "ERROR", message, timestamp: Date.now(), data });
     }
   }
 
@@ -152,8 +162,8 @@ class Profiler {
   private completed: ProfileEntry[] = [];
 
   start(name: string, metadata?: any) {
-    if (!name || typeof name !== 'string') {
-      console.warn('Profile name must be a non-empty string');
+    if (!name || typeof name !== "string") {
+      console.warn("Profile name must be a non-empty string");
       return;
     }
 
@@ -166,61 +176,61 @@ class Profiler {
       const entry: ProfileEntry = {
         name,
         startTime: performance.now(),
-        metadata
+        metadata,
       };
-      
+
       this.profiles.set(name, entry);
-      
+
       if (globalLogger) {
         globalLogger.debug(`Profile started: ${name}`, metadata);
       }
     } catch (error) {
-      console.error('Error starting profile:', error);
+      console.error("Error starting profile:", error);
     }
   }
 
   end(name: string): number | undefined {
-    if (!name || typeof name !== 'string') {
-      console.warn('Profile name must be a non-empty string');
+    if (!name || typeof name !== "string") {
+      console.warn("Profile name must be a non-empty string");
       return undefined;
     }
 
     const entry = this.profiles.get(name);
-    
+
     if (!entry) {
       console.warn(`Profile "${name}" not found`);
       return undefined;
     }
-    
+
     try {
       entry.endTime = performance.now();
       entry.duration = entry.endTime - entry.startTime;
-      
+
       this.completed.push(entry);
       this.profiles.delete(name);
-      
+
       if (globalLogger) {
         globalLogger.debug(`Profile ended: ${name}`, {
           duration: `${entry.duration.toFixed(2)}ms`,
-          ...entry.metadata
+          ...entry.metadata,
         });
       }
-      
+
       return entry.duration;
     } catch (error) {
-      console.error('Error ending profile:', error);
+      console.error("Error ending profile:", error);
       return undefined;
     }
   }
 
   measure(name: string, fn: () => any, metadata?: any) {
-    if (!name || typeof name !== 'string') {
-      console.warn('Profile name must be a non-empty string');
+    if (!name || typeof name !== "string") {
+      console.warn("Profile name must be a non-empty string");
       return undefined;
     }
 
-    if (typeof fn !== 'function') {
-      console.warn('Second argument must be a function');
+    if (typeof fn !== "function") {
+      console.warn("Second argument must be a function");
       return undefined;
     }
 
@@ -237,13 +247,13 @@ class Profiler {
   }
 
   async measureAsync(name: string, fn: () => Promise<any>, metadata?: any) {
-    if (!name || typeof name !== 'string') {
-      console.warn('Profile name must be a non-empty string');
+    if (!name || typeof name !== "string") {
+      console.warn("Profile name must be a non-empty string");
       return undefined;
     }
 
-    if (typeof fn !== 'function') {
-      console.warn('Second argument must be a function');
+    if (typeof fn !== "function") {
+      console.warn("Second argument must be a function");
       return undefined;
     }
 
@@ -260,7 +270,7 @@ class Profiler {
   }
 
   getProfile(name: string): ProfileEntry | undefined {
-    return this.completed.find(p => p.name === name);
+    return this.completed.find((p) => p.name === name);
   }
 
   getAllProfiles(): ProfileEntry[] {
@@ -268,9 +278,9 @@ class Profiler {
   }
 
   getAverageDuration(name: string): number {
-    const profiles = this.completed.filter(p => p.name === name);
+    const profiles = this.completed.filter((p) => p.name === name);
     if (profiles.length === 0) return 0;
-    
+
     const total = profiles.reduce((sum, p) => sum + (p.duration || 0), 0);
     return total / profiles.length;
   }
@@ -284,30 +294,32 @@ class Profiler {
     const report = {
       active: Array.from(this.profiles.values()),
       completed: this.completed,
-      summary: this.getSummary()
+      summary: this.getSummary(),
     };
-    
+
     console.table(report.completed);
     return report;
   }
 
   private getSummary() {
-    const names = new Set(this.completed.map(p => p.name));
+    const names = new Set(this.completed.map((p) => p.name));
     const summary: Record<string, any> = {};
-    
-    names.forEach(name => {
-      const profiles = this.completed.filter(p => p.name === name);
-      const durations = profiles.map(p => p.duration || 0);
-      
+
+    names.forEach((name) => {
+      const profiles = this.completed.filter((p) => p.name === name);
+      const durations = profiles.map((p) => p.duration || 0);
+
       summary[name] = {
         count: profiles.length,
-        total: durations.reduce((a, b) => a + b, 0).toFixed(2) + 'ms',
-        average: (durations.reduce((a, b) => a + b, 0) / profiles.length).toFixed(2) + 'ms',
-        min: Math.min(...durations).toFixed(2) + 'ms',
-        max: Math.max(...durations).toFixed(2) + 'ms'
+        total: durations.reduce((a, b) => a + b, 0).toFixed(2) + "ms",
+        average:
+          (durations.reduce((a, b) => a + b, 0) / profiles.length).toFixed(2) +
+          "ms",
+        min: Math.min(...durations).toFixed(2) + "ms",
+        max: Math.max(...durations).toFixed(2) + "ms",
       };
     });
-    
+
     return summary;
   }
 }
@@ -344,34 +356,34 @@ class DevTools {
   constructor(config: Partial<DevToolsConfig> = {}) {
     this.config = {
       enabled: true,
-      ...config
+      ...config,
     };
-    
+
     this.logger = config.logger || logger();
     this.profiler = config.profiler || profiler();
-    
+
     if (this.config.enabled) {
       this.attachToWindow();
     }
   }
 
   private attachToWindow() {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       (window as any).__RYNEX_DEVTOOLS__ = {
         logger: this.logger,
         profiler: this.profiler,
-        version: '0.1.55',
+        version: "0.1.55",
         inspect: this.inspect.bind(this),
-        getState: this.getState.bind(this)
+        getState: this.getState.bind(this),
       };
-      
-      this.logger.info('DevTools attached to window.__RYNEX_DEVTOOLS__');
+
+      this.logger.info("DevTools attached to window.__RYNEX_DEVTOOLS__");
     }
   }
 
   inspect(element: HTMLElement) {
     if (!element || !(element instanceof HTMLElement)) {
-      this.logger.warn('Invalid element provided to inspect');
+      this.logger.warn("Invalid element provided to inspect");
       return null;
     }
 
@@ -380,18 +392,18 @@ class DevTools {
         tagName: element.tagName,
         id: element.id,
         className: element.className,
-        attributes: Array.from(element.attributes).map(attr => ({
+        attributes: Array.from(element.attributes).map((attr) => ({
           name: attr.name,
-          value: attr.value
+          value: attr.value,
         })),
         children: element.children.length,
-        dataset: { ...element.dataset }
+        dataset: { ...element.dataset },
       };
-      
-      console.log('Element Inspector:', info);
+
+      console.log("Element Inspector:", info);
       return info;
     } catch (error) {
-      this.logger.error('Error inspecting element:', error);
+      this.logger.error("Error inspecting element:", error);
       return null;
     }
   }
@@ -400,7 +412,7 @@ class DevTools {
     // This would integrate with the state management system
     // For now, return a placeholder
     return {
-      message: 'State inspection not yet implemented'
+      message: "State inspection not yet implemented",
     };
   }
 
@@ -411,7 +423,7 @@ class DevTools {
 
   disable() {
     this.config.enabled = false;
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       delete (window as any).__RYNEX_DEVTOOLS__;
     }
   }
@@ -439,13 +451,15 @@ export const log = {
   debug: (msg: string, data?: any) => logger().debug(msg, data),
   info: (msg: string, data?: any) => logger().info(msg, data),
   warn: (msg: string, data?: any) => logger().warn(msg, data),
-  error: (msg: string, data?: any) => logger().error(msg, data)
+  error: (msg: string, data?: any) => logger().error(msg, data),
 };
 
 export const profile = {
   start: (name: string, metadata?: any) => profiler().start(name, metadata),
   end: (name: string) => profiler().end(name),
-  measure: (name: string, fn: () => any, metadata?: any) => profiler().measure(name, fn, metadata),
-  measureAsync: (name: string, fn: () => Promise<any>, metadata?: any) => profiler().measureAsync(name, fn, metadata),
-  report: () => profiler().report()
+  measure: (name: string, fn: () => any, metadata?: any) =>
+    profiler().measure(name, fn, metadata),
+  measureAsync: (name: string, fn: () => Promise<any>, metadata?: any) =>
+    profiler().measureAsync(name, fn, metadata),
+  report: () => profiler().report(),
 };
