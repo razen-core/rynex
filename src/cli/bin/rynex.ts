@@ -14,6 +14,7 @@ import { logger } from "../logger.js";
 import { handleAddCommand } from "../add-command.js";
 import { runTypeCheck } from "../type-checker.js";
 import { runRynexValidation } from "../rynex-validator.js";
+import { initCSS } from "../init-css-command.js";
 import * as path from "path";
 
 const args = process.argv.slice(2);
@@ -143,6 +144,11 @@ async function main() {
       break;
     }
 
+    case "init:css": {
+      await initCSS();
+      break;
+    }
+
     case "clean": {
       const { execSync } = await import("child_process");
       logger.info("Cleaning build artifacts");
@@ -163,6 +169,7 @@ Usage:
 
 Commands:
   init [name]    Create a new Rynex project
+  init:css       Initialize Tailwind CSS v4 setup
   build          Build project for production
   dev            Start development server with hot reload
   start          Start production server (Express or native HTTP)
@@ -172,6 +179,7 @@ Commands:
 
 Examples:
   rynex init my-app
+  rynex init:css
   rynex dev
   rynex build
   rynex add tailwind

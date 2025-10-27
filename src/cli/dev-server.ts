@@ -11,6 +11,8 @@ import { logger } from './logger.js';
 import { RouteConfig, RynexConfig } from './config.js';
 import { scanRoutes, RouteManifest } from './route-scanner.js';
 import { readBuildManifest } from './hash-utils.js';
+import { watchCSS, checkCSSSetup, hasPostCSSConfig, printCSSSetupInstructions } from './css-processor.js';
+import { ChildProcess } from 'child_process';
 
 export interface DevServerOptions {
   port: number;
@@ -30,6 +32,44 @@ export async function startDevServer(options: DevServerOptions): Promise<void> {
   
   // Middleware stack
   const middlewareStack: Middleware[] = [];
+  
+  // Start CSS watcher if enabled
+  let cssWatcher: ChildProcess | null = null;
+  if (config?.css?.enabled) {
+    const projectRoot = process.cwd();
+    const cssSetup = checkCSSSetup(projectRoot);
+    
+    if (!cssSetup.hasTailwind || !cssSetup.hasPostCSS || !cssSetup.hasPostCSSCLI) {
+      logger.warning('CSS processing is enabled but dependencies are missing');
+      printCSSSetupInstructions();
+    } else if (!hasPostCSSConfig(projectRoot)) {
+      logger.warning('PostCSS config not found. Run: rynex init:css');
+    } else {
+      const cssEntry = config.css.entry || 'src/styles/main.css';
+      const cssOutput = config.css.output || 'dist/styles.css';
+      
+      logger.info(`Watching CSS: ${cssEntry} → ${cssOutput}`);
+      
+      cssWatcher = watchCSS({
+        entry: cssEntry,
+        output: cssOutput,
+        minify: false,
+        sourcemap: true,
+        projectRoot
+      }, () => {
+        // Notify clients when CSS changes
+        if (hotReload) {
+          clients.forEach(client => {
+            client.write('data: reload\n\n');
+          });
+        }
+      });
+      
+      if (cssWatcher) {
+        logger.success('CSS watcher started');
+      }
+    }
+  }
   
   // Scan routes if file-based routing is enabled
   let routeManifest: RouteManifest | null = null;
@@ -293,5 +333,17 @@ export async function startDevServer(options: DevServerOptions): Promise<void> {
     if (hotReload) {
       logger.info('Hot reload enabled');
     }
+    if (cssWatcher) {
+      logger.info('CSS watching enabled');
+    }
+  });
+  
+  // Cleanup on exit
+  process.on('SIGINT', () => {
+    logger.info('\nShutting down dev server...');
+    if (cssWatcher) {
+      cssWatcher.kill();
+    }
+    process.exit(0);
   });
 }

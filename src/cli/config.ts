@@ -60,6 +60,13 @@ export interface RynexConfig {
   resolve?: {
     alias?: Record<string, string>;
   };
+  css?: {
+    enabled?: boolean;
+    entry?: string;
+    output?: string;
+    minify?: boolean;
+    sourcemap?: boolean;
+  };
 }
 
 const defaultConfig: RynexConfig = {
@@ -86,6 +93,13 @@ const defaultConfig: RynexConfig = {
     chunkSize: 500,
     publicPath: '/',
     analyze: false
+  },
+  css: {
+    enabled: false,
+    entry: 'src/styles/main.css',
+    output: 'dist/styles.css',
+    minify: false,
+    sourcemap: true
   }
 };
 

@@ -1,0 +1,21 @@
+{
+  "name": "rynex-tailwind-demo",
+  "version": "1.0.0",
+  "description": "Rynex Builder API with Tailwind CSS v4 demonstration",
+  "type": "module",
+  "scripts": {
+    "dev": "node ../../dist/cli/bin/rynex.js dev",
+    "start": "node ../../dist/cli/bin/rynex.js start",
+    "build": "node ../../dist/cli/bin/rynex.js build"
+  },
+  "dependencies": {
+    "rynex": "file:../.."
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "postcss-cli": "^11.0.1",
+    "tailwindcss": "^4.0.0"
+  }
+}

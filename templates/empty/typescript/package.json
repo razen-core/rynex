@@ -7,7 +7,7 @@
     "build": "rynex build"
   },
   "dependencies": {
-    "rynex": "^0.1.0-alpha.65"
+    "rynex": "^0.1.0-alpha.67"
   },
   "devDependencies": {
     "typescript": "^5.3.0"

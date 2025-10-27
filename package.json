@@ -1,6 +1,6 @@
 {
   "name": "rynex",
-  "version": "0.1.0-alpha.65",
+  "version": "0.1.0-alpha.67",
   "description": "A minimalist TypeScript framework for building reactive web applications with no virtual DOM",
   "main": "dist/runtime/index.js",
   "types": "dist/runtime/index.d.ts",
@@ -105,6 +105,23 @@
   },
   "peerDependencies": {
     "typescript": ">=5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "tailwindcss": {
+      "optional": true
+    },
+    "@tailwindcss/postcss": {
+      "optional": true
+    },
+    "postcss": {
+      "optional": true
+    },
+    "postcss-cli": {
+      "optional": true
+    },
+    "autoprefixer": {
+      "optional": true
+    }
   },
   "browserslist": [
     "defaults",

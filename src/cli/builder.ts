@@ -25,6 +25,12 @@ import { createAliasPlugin } from './path-resolver.js';
 import { buildProgress } from './progress.js';
 import { compressDirectory, printCompressionSummary } from './compression.js';
 import { handleError, parseBuildError } from './error-handler.js';
+import { 
+  processCSS, 
+  checkCSSSetup, 
+  hasPostCSSConfig, 
+  printCSSSetupInstructions 
+} from './css-processor.js';
 
 /**
  * Check if Tailwind CSS is configured
@@ -494,6 +500,41 @@ export async function build(options: BuildOptions): Promise<void> {
   const builtFiles = new Map<string, string>();
 
   try {
+    // Process CSS if enabled
+    if (options.config?.css?.enabled) {
+      buildProgress.step('Processing CSS');
+      
+      const cssSetup = checkCSSSetup(projectRoot);
+      
+      if (!cssSetup.hasTailwind || !cssSetup.hasPostCSS || !cssSetup.hasPostCSSCLI) {
+        logger.warning('CSS processing is enabled but dependencies are missing');
+        printCSSSetupInstructions();
+      } else if (!hasPostCSSConfig(projectRoot)) {
+        logger.warning('PostCSS config not found. Run: rynex init:css');
+      } else {
+        const cssEntry = options.config.css.entry || 'src/styles/main.css';
+        const cssOutput = options.config.css.output || 'dist/styles.css';
+        const cssMinify = options.config.css.minify ?? options.minify;
+        const cssSourcemap = options.config.css.sourcemap ?? options.sourceMaps;
+        
+        logger.info(`Building CSS: ${cssEntry} → ${cssOutput}`);
+        
+        const cssResult = await processCSS({
+          entry: cssEntry,
+          output: cssOutput,
+          minify: cssMinify,
+          sourcemap: cssSourcemap,
+          projectRoot
+        });
+        
+        if (cssResult.success) {
+          logger.success('CSS compiled successfully');
+        } else {
+          logger.error(`CSS compilation failed: ${cssResult.error || 'Unknown error'}`);
+        }
+      }
+    }
+    
     // Scan and generate routes if file-based routing is enabled
     buildProgress.step('Scanning routes');
     if (options.config?.routing?.fileBasedRouting) {
